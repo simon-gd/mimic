@@ -1,0 +1,110 @@
+{% load staticfiles %}
+<script type="text/javascript">
+    //
+    // Creates a Likert scale input element
+    //
+    function createLikertScale(name, width, labels, onchange) {
+            var nbValues = labels.length;
+            var s = "";
+            s += '<table id="LikertScale_'+name+'" width="' + width + '" border="0" cellspacing="3" style="table-layout:fixed; border-width: 1px; border-color:#CCCCCC; border-style: solid;">';
+            //for (var i=1; i<=nbValues; i++)
+            //        s += '<col id="col_'+i+'" width="' + width/nbValues + '" align="center">';
+            //s += '<tr id="LikertScale_tr_1" style="font-size: 95%">';
+            //for (var i=1; i<=nbValues; i++)
+            //        s += '<td id="td_' + (name + i + "label") + '" align="center"><span id="' + (name + i + "label") + '">' + labels[i-1] + '</span></td>';
+            //s += '</tr><tr id="LikertScale_tr_1">';
+            for (var i=1; i<=nbValues; i++)
+                    s += '<td id="td_'+ (name + i) +'" align="center"><label id="label_'+ (name + i) +'" class="radio inline"><input type="radio" id="' + (name + i) + '" name="' + name + '" value="' + i + '" onclick="' + onchange + '">' + labels[i-1] + '</label></td>';
+            
+            s += '<td><input id="submit" type="submit" name="submit" value="Submit"></td>';
+            s += '</tr></table>';
+            document.write(s);
+    }
+    //
+    // SCENARIO HTML CODE
+    //
+    function getHTMLforScenarioText(text, question, icon_path, c1_image_path,condition)
+    {
+       var s = "";
+      // s += '<h3>' + title + '</h3>';
+       s+= '<hr id="hr_scenario">';
+    
+       imageHTML = '<img id="scenarioIcon" alt="" style = "vertical-align: top" src ="'+icon_path+'"/>';
+       textHTML = text;
+       s+= '<table id="scenarioTable" border="0" cellpadding="0" cellspacing="10" width="100%"><tr id="scenarioTable_tr1" valign="top"><td id="scenarioTable_td1" border="0" width="90px">' + imageHTML + '</td> \
+            <td id="scenarioTable_td2"><div id="scenarioTable_div1" style="background: #F5F5F5; padding: 1em; border: #D0D0D0 solid 1px;">' + textHTML + '</div></td></tr></table>';
+    
+       if (condition > 0) {
+                    s += '<p id="description_paragraph4">This is illustrated by the following diagram:</p>';
+                    s += '<p id="description_paragraph5"><img id="diagram1" alt="" src ="'+ c1_image_path +'"/></p>';
+            }
+       s += '<br id="br1"><p id="description_paragraph6">Please answer the following question:</p>';
+       s += '<p id="question1"><div id="question1_div" style="background: #F5F5F5; padding: 1em; border: #D0D0D0 solid 1px;">' + question + '</div></p>';
+       s += '</table>';
+       return s;
+    }
+    
+    head.ready(function() {
+    $(document).ready(function() {
+        var questionData = {{ question|safe}};
+        var questionCondition = {{ condition|safe}};
+        //console.log("we are filling out stuff now: ", questionData, questionCondition);
+        
+        var scenario_text = "10 out of every 1,000 women at age forty who participate in routine screening have breast cancer. <br id='br2'>8 of every 10 women with breast cancer will get a positive mammography. <br id='br3'>95 out of every 990 women without breast cancer will also get a positive mammography. <br id='br5'>";
+        var question = "Here is a new representative sample of women at age forty who got a positive mammography in routine screening. <br id='br4'>How many of these women do you expect to actually have breast cancer?";
+        var icon_path = "{% static 'img\micallef\si.png' %}";
+        var c1_image_path = "{% static 'img\micallef\v1.png' %}";
+        
+        $('#scenario').html(getHTMLforScenarioText(scenario_text, question, icon_path, c1_image_path, questionCondition));
+        
+        $('#mainForm').submit(function() {
+            var a1 = $('input:text[name=scenario_nominator]').val();
+            var a2 = $('input:text[name=scenario_denominator]').val();
+            var confidence = $('input:radio[name=confidence]:checked').val();
+             
+            //console.log(b);
+            
+            var concatAnswer = {'a1':5, 'a2':5};
+            var concatAnswerString = JSON.stringify(concatAnswer);
+            var concatLogBuffer = JSON.stringify(logBuffer);
+            
+          
+            //var compressed = Base64.toBase64(RawDeflate.deflate(Base64.utob(concatLogBuffer)));
+            
+            $("#answer").val(concatAnswerString);
+            $("#mouseData").val(concatLogBuffer);
+            logBuffer = [];
+            $(window).unbind('beforeunload');
+            return true;
+        });
+
+
+         $(window).bind('beforeunload', function(){
+          // Save the questions
+          var concatLogBuffer = JSON.stringify(logBuffer);
+          //var compressed = Base64.toBase64(RawDeflate.deflate(Base64.utob(concatLogBuffer)));
+          
+          $.post("./survey/save_question/", { 'mouseData': concatLogBuffer, 'csrfmiddlewaretoken': '{{ csrf_token }}'} );
+          return ''; //Are you sure you want to leave?';
+        });
+    });
+    });
+</script>
+
+<form id="mainForm" action="/?WorkerId={{worker_id}}" method="post">{% csrf_token %}
+    <input type="hidden" id="mouseData" name="mouseData" value="">
+    <input type="hidden" id="currentQ" name="currentQ" value="{{qnum}}">
+    <input type="hidden" id="answer" name="answer" value="">
+    <input type="hidden" name="WorkerID" value="{{worker_id}}">
+    
+
+
+<div id="page2">
+<br id="br1"><br id="br2"><br id="br3"><br id="br3"><br id="br4"><br id="br5"><br id="br6"><br id="br7">
+<script type="text/javascript">
+createLikertScale('confidence', 400, ['A', 'B', 'C']); 
+</script>
+</div>
+
+</form>
+   

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block extra_head %}
+<script type="text/javascript">
+    var logBuffer = "";
+    
+    head.ready(function() {
+    $(document).ready(function() {
+        
+    }); //$(document).ready(function() {
+    
+    }); //head.ready(function() {
+</script>
+{% endblock extra_head %}
+
+{% block content %}
+{% if qnum < 1 %}
+        <h4>Problem: 1 of 1</h4>
+{% else %}
+        <h4>Questionnaire: Question {{qnum}} of {{qtotal}}</h4>
+        
+{% endif %}
+        {% include question_template %}
+{% endblock content %}
+

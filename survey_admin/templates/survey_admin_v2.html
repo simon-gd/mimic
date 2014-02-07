@@ -1,0 +1,753 @@
+{% extends "base_admin.html" %}
+{% load staticfiles %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'js/lib/SlickGrid/slick.grid.css' %}" type="text/css"/>
+<link rel="stylesheet" href="{% static 'js/lib/SlickGrid/plugins/slick.headermenu.css' %}" type="text/css"/>
+<link rel="stylesheet" href="{% static 'js/lib/SlickGrid/css/smoothness/jquery-ui-1.8.16.custom.css' %}" type="text/css"/>
+<link rel="stylesheet" href="{% static 'js/lib/SlickGrid/examples/examples.css' %}" type="text/css"/>
+<link type="text/css" rel="stylesheet" href="{% static 'css/layout-default-latest.css' %}" />
+
+<style>
+    .cell-title {
+      font-weight: bold;
+    }
+
+    .cell-effort-driven {
+      text-align: center;
+    }
+
+    .description * {
+      font-size: 11pt;
+    }
+    .cell-story {
+      white-space: normal !important;
+      line-height: 19px !important;
+    }
+
+    .loading-indicator {
+      display: inline-block;
+      padding: 12px;
+      background: white;
+      -opacity: 0.5;
+      color: black;
+      font-weight: bold;
+      z-index: 9999;
+      border: 1px solid red;
+      -moz-border-radius: 10px;
+      -webkit-border-radius: 10px;
+      -moz-box-shadow: 0 0 5px red;
+      -webkit-box-shadow: 0px 0px 5px red;
+      -text-shadow: 1px 1px 1px white;
+    }
+
+    .loading-indicator label {
+      padding-left: 20px;
+      background: url('../images/ajax-loader-small.gif') no-repeat center left;
+    }
+   
+	
+    .ui-layout-pane {
+	border: 0; /* override layout-default-latest.css */
+	padding: 0px; 
+    }
+  
+  .slick-header-menu {
+      border: 1px solid #718BB7;
+      background: #f0f0f0;
+      padding: 2px;
+      -moz-box-shadow: 2px 2px 2px silver;
+      -webkit-box-shadow: 2px 2px 2px silver;
+      min-width: 100px;
+      z-index: 20;
+    }
+
+
+    .slick-header-menuitem {
+      padding: 2px 4px;
+      border: 1px solid transparent;
+      border-radius: 3px;
+    }
+
+    .slick-header-menuitem:hover {
+      border-color: silver;
+      background: white;
+    }
+
+    .slick-header-menuitem-disabled {
+      border-color: transparent !important;
+      background: inherit !important;
+    }
+
+
+</style>
+{% endblock head %}
+
+{% block extra_head %}
+  
+<script src="{% static 'js/lib/SlickGrid/lib/firebugx.js' %}"></script>
+
+
+<script src="{% static 'js/lib/SlickGrid/lib/jquery-ui-1.8.16.custom.min.js' %}"></script>
+<script src="{% static 'js/lib/SlickGrid/lib/jquery.event.drag-2.2.js' %}"></script>
+<script src="{% static 'js/lib/SlickGrid/lib/jquery.sparkline.min.js' %}"></script>
+
+<script src="{% static 'js/lib/SlickGrid/slick.core.js' %}"></script>
+<script src="{% static 'js/lib/SlickGrid/slick.formatters.js' %}"></script>
+<script src="{% static 'js/lib/SlickGrid/slick.editors.js' %}"></script>
+<script src="{% static 'js/lib/SlickGrid/slick.grid.js' %}"></script>
+<script src="{% static 'js/lib/SlickGrid/slick.remotemodel.js' %}"></script>
+<script src="{% static 'js/lib/SlickGrid/plugins/slick.rowselectionmodel.js' %}"></script>
+<script src="{% static 'js/lib/SlickGrid/plugins/slick.cellselectionmodel.js' %}"></script>
+<script src="{% static 'js/lib/SlickGrid/slick.dataview.js' %}"></script>
+<script src="{% static 'js/lib/SlickGrid/slick.groupitemmetadataprovider.js' %}"></script>
+<script src="{% static 'js/lib/SlickGrid/plugins/slick.headermenu.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery.layout-latest.min.js' %}"></script>
+
+<script>
+  
+head.ready(function() {
+$(document).ready(function() {
+  var g_condition_count = 5;
+  var g_questions = [];
+  var g_survey = 0;
+  var question_id = -1;
+  var current_user = -1;
+  var current_row = -1;
+  var sortcol = "id";
+  var sortdir = 1;
+  var hideInvalid = true;
+  var grid;
+  var dataView;
+  var answerKeys;			
+  $("#myGrid").hide();
+
+  var viz_type = 0;
+  
+  $("select#viz_type").change(function() {
+     viz_type = parseInt($(this).val());
+  });
+  $("select#study").change(function() {
+      if ($(this).val() == 'Z') {
+	  $("select#question").html("<option>Select a question</option>");
+	  $("select#question").attr('disabled', true);
+	  $("#myGrid").hide();
+      }
+      else {
+	 
+	  g_survey = $(this).val()
+	  var url = '{% url "json_all_questions" "999" %}'.replace (999, g_survey);
+	  $.getJSON(url, function(questions) {
+	      var options = '<option value="-1">Select a question</option>';
+	      for (var i = 0; i < questions.length; i++) {
+		 options += '<option value="' + questions[i].pk + '" title="'+questions[i].fields['slug']+'">' + questions[i].fields['slug'] + '</option>';
+		 g_questions[questions[i].pk] = questions[i]
+	      }
+	      $("select#question").html(options);
+	      $("select#question option:first").attr('selected', 'selected');
+	      $("select#question").attr('disabled', false);
+	  });
+      }
+  });
+  
+  $("#hide_invalid").click(function(){
+      hideInvalid = $(this).is(':checked');
+      dataView.setFilterArgs({
+	hideInvalid: hideInvalid
+      });
+      dataView.refresh();
+  });
+  
+  $("#hide_invalid").click(function(){
+      hideInvalid = $(this).is(':checked');
+      dataView.setFilterArgs({
+	hideInvalid: hideInvalid
+      });
+      dataView.refresh();
+  });
+  
+  
+  
+  function myFilter(item, args) {
+    //console.log('myFilter',item, args);
+    if (!item["valid"] && args.hideInvalid) {
+      return false;
+    }else{
+      return true;
+    }
+  }
+  function comparer(a, b) {
+    var x = a[sortcol], y = b[sortcol];
+    return (x == y ? 0 : (x-y));//(x > y ? 1 : -1));
+  }
+  function AnswerFormatter(row, cell, value, columnDef, dataContext) {
+    //console.log("AnswerFormatter", row, cell, value, columnDef, dataContext);
+    var correct = dataContext["correct_"+columnDef.name];
+    //console.log("AnswerFormatter", value, correct);
+    if (value == null || value === "") {
+      return "-";
+    } else if (value != correct) {
+      return "<div>" + value + "</div>";
+    } else {
+      return "<div style='background-color:green;font-weight:bold; color: white; padding: 2px;'>" + value + "</div>";
+    }
+  }
+  function avgTotalsFormatter(totals, columnDef) {
+    var val = totals.avg && totals.avg[columnDef.field];
+    if (val != null) {
+      return "avg: " + val;
+    }
+    return "";
+  }
+
+  function groupBy(column, answerKeys)
+  {
+    var data = {
+    getter: column,
+    formatter: function (g) {
+      return column+":  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
+    },
+    aggregators: [
+      new Slick.Data.Aggregators.Avg("time"),
+      new Slick.Data.Aggregators.Avg("clicks"),
+      new Slick.Data.Aggregators.Avg("scrolls"),
+      new Slick.Data.Aggregators.Avg("keydown"),
+      new Slick.Data.Aggregators.Avg("conf"),
+      new Slick.Data.Aggregators.Avg("conf_click"),
+      new Slick.Data.Aggregators.Avg("window_h"),
+      new Slick.Data.Aggregators.Avg("window_w"),
+    ],
+    aggregateCollapsed: true,
+    lazyTotalsCalculation: true
+   };
+   for(var k=0; k < answerKeys.length; ++k){
+    data['aggregators'].push(new Slick.Data.Aggregators.Avg(answerKeys[k]));
+   }
+   dataView.setGrouping(data);
+    
+  }
+  
+  function waitingFormatter(value) {
+    return "wait...";
+  }
+  var maxProp = function (array, prop) {
+        var values = array.map(function (el) {
+          return el[prop];
+        });
+        return Math.max.apply(Math, values);
+  };
+  function renderSparkline(cellNode, row, dataContext, colDef) {
+    //console.log(dataContext, colDef);
+    var moveVals = [];
+    var clickVals = [];
+    var keyVals = [];
+    
+    if("cursor_y" in dataContext){
+      var time = dataContext.time;
+      var movePts = dataContext.cursor_y;
+      //var keyPts = dataContext.keyPts;
+      //var clickPts = dataContext.clickPts;
+
+      //var max_y1 = maxProp(clickPts, 'y');
+      //var max_y2 = maxProp(keyPts, 'y');
+      var max_y3 = Math.max(movePts)//maxProp(movePts, 'y');
+      var max_y = max_y3; //Math.max(max_y1, max_y2, max_y3);
+		
+      for(var i=0; i < movePts.length; ++i){
+	//moveVals.push((movePts[i]['time']/1000.0)+":"+movePts[i]['y']);
+	moveVals.push(i+":"+movePts[i]);
+      }
+      /*
+      for(var i=0; i < clickPts.length; ++i){
+	clickVals.push((clickPts[i]['time']/1000.0)+":"+clickPts[i]['y']);
+      }
+      for(var i=0; i < keyPts.length; ++i){
+	keyVals.push((keyPts[i]['time']/1000.0)+":"+keyPts[i]['y']);
+      }
+      
+      console.log(keyVals);
+      */
+      $(cellNode).empty().sparkline(moveVals, {width: "100%", spotRadius: 0, chartRangeMin: 0, chartRangeMax: max_y, composite: true,chartRangeMinX:0, chartRangeMaxX: movePts.length})
+      //$(cellNode).empty().sparkline(keyVals, {type: 'bar', barWidth: 3, width: "100%", chartRangeMin: 0, chartRangeMax: 10, composite: true,chartRangeMinX:0, chartRangeMaxX: time});
+      //$(cellNode).empty().sparkline(clickPts, {width: "100%", spotRadius: 1.5, chartRangeMin: 0, chartRangeMax: max_y, composite: true, chartRangeMinX:0, chartRangeMaxX: time});
+    }
+  }
+    
+
+  
+  $("#group_clear").click(function(){
+    dataView.setGrouping([]);
+  });
+  
+  $("#group_conditions").click(function(){
+    //groupBy(answerKeys);
+  });
+  
+  function addRow(row)
+  {
+    var newObj = {}
+    for (var r in row){
+      if (r != 'cursor_y') {
+	   newObj[r] = row[r];
+      }
+    }
+    return newObj;
+  }
+  
+  $("select#question").change(function() {
+                             question_id = $(this).val();
+                             if (question_id == -1) {
+                                 $("#myGrid").hide();
+                                 return;
+                             }
+                             $("#myGrid").show();
+                             var url = '{% url "json_answers" "111" "222" %}'.replace (111, g_survey).replace (222, question_id);
+                             $.getJSON(url, function(answers) {
+				
+				
+				answerKeys = [];
+				//console.log(answers['data'][0]['answer'])
+				//var order = answers['data'][0]['q_order']
+			      
+				
+				if(answers['data'][0]['answer'][0] == "{"){
+				  var obj = $.parseJSON(answers['data'][0]['answer']);
+				  for(var i in obj){
+				    answerKeys.push(i);
+				  }
+				}else{
+				  answerKeys.push("answer");
+				}
+				console.log(answerKeys);
+				//console.log("answerKeys ", answerKeys);
+				var columns = [
+				  {id: "num", name: "#", field: "id", width: 40, sortable: true},
+				  { id: "user_id", name: "User ID", field: "user_id", sortable: true },
+				  //{ id: "answer", name: "Answer", field: "answer", sortable: true },
+				  { id: "condition", name: "Condition", field: "condition", sortable: true },
+				  { id: "time", name: "Time (sec)", field: "time", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
+				  { id: "clicks", name: "Clicks", field: "clicks", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
+				  { id: "scrolls", name: "Scrolls", field: "scrolls", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
+				  { id: "keydown", name: "Keydown", field: "keydown", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
+				  { id: "conf", name: "Confidence", field: "conf", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
+				  { id: "conf_click", name: "Confidence Click", field: "conf_click", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
+			      
+				  { id: "valid", name: "Valid", field: "valid", sortable: true, editable: true, width: 40, minWidth: 20, maxWidth: 40, cssClass: "cell-effort-driven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox },
+				  {id: "cursor_y", name: "Cursor-Y", sortable: false, width: 100, formatter: waitingFormatter, rerenderOnResize: true, asyncPostRender: renderSparkline},
+				  { id: "window_h", name: "Window Height", field: "window_h", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
+				  { id: "window_w", name: "Window Width", field: "window_w", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
+		      
+				];
+				
+				for(var i=0; i < answerKeys.length; ++i){
+				  columns.push({ id: answerKeys[i], name: answerKeys[i], field: answerKeys[i], sortable: true, formatter:AnswerFormatter, groupTotalsFormatter: avgTotalsFormatter});
+				}
+				
+				for (var i = 0; i < columns.length; i++) {
+				  columns[i].header = {
+				    menu: {
+				      items: [
+					{
+					  title: "Group by "+columns[i].name,
+					  command: "group"
+					},
+					{
+					  title: "Clear Grouping",
+					  command: "clear_group"
+					}
+				      ]
+				    }
+				  };
+				}
+				function dayFormatter(row, cell, value, columnDef, dataContext) {
+				    return value + ' days';
+				}
+			      
+				function dateFormatter(row, cell, value, columnDef, dataContext) {
+				    return value.getMonth() + '/' + value.getDate() + '/' + value.getFullYear();
+				}
+			      
+				var options = {
+				  editable: true,
+				  enableAddRow: false,
+				  enableCellNavigation: true,
+				  forceFitColumns: false,
+				  autoEdit: false,
+				  enableColumnReorder: false,
+				  multiColumnSort: false,
+				  enableAsyncPostRender: true
+				};
+			      
+				$(function () {
+				  var MS_PER_DAY = 24 * 60 * 60 * 1000;
+				  var data = [];
+				  for (var i = 0; i < answers['data'].length; i++) {
+				        if(current_user > -1 && answers['data'][i]['user'] == current_user){
+					  current_row=i;
+					}
+					var v = (answers['data'][i]['state']==0) ? true : false;
+					
+					var answerObjAll = [];
+					//for(var k=0; k < (answers['data'][i]['answer']).length; ++k){
+					//  answerObjAll.push($.parseJSON(answers['data'][i]['answer'][k]));
+					//}
+					//console.log(answerObjAll,answers['data'][i]['answer']);
+					data[i] = {
+					     id: answers['data'][i]['id'],
+					     user_id: answers['data'][i]['user'],
+					     //answer: answers['data'][i]['answer'],
+					     condition: answers['data'][i]['condition'],
+					     time: answers['data'][i]['time'],
+					     clicks: answers['data'][i]['clicks'],
+					     scrolls: answers['data'][i]['scrolls'],
+					     keydown: answers['data'][i]['keydown'],
+					     conf: answers['data'][i]['confidence'],
+					     conf_click: answers['data'][i]['confidenceClick'],
+					     window_h: answers['data'][i]['window_h'],
+					     window_w: answers['data'][i]['window_w'],
+					     valid: v
+					};
+					
+					
+					var answerObj = {};
+					if(answers['data'][i]['answer'][0] == "{"){
+					  answerObj = $.parseJSON(answers['data'][i]['answer']);
+					}else{
+					  answerObj['answer'] = answers['data'][i]['answer'];
+					}
+					var correctAnswerObj = {};
+					if(answers['data'][i]['correct_answer'] && answers['data'][i]['correct_answer'][0] == "{"){
+					  correctAnswerObj = $.parseJSON(answers['data'][i]['correct_answer']);
+					  //console.log("correctAnswerObj",correctAnswerObj);
+					}else{
+					  //console.log("answers['data'][i]['correct_answer']",answers['data'][i]['correct_answer']);
+					  correctAnswerObj['answer'] = answers['data'][i]['correct_answer'];
+					}
+					//console.log(answers['data'][i]['cursor_y']);
+					data[i]['cursor_y'] = $.parseJSON(answers['data'][i]['cursor_y']);
+
+					
+					//console.log(answerObj, correctAnswerObj);
+					for(var k=0; k < answerKeys.length; ++k){
+					  if(answerObj && (answerKeys[k] in answerObj)){
+					    data[i][answerKeys[k]] = answerObj[answerKeys[k]];
+					    data[i]["correct_"+answerKeys[k]] = correctAnswerObj[answerKeys[k]];
+					  }else{
+					    data[i][answerKeys[k]] = "null";
+					    data[i]["correct_"+answerKeys[k]] = "";
+					  }
+					  
+					}
+				  }
+				  
+				  // initialize the model
+				  var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider();
+				  dataView = new Slick.Data.DataView({
+				    groupItemMetadataProvider: groupItemMetadataProvider,
+				    inlineFilters: true });
+				  dataView.beginUpdate();
+				  dataView.setItems(data);
+				  dataView.setFilter(myFilter);
+				  dataView.setFilterArgs({
+				      hideInvalid: hideInvalid
+				    });
+				  groupBy("valid",answerKeys);
+				  dataView.endUpdate();
+				  
+				  
+  
+				  grid = new Slick.Grid("#myGrid", dataView, columns, options);
+				  
+				  var headerMenuPlugin = new Slick.Plugins.HeaderMenu({});
+
+				  //headerMenuPlugin.onBeforeMenuShow.subscribe(function(e, args) {
+				  //  var menu = args.menu;
+			      
+				    // We can add or modify the menu here, or cancel it by returning false.
+				 //   var i = menu.items.length;
+				 //   menu.items.push({
+				 //     title: "Menu item " + i,
+				 //     command: "item" + i
+				 //   });
+				 // });
+			      
+				  headerMenuPlugin.onCommand.subscribe(function(e, args) {
+				    console.log("Command: ", args);
+				    if(args.command == "group"){
+				      var column_id = args.column.id;
+				      groupBy(column_id,answerKeys);
+				    }else if(args.command == "clear_group"){
+				      dataView.setGrouping([]);
+				    }
+				  });
+			      
+				  grid.registerPlugin(headerMenuPlugin);
+				  
+				  grid.setSelectionModel(new Slick.RowSelectionModel());
+				  grid.registerPlugin(groupItemMetadataProvider);
+				  if(current_row > -1){
+				    console.log("Selecting: ", current_row, current_user);
+				    grid.setSelectedRows([current_row]);
+				  }
+				  
+				  grid.onCellChange.subscribe(function (e, args) {
+					dataView.updateItem(args.item.id, args.item);
+					var v = (args.item.valid) ? 0 : 3;
+					//console.log("onCellChange: ", args.item.id, args.item);
+					var url = '{% url "update_experiment_state" "111" "222" "333"%}'.replace (111, g_survey).replace (222, args.item.user_id).replace(333, v);
+					$.getJSON(url, function() {});
+					//dataView.refresh();
+					//grid.invalidate();
+					//grid.render();
+				  });
+				  
+				  // wire up model events to drive the grid
+				  dataView.onRowCountChanged.subscribe(function (e, args) {
+				    grid.updateRowCount();
+				    grid.render();
+				  });
+				
+				  dataView.onRowsChanged.subscribe(function (e, args) {
+				    grid.invalidateRows(args.rows);
+				    grid.render();
+				  });
+				
+				  grid.onSelectedRowsChanged.subscribe(function (e, args) {
+				      var myrows = args.rows;
+				      try{
+					
+					if(viz_type == 0 || viz_type == 1){
+					  // We only interested in first selection
+					  var row = args.rows[0];
+					  var mygrid = args.grid;
+					  var thisRow = grid.getDataItem(row)
+					  if ("__group" in thisRow){
+					    // We selected a group
+					    if(viz_type == 0){
+					      alert("This Visualization does not support Composite Visualizations.");
+					    } else if(viz_type == 1){
+					      //console.log("thisRow: ", thisRow.value, thisRow);
+					      url = '{% url "comp_heatmap" "111" "222" "333" %}'.replace (111, g_survey).replace (222, question_id).replace (333, thisRow.value);
+					      //console.log("thisRow: ", url);
+					      $("#vizIframe").attr('src', url);
+					    } 
+					  }else{
+					    //we selected an individual row
+					    
+					    current_user = thisRow.user_id;
+					    item_id = thisRow.id;
+					    
+					    console.log("selecting: ", current_user);
+					    
+					    $('#current_user').text(current_user);
+					    var url = '{% url "json_experiment" "111" "222" %}'.replace (111, g_survey).replace (222, current_user);
+					    $.getJSON(url, function(experiment) {
+					      var myhtml = "User Agent: ";
+					      myhtml += experiment.http_user_agent + "<br/>";
+					      //myhtml += "Finished: "+experiment.finished + "<br/>";
+					      $("#experiment_info").html(myhtml);
+					      //$("select#exp_state").val(exp_state);
+					      //$("select#exp_state").attr('disabled', false);
+					      //console.log(experiment);
+					      
+					      var url = '{% url "animated_mouse_paths" "999" %}'.replace (999, item_id);
+					      if(viz_type == 1){
+						  url = '{% url "heatmap" "999" %}'.replace (999, item_id);
+					      }
+					      //console.log(url);
+					      $("#vizIframe").attr('src', url);
+					    });
+					  }
+					}else{
+					      // custom selection
+					      
+					      url = '{% url "custom_viz" %}?composite=1';
+					      //console.log("thisRow: ", url);
+					      
+					      //console.log("rows: ", rows);
+					     
+					      var handler = function(){
+						      
+						      var datablock = $('#vizIframe').contents().find('#editor_data');
+						      var ddd = [];
+						      //console.log("selection has rows: ",  myrows.length, myrows);
+						      for(var i=0; i < myrows.length; ++i){
+							var thisRow = grid.getDataItem(myrows[i]);
+							//console.log("thisRow: ", thisRow);
+							if(thisRow){
+							  if ('__groupTotals' in thisRow){
+							    
+							  }else if("__group" in thisRow){
+							    
+							    var groupRows = thisRow.rows;
+							    
+							    //var groupRowsData = [];
+							    for(var j=0; j < groupRows.length; ++j){
+							      //groupRowsData.push(groupRows[j]);
+							      ddd.push(addRow(groupRows[j]));
+							    }
+							    /*
+							    ddd.push({
+								     '__group':true,
+								     'rows': groupRowsData,
+								     'count': thisRow.count,
+								     'groupingKey': thisRow.groupingKey,
+								     'title': thisRow.title, 
+								     'value': thisRow.value});
+								     */
+							  }else{
+							    ddd.push(addRow(thisRow));
+							  }
+							}
+						      }
+						      $('#vizIframe')[0].contentWindow.updateData(ddd);
+						      
+						       $( "#vizIframe" ).unbind( "load", handler );
+						      //datablock.html(JSON.stringify(ddd));
+						      
+					      };
+					      $( "#vizIframe" ).bind( "load", handler );
+					     
+					      $("#vizIframe").attr('src', url);
+					  }
+					      
+					}catch(e){
+					$('#current_user').text("N/A");
+					current_user = -1;
+					//$("select#exp_state").attr('disabled', true);
+					}
+					
+					
+					
+				     
+				      
+				      //console.log("onSelectedRowsChanged: ", current_user);
+				  });
+				  /*
+				  grid.onClick.subscribe(function (e, args) {
+				    if ($(e.target).hasClass("toggle")) {
+				      var item = dataView.getItem(args.row);
+				      if (item) {
+					if (!item._collapsed) {
+					  item._collapsed = true;
+					} else {
+					  item._collapsed = false;
+					}
+				
+					dataView.updateItem(item.id, item);
+				      }
+				      e.stopImmediatePropagation();
+				    }
+				  });
+				  */
+				  grid.onSort.subscribe(function (e, args) {
+				    //console.log(args);
+				    sortdir = args.sortAsc ? 1 : -1;
+				    sortcol = args.sortCol.field;
+				    
+				    dataView.sort(comparer, args.sortAsc);
+				    
+				    /*
+				    data.sort(function (dataRow1, dataRow2) {
+				      for (var i = 0, l = cols.length; i < l; i++) {
+					var field = cols[i].sortCol.field;
+					var sign = cols[i].sortAsc ? 1 : -1;
+					var value1 = dataRow1[field], value2 = dataRow2[field];
+					var result = (value1 == value2 ? 0 : (value1 > value2 ? 1 : -1)) * sign;
+					if (result != 0) {
+					  return result;
+					}
+				      }
+				      return 0;
+				    });*/
+				    //grid.invalidate();
+				    //grid.render();
+				  });
+				});
+			    }); // $.getJSON
+  }); //$("select#question").change(function()
+  
+  $('body').layout({
+		minSize: 100,
+		west__size: 700,
+		stateManagement__enabled: true, 
+		west__childOptions:{
+		    minSize:50,
+		    north__size:250,
+		    north__childOptions:	{
+		      minSize: 50,	
+		      west__size:250
+		    },
+		}
+  });
+
+
+
+}); //$(document).ready(function()
+}); //head.ready(function()
+</script>
+{% endblock %}
+
+
+
+{% block content %}
+  
+<div class="ui-layout-center">
+  
+  <iframe id="vizIframe" style="width: 99%; height:99%; position: absolute; top:0;left:0;" src=""></iframe> 
+  
+
+</div>
+<div class="ui-layout-west">
+  <div class="ui-layout-north">
+    
+    <div class="ui-layout-west" style="padding:5px;">
+      <img src="{% static 'img/logo.png' %}">
+      <form action="" method="get" accept-charset="utf-8">
+          <select name="study" id="study">
+              <option value="Z">Select a survey</option>
+              {% for study in surveys %}
+                  <option value="{{ study.id}}">{{ study.slug }}</option>
+              {% endfor %}
+          </select><br/>
+      </form>
+   </div>
+   <div class="ui-layout-center" style="padding:5px;">
+    <div id="properties">
+    <form action="" method="get" accept-charset="utf-8">
+          <select name="question" id="question" disabled="true">
+              <option>Select a question</option>
+          </select><br>
+	  <label class="checkbox">
+	  <input type="checkbox" id="hide_invalid" name="hide_invalid" value="true" checked> Hide Invalid<br></label>
+	  Visualization:
+	  <select name="viz_type" id="viz_type">
+              <option value="0">Animated Paths</option>
+	      <option value="1">Heatmap</option>
+	      <option value="2">Custom</option>
+          </select><br>
+	  
+      <!-- <a id="group_clear" class="btn" style="width: 150px; margin: 3px;" href="#">Clear grouping</a><br/>
+    <a id="group_conditions" class="btn" style="width: 150px; margin: 3px;" href="#">Group by conditions</a>-->
+    </form>
+    Selected UserID: <span id="current_user">N/A</span>
+    <div id="experiment_info">
+    </div>
+    </div>
+    </div>
+  </div>
+  <div class="ui-layout-center">
+    
+      <div id="myGrid" style="width:99%;height:99%;border:0;"></div>
+    
+  </div>
+</div>
+
+
+
+
+
+          
+     
+    
+{% endblock %}

@@ -1,0 +1,89 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store">
+    <meta http-equiv="Pragma" content="no-cache">
+    
+    <title>{% block title %}experiscope{% endblock title %}</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
+  
+   <style type="text/css">
+    body {
+      font-family: Sans-Serif;
+      /*font-size: 75%;*/
+      padding-top: 10px;
+      padding-left: 10px;
+    }
+    table {
+      font-family: Sans-Serif;
+      /*font-size: 100%;*/
+    }
+    hr{
+      border-top: 1px solid #000000;
+    }
+    br {
+      display: block;
+      width: 100%;
+    }
+    </style>
+
+    
+          
+    <script type="text/javascript" src="{% static 'js/lib/bowser.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/modernizr.custom.20963.js' %}"></script>
+    <script>
+       //head.ready(function() {
+        var nsURL = "{% url 'survey.views.not_supported' %}";
+        if ((!Modernizr.canvas || !Modernizr.inlinesvg) && window.location.href.indexOf(nsURL) == -1) {
+          window.location.href = nsURL;
+        }
+        if( (bowser.msie && bowser.version >= 9) ||
+            (bowser.chrome && bowser.version >= 14) ||
+            (bowser.firefox && bowser.version >= 4.0) ||
+            (bowser.safari && bowser.version >= 5) ||
+            (bowser.opera && bowser.version >= 11.0) ||
+            window.location.href.indexOf(nsURL) != -1) {
+          // We are good
+        }else{
+          window.location.href = nsURL;
+        }
+        //window.location.href = "{% url 'survey.views.not_supported' %}";
+      //});
+    </script>
+    
+    <script type="text/javascript" src="{% static 'js/lib/head.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/jquery-2.0.3.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/jquery.mousewheel.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/bootstrap-2.3.2.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/json2.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/rangy-core.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/rangy-serializer.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/app/nameDictionary.js' %}"></script>
+    
+    
+    <script>
+      //head.js();
+      //head.js("{% static 'js/lib/jquery-2.0.3.js' %}",
+      //        "{% static 'js/lib/bootstrap-2.3.2.js' %}",
+      //        "{% static 'js/lib/modernizr.custom.20963.js' %}");
+    </script>
+    {% block head %}{% endblock head %}
+  </head>
+
+  <body id="body">
+     <script type="text/javascript" src="{% static 'js/lib/detect-zoom.js' %}"></script>
+    {% block extra_head %}{% endblock extra_head %}
+
+    
+      {% block content %}
+        <p>Use this document as a way to quick start any new project.</p>
+      {% endblock content %}
+
+
+  </body>
+</html>

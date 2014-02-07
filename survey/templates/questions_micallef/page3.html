@@ -1,0 +1,70 @@
+{% load staticfiles %}
+<script type="text/javascript">
+    
+    head.ready(function() {
+    $(document).ready(function() {
+        var questionData = {{ question|safe}};
+        var questionCondition = {{ condition|safe}};
+        //console.log("we are filling out stuff now: ", questionData, questionCondition);
+
+        $('#mainForm').submit(function() {
+            var a1 = $('select[name=check] option:selected').val();
+          
+            //console.log(b);
+            if(!a1 ){
+                alert('Please answer the above question first.');
+                //$("#error").html("Please answer the above question first.");
+                return false;     
+            }
+            var concatAnswer = {'answer':a1};
+            var concatAnswerString = JSON.stringify(concatAnswer);
+            var concatLogBuffer = JSON.stringify(logBuffer);
+            //var compressed = Base64.toBase64(RawDeflate.deflate(Base64.utob(concatLogBuffer)));
+            $("#answer").val(concatAnswerString);
+            $("#mouseData").val(concatLogBuffer);
+            logBuffer = [];
+            $(window).unbind('beforeunload');
+            return true;
+        });
+
+
+        $(window).on('beforeunload', function(){
+          // Save the questions
+          var concatLogBuffer = JSON.stringify(logBuffer);
+          $.post("./survey/save_question/", { 'mouseData': concatLogBuffer, 'csrfmiddlewaretoken': '{{ csrf_token }}'} );
+          return ''; //Are you sure you want to leave?';
+        });
+    });
+    });
+</script>
+
+<form id="mainForm" action="/?WorkerId={{worker_id}}" method="post">{% csrf_token %}
+    <input type="hidden" id="mouseData" name="mouseData" value="">
+    <input type="hidden" id="currentQ" name="currentQ" value="{{qnum}}">
+    <input type="hidden" id="answer" name="answer" value="">
+    <input type="hidden" name="WorkerID" value="{{worker_id}}">
+    
+<div id="page3">
+<p id="page_count">Page 3/4</script></p><hr id="hr1">
+<h5 id="page_title">Double-Check Question</h5>
+<p id="description_p1">The question below is simply to make sure you have read the problem statement.</p>
+
+<hr id="hr2">
+<p id="description_p3">Which topic was part of the problem presented to you just before?</p>
+<select id="select1" class="input-medium" name="check">
+<option id="select1_o1" value=""></option>
+<option id="select1_o2" value="1">Car accident</option>
+<option id="select1_o3" value="2">History course</option>
+<option id="select1_o4" value="3">Airplane crash</option>
+<option id="select1_o5" value="4">Cancer</option>
+<option id="select1_o6" value="5">Students</option>
+<option id="select1_o7" value="6">Red cab</option>
+<option id="select1_o8" value="7">Economics</option>
+</select></p>
+<hr id="hr3">
+<input id="submit" type="submit" name="submit" value="Next page">
+<font id="font1" color="#999999">(you cannot return to this page afterwards)</font>
+</div>
+
+</form>
+   

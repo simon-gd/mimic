@@ -1,0 +1,128 @@
+{% load staticfiles %}
+<script type="text/javascript">
+    head.ready(function() {
+    $(document).ready(function() {
+        var questionData = {{ question|safe}};
+        var questionCondition = {{ condition|safe}};
+        //console.log("we are filling out stuff now: ", questionData, questionCondition);
+        function createQuestion(data, condition){
+            for (var i=0; i < data.length; i++){
+                if (data[i].p){
+                    $("#question").append("<p>"+data[i].p+"</p>")
+                 }else if (data[i].ul){
+                    var list = $("#question").append('<ul></ul>').find('ul');
+                    for (var j=0; j < data[i].ul.length; j++){
+                        list.append("<li>"+data[i].ul[j]+"</li>");
+                    }
+                }else if(data[i].image){
+                    //if(data[i].image.length > 1){}
+                    //else { $("#question").append("<>")
+                    var url = '{% static '999' %}';
+                     if (data[i].image.length > 1){
+                        if(condition > 0){
+                            url = url.replace('999', data[i].image[condition-1].url);
+                            $("#image").append("<img src='"+url+"'>"); 
+                        }
+                        
+                     }else{
+                        url = url.replace('999', data[i].image.url);
+                        $("#image").append("<img src='"+url+"'>");
+                     }
+                }
+            }
+            $("#answer_units").text(questionData.units);
+        }
+       
+        createQuestion(questionData.question, questionCondition);
+        
+        $('#mainForm').submit(function() {
+            var a1 = $('input:text[name=answer1]').val();
+            var a2 = $('input:text[name=answer2]').val();
+            var confidence = $('input:radio[name=confidence]:checked').val();
+            //console.log(b);
+            if(!a1 || !a2){
+                
+                $("#error").html("<div class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                return false;     
+            }
+            if(!confidence){
+                 $("#error").html("<div class='alert alert-error'>Error: Please indicate your level of confidence to proceed.</div>");
+                 return false;
+            }
+            if(!a1.match(/^\d+$/) || !a2.match(/^\d+$/)) {
+               $("#error").html("<div class='alert alert-error'>Error: Answer must be a number.</div>");
+               return false;     
+            }
+            $("#answer").val(a1+" of "+a2);
+            $("#mouseData").val(logBuffer);
+
+            logBuffer = "";
+            $(window).unbind('beforeunload');
+            return true;
+        });
+
+        $(".answer").keydown(function(event) {
+            var key = event.charCode || event.keyCode || 0;
+            // Allow: backspace, delete, tab, escape, and enter
+            if ( key == 46 ||key == 8 ||key == 9 || key == 27 || key == 13 || 
+                 // Allow: Ctrl+A
+                (key == 65 && key === true) || 
+                 // Allow: home, end, left, right
+                (key >= 35 && key <= 39)) {
+                     // let it happen, don't do anything
+                     return;
+            }
+            else {
+                // Ensure that it is a number and stop the keypress
+                if (event.shiftKey || (key < 48 || key > 57) && (key < 96 || key > 105 )) {
+                    event.preventDefault(); 
+                }   
+            }
+        });
+        
+         $(window).bind('beforeunload', function(){
+          // Save the questions
+          $.post("./survey/save_question/", { 'mouseData': logBuffer, 'csrfmiddlewaretoken': '{{ csrf_token }}'} );
+          return ''; //Are you sure you want to leave?';
+        });
+    });
+    });
+</script>
+
+<form id="mainForm" action="/?WorkerId={{worker_id}}" method="post">{% csrf_token %}
+    <input type="hidden" id="mouseData" name="mouseData" value="">
+    <input type="hidden" id="currentQ" name="currentQ" value="{{qnum}}">
+    <input type="hidden" id="answer" name="answer" value="">
+    <input type="hidden" name="WorkerID" value="{{worker_id}}">
+    <div id="question"></div>
+    <div id="image"></div>
+    <div id="answers"></div>
+    <label><strong>Answer:</strong></label>
+    
+    <div class="controls controls-row">
+        <input class="input-small answer" name="answer1" type="text" placeholder="">&nbsp;<strong>of</strong>&nbsp;
+        <input class="input-small answer" name="answer2" type="text" placeholder="">
+        &nbsp;<strong id="answer_units"></strong>&nbsp;
+    </div>
+   
+    <br>
+    <p>How confident are you in your answer?</p>
+    <label class="radio inline">
+        <input type="radio"  name="confidence" id="confidentCheckbox1" value="1"> Highly Confident
+    </label>
+     <label class="radio inline">
+        <input type="radio"  name="confidence" id="confidentCheckbox2" value="2"> Confident
+    </label>
+      <label class="radio inline">
+        <input type="radio"  name="confidence" id="confidentCheckbox3" value="3"> Neutral
+    </label>
+       <label class="radio inline">
+        <input type="radio"  name="confidence" id="confidentCheckbox4" value="4"> Unsure
+    </label>
+        <label class="radio inline">
+        <input type="radio"  name="confidence" id="confidentCheckbox5" value="5"> Highly Unsure
+    </label>
+    <br><br>
+    <button type="submit" class="btn">Submit</button>
+    <div id="error"></div>
+</form>

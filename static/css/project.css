@@ -1,0 +1,40 @@
+/*! project specific CSS goes here. */
+.container
+{
+    width: 1000px;
+    margin-left: 20px;
+    margin-right: 0px;
+}
+
+body {
+    padding-top: 10px;
+}
+
+.dataTable
+{
+    border-width: 1px;
+    border-color: #666666;
+    border-collapse: collapse;
+}
+
+
+
+.dataTable th
+{
+    border-width: 1px;
+    padding: 8px;
+    border-style: solid;
+    border-color: #666666;
+    background-color: #dedede;
+}
+
+
+
+.dataTable td
+{
+    border-width: 1px;
+    padding: 8px;
+    border-style: solid;
+    border-color: #666666;
+    background-color: #ffffff;
+}

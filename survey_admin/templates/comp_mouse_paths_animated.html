@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% block htmlid %} id="landingpage"{% endblock htmlid %}
+{% block extra_head %}
+  <script src="{% static "js/lib/kinetic-v4.6.0.js" %}"></script>
+ 
+  <script type="text/javascript">
+    var mouseMoves = {{mouseMoves|safe}};
+    function findMax(list)
+    { 
+      var maxTime = list[0][list[0].length-1].time - list[0][0].time;
+      try{
+        for(var i=0; i < list.length; i++){
+          var diff = list[i][list[i].length-1].time - list[i][0].time;
+          if(diff > maxTime){
+            maxTime = diff
+          }
+        }
+      }catch(err){}
+      return maxTime;
+    }
+
+    var maxTime = findMax(mouseMoves);
+    //alert(maxTime)
+    var curTimelineTime = 0;
+    var Dt = 100;
+    var finishedPts = 0;
+    if (!window.console) console = {};
+    console.log = console.log || function(){};
+    console.warn = console.warn || function(){};
+    console.error = console.error || function(){};
+    console.info = console.info || function(){};
+    
+    function get_random_color() {
+        var letters = '0123456789ABCDEF'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++ ) {
+            color += letters[Math.round(Math.random() * 15)];
+        }
+        return color;
+    }
+    
+    function updateTime(id, stage, currentTime)
+    {
+      if (currentTime > curTimelineTime){
+        curTimelineTime = currentTime;
+      }else{
+        return;
+      }
+      var t_c=document.getElementById("timeline");
+      var t_ctx=t_c.getContext("2d");
+      var normT = curTimelineTime / maxTime;
+      //console.log(currentTime,  maxTime, curTimelineTime, normT);
+
+      t_ctx.clearRect ( 0 , 0 , t_c.width, t_c.height);
+       t_ctx.beginPath();
+        t_ctx.rect(0, 0, t_c.width, t_c.height);
+        t_ctx.fillStyle = 'rgba(239,234,204, 1.0)';
+        t_ctx.fill();
+        t_ctx.globalAlpha = 0.5;
+        t_ctx.lineWidth = 2;
+        t_ctx.strokeStyle = '#4B4934';
+        t_ctx.stroke();
+      t_ctx.beginPath();
+      t_ctx.rect(0, 0, t_c.width*normT, t_c.height);
+      t_ctx.fillStyle = 'rgba(122,106,70, 0.8)';
+      t_ctx.fill();
+        /*
+      stage.toDataURL({
+             callback: function(dataUrl) {
+                //'{"imageData" : "' + "imageDataisHere" + '" ' + ', "name" : "' + name + '"}',
+                
+                var FileName = "Frame"+curTimelineTime+".png";
+                var csrf_token = $.cookie('csrftoken');
+                console.log(FileName);
+           
+                    $.ajax({
+                        type: "POST",
+                        beforeSend: function(xhr, settings) {
+                                       xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                                    },
+                        url: "/save_image_from_canvas/?data_url_to_binary=1",
+                        data: { name: FileName, dataUrl: dataUrl },
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+                    }).done(function(msg) {  })
+                      .fail(function(msg) {  })
+                  
+
+                // go to the next frame
+            
+              }
+            });
+            */
+    }
+
+    function drawCircleAnimation(stage, layer, xPos, yPos)
+    {
+      var circle = new Kinetic.Circle({
+        x: xPos,
+        y: yPos,
+        radius: 5,
+        opacity: 1.0,
+        fill: '#006FB7',
+      });
+      // add the shape to the layer
+      layer.add(circle);
+      // add the layer to the stage
+      //stage.add(layer);
+       var tween = new Kinetic.Tween({
+        node: circle, 
+        opacity: 0,
+        radius: 15,
+        duration: 0.7,
+        onFinish: function() {
+          circle.remove();
+        }
+      });
+      tween.play();
+      /*
+        circle.transitionTo({
+          radius: 15,
+          opacity: 0,
+          duration: 0.7,
+          easing: 'linear',
+          callback: function() {
+            circle.remove();
+            //writeMessage(messageLayer, 'transition complete!');
+          }
+        });*/
+        //snd.play();
+    }
+
+    
+
+    function drawMouseTrails(stage, layer, xPos, yPos, color)
+    {
+      var circle = new Kinetic.Circle({
+        x: xPos,
+        y: yPos,
+        radius: 4,
+        opacity: 0.5,
+        fill: color,
+      });
+      // add the shape to the layer
+      layer.add(circle);
+      // add the layer to the stage
+      
+      var tween = new Kinetic.Tween({
+        node: circle, 
+        opacity: 0,
+        duration: 0.4,
+        onFinish: function() {
+          circle.remove();
+        }
+      });
+      tween.play();
+      
+      /*
+        circle.transitionTo({
+          radius: 0,
+          opacity: 0,
+          duration: 0.4,
+          easing: 'linear',
+          callback: function() {
+            circle.remove();
+            //writeMessage(messageLayer, 'transition complete!');
+          }
+        });*/
+    }
+    
+    var colors = []
+    var startTimes = [];
+    var endTimes = [];
+    for (var i=0; i < mouseMoves.length; i++){
+        colors[i] = get_random_color();
+        //alert(colors[i]);
+        try{
+        startTimes[i] = mouseMoves[i][0].time;
+        endTimes[i] = mouseMoves[i][mouseMoves[i].length-1].time;
+        }catch(err){
+          startTimes[i] = 0;
+          endTimes[i] = 0;
+          
+        }
+    }
+    $(document).ready(function() {
+      var stage = new Kinetic.Stage({
+        container: 'layer4',
+        width: 2000,
+        height: 2000
+      });
+
+      var layer = new Kinetic.Layer();
+      var layer2 = new Kinetic.Layer();
+      var layers = [layer, layer2];
+      stage.add(layer);
+      stage.add(layer2);
+        
+        var currentPositions = []
+        for (var i=0; i < mouseMoves.length; i++){
+          currentPositions[i] = 0
+        }
+        
+        
+        
+        for (i=0; i < mouseMoves.length; i++){
+          var currentTime = mouseMoves[i][0].time;
+          var currentPt = 0;
+          var totalPts = mouseMoves[i].length;
+          draw(i, currentTime, currentPt, totalPts, currentPositions, stage, layers); 
+        }
+        
+        stage.add(layer);
+        //stage.add(layer2);
+    });
+    
+    function draw(id, currentTime, currentPt, totalPts, currentPositions, stage, layers){
+        currentTime = mouseMoves[id][currentPt].time;
+        
+        var dddd = currentTime -  startTimes[id];
+        updateTime(id, stage, dddd);
+        
+        var c=document.getElementById("layer1");
+        var ctx=c.getContext("2d");
+        var c2=document.getElementById("layer2");
+        var ctx2=c2.getContext("2d");
+        var c3=document.getElementById("layer3");
+        var ctx3=c3.getContext("2d");
+        
+        ctx.clearRect ( 0 , 0 , c.width, c.height);
+        c.width = c.width;
+        
+        if (currentPt==0){
+            //alert("Start")
+            ctx2.clearRect ( 0 , 0 , c2.width, c2.height);
+            c2.width = c2.width;
+            ctx2.moveTo(mouseMoves[id][currentPt].x,mouseMoves[id][currentPt].y);
+            ctx3.clearRect ( 0 , 0 , c3.width, c3.height);
+            c3.width = c3.width;
+            
+        }else{
+          ctx2.moveTo(mouseMoves[id][currentPt-1].x,mouseMoves[id][currentPt-1].y);
+          
+          
+        }
+        
+        
+          
+          /*
+          for (var jk=0; jk < 20; jk++)
+          {
+            
+            for (var i=0; i < mouseMoves.length; i++){
+              try{
+                var ind = currentPositions[i]-jk;
+                if (ind >= 1){
+                  ctx.moveTo(mouseMoves[i][ind-1].x,mouseMoves[i][ind-1].y);
+                }else if(ind==0){
+                  ctx.moveTo(mouseMoves[i][ind].x,mouseMoves[i][ind].y);
+                }
+                
+                
+                if (ind >= 0){
+                  ctx.lineTo(mouseMoves[i][ind].x,mouseMoves[i][ind].y);
+                  var t =1.0 - (jk/20);
+                  ctx.globalAlpha = t * 0.5;
+                  //ctx.globalCompositeOperation = 'destination-atop';
+                  //console.info(colors[i]);
+                  //ctx.lineWidth = 5;
+                  ctx.strokeStyle = "#EA1D24";
+                  ctx.stroke();
+                }
+              }catch(err)
+              {
+                
+              }
+            }
+          }*/
+        
+        
+        if (mouseMoves[id][currentPt].type == "mousemove"){
+          ctx2.beginPath();
+          if (currentPt >= 1){
+            ctx2.moveTo(mouseMoves[id][currentPt-1].x,mouseMoves[id][currentPt-1].y);
+          }
+          
+          ctx2.lineTo(mouseMoves[id][currentPt].x,mouseMoves[id][currentPt].y);
+          ctx2.strokeStyle = "#A8A39D";
+          //ctx2.fillStyle = "#A8A39D";
+          //ctx2.lineWidth = 5;
+          ctx2.globalAlpha = 0.4;
+         
+          ctx2.stroke();
+          ctx2.beginPath();
+          
+          var rad = ctx.createRadialGradient(mouseMoves[id][currentPt].x,mouseMoves[id][currentPt].y, 1, mouseMoves[id][currentPt].x,mouseMoves[id][currentPt].y, 10);
+
+          rad.addColorStop(0, 'rgba(250,159,1,0.3)');
+          rad.addColorStop(1, 'rgba(253,237,3,0)');
+          ctx2.fillStyle = rad;
+    
+          ctx2.arc(mouseMoves[id][currentPt].x,mouseMoves[id][currentPt].y, 10, 0, Math.PI * 2, false);
+          
+          ctx2.closePath();
+          ctx2.fill();
+          
+          drawMouseTrails(stage, layers[1], mouseMoves[id][currentPt].x,mouseMoves[id][currentPt].y, colors[id]);
+          
+        }else{
+          ctx3.moveTo(mouseMoves[id][currentPt].x,mouseMoves[id][currentPt].y);
+          ctx3.beginPath();
+          ctx3.strokeStyle = "#006FB7";
+          ctx3.arc(mouseMoves[id][currentPt].x,mouseMoves[id][currentPt].y, 5, 0, Math.PI * 2, false);
+          ctx3.closePath();
+          ctx3.stroke();
+          drawCircleAnimation(stage, layers[1], mouseMoves[id][currentPt].x,mouseMoves[id][currentPt].y);
+          
+        }
+        var t1 = mouseMoves[id][currentPt].time
+        var t2 = t1+10
+        if (currentPt < (totalPts-1)){
+            t2 = mouseMoves[id][currentPt+1].time
+        }
+        
+        currentPt+=1;
+        currentPositions[id] = currentPt
+        //currentTime = mouseMoves[id][currentPt].time;
+        
+        //var dddd = currentTime -  startTimes[id];
+        //updateTime(dddd);
+        
+        if (currentPt >= totalPts){
+            finishedPts += 1;
+            if (finishedPts == mouseMoves.length){
+              ctx.clearRect ( 0 , 0 , c.width, c.height);
+              c.width = c.width;
+              //alert("Finished");
+            }
+            return;
+        }
+
+            
+        
+        setTimeout(function() { draw(id, currentTime, currentPt, totalPts, currentPositions, stage, layers) },t2-t1);
+    }
+  </script>
+{% endblock %}
+
+
+{% block content %}
+    <h4>Question {{qnum}} of {{qtotal}}</h4>
+    {% include question_template %}
+        
+   <div style="position:absolute;top:0;left:0;z-index:2;">
+ <canvas id="layer2" width="2000" height="2000" 
+   style="position: absolute; left: 0; top: 0; z-index: 2;"></canvas>
+ <canvas id="layer1" width="2000" height="2000" 
+   style="position: absolute; left: 0; top: 0; z-index: 3;"></canvas>
+ <canvas id="layer3" width="2000" height="2000" 
+   style="position: absolute; left: 0; top: 0; z-index: 4;"></canvas>
+ <canvas id="timeline" width="200" height="20" 
+   style="position: absolute; right: 10px; top: 20px; z-index: 5; width:200px; height: 20px; vertical-align: bottom; line-height: 1px;"></canvas>
+  <div id="layer4" style="position: absolute; left: 0; top: 0; z-index: 6;"></div>
+</div>
+    
+{% endblock %}

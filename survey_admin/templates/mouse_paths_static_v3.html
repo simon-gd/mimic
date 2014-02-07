@@ -1,0 +1,1860 @@
+{% extends "base_admin.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block head %}
+<script src="http://d3js.org/d3.v2.min.js?2.10.0"></script>
+<link rel="stylesheet" href="{% static 'css/jquery-ui.min.css' %}" >
+<link type="text/css" rel="stylesheet" href="{% static 'css/layout-default-latest.css' %}" />
+<script type="text/javascript" src="{% static 'js/lib/jquery-ui.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery.simulate.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/rangy-core.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/rangy-serializer.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery.layout-latest.min.js' %}"></script>
+
+<style>
+.strong{
+            font-weight: bolder;
+}
+.ui-layout-pane {
+            border: 0; /* override layout-default-latest.css */
+            padding: 0px; 
+}
+.highlight {
+            background-color: yellow;
+            font-weight: bolder;
+            color:  red;
+        }
+.axis text {
+  font: 10px sans-serif;
+  fill: #000;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis .minor line {
+  stroke: #777;
+  stroke-dasharray: 2,2;
+}
+
+.line {
+  fill: none;
+  stroke: yellow;
+  stroke-width: 1.5px;
+}
+
+.line2 {
+  fill: none;
+  stroke: red;
+  stroke-width: 2.5px;
+}
+
+.line3 {
+  fill: none;
+  stroke: #f7806f;
+  stroke-width: 2.5px;
+}
+
+path.line1 {
+        stroke: steelblue;
+        stroke-width: 1;
+        fill: none;
+}
+
+path.line2 {
+        stroke: red;
+        stroke-width: 1;
+        fill: none;
+}
+.dotClick {
+  stroke-width: 0;
+  stroke-color: black;
+  fill: #FF6FB7;
+}
+
+.dotKey {
+  stroke-width: 0;
+  stroke-color: black;
+  fill: steelblue;
+}
+
+
+
+.aGraph{
+   width: 100%;
+   height: 100px;
+   position: relative;
+   left: 0px;
+   padding-left:10px;
+   top: 0px;
+   border: 0px solid black;
+   z-index: 100;
+  
+}
+
+.span1{
+  text-align: left;
+  color: black;
+}
+
+</style>
+{% endblock head %}
+
+{% block extra_head %}
+  <script type="text/javascript">
+    my_keycode_dictionary = {
+    0: "\\",
+    8: "backspace",
+    9: "tab",
+    12: "num",
+    13: "enter",
+    16: "shift",
+    17: "ctrl",
+    18: "alt",
+    19: "pause",
+    20: "caps",
+    27: "esc",
+    32: "space",
+    33: "pageup",
+    34: "pagedown",
+    35: "end",
+    36: "home",
+    37: "left",
+    38: "up",
+    39: "right",
+    40: "down",
+    44: "print",
+    45: "insert",
+    46: "delete",
+    48: "0",
+    49: "1",
+    50: "2",
+    51: "3",
+    52: "4",
+    53: "5",
+    54: "6",
+    55: "7",
+    56: "8",
+    57: "9",
+    65: "a",
+    66: "b",
+    67: "c",
+    68: "d",
+    69: "e",
+    70: "f",
+    71: "g",
+    72: "h",
+    73: "i",
+    74: "j",
+    75: "k",
+    76: "l",
+    77: "m",
+    78: "n",
+    79: "o",
+    80: "p",
+    81: "q",
+    82: "r",
+    83: "s",
+    84: "t",
+    85: "u",
+    86: "v",
+    87: "w",
+    88: "x",
+    89: "y",
+    90: "z",
+    91: "cmd",
+    92: "cmd",
+    93: "cmd",
+    96: "num_0",
+    97: "num_1",
+    98: "num_2",
+    99: "num_3",
+    100: "num_4",
+    101: "num_5",
+    102: "num_6",
+    103: "num_7",
+    104: "num_8",
+    105: "num_9",
+    106: "num_multiply",
+    107: "num_add",
+    108: "num_enter",
+    109: "num_subtract",
+    110: "num_decimal",
+    111: "num_divide",
+    124: "print",
+    144: "num",
+    145: "scroll",
+    186: ";",
+    187: "=",
+    188: ",",
+    189: "-",
+    190: ".",
+    191: "/",
+    192: "`",
+    219: "[",
+    220: "\\",
+    221: "]",
+    222: "\'",
+    223: "`",
+    224: "cmd",
+    57392: "ctrl",
+    63289: "num"
+  };
+
+head.ready(function() {
+$(document).ready(function() {
+    $('#userCanvas').load(function(){
+      
+    var mouseMoves = {{mouseMoves|safe}};
+    
+    function getURLParameter(name) {
+      return decodeURI((RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,0])[1]
+      );
+    }
+    
+   
+    var speedup = getURLParameter('speedup');
+    var delay = getURLParameter('delay');
+    //console.log("speedup ",speedup);
+    var y=0;
+    var gCurrentTime = mouseMoves[y].time;
+    
+    while (gCurrentTime == 0)
+    {
+      gCurrentTime = mouseMoves[++y].time;
+    }
+    var startTime = gCurrentTime;
+    var currentPt = 0;
+    var currentClick = 0;
+    var totalPts = mouseMoves.length;
+    //console.log(totalPts);
+    var maxTime = mouseMoves[mouseMoves.length-1].time - startTime;
+    //alert(maxTime)
+    var currentTime = 0;
+    var global_x_offset = 200;
+    var global_y_offset = 100;
+    var scroll_offset_x = 0;
+    var scroll_offset_y = 0;
+    
+    var screen_w = 0;
+    var screen_h = 0;
+    var screen_pos_x = 0;
+    var screen_pos_y = 0;
+    var pixelRatio = 1.0;
+    
+    var document_pos_x = 0;
+    var document_pos_y = 0;
+    
+    var window_w = {{window_w|safe}};
+    var window_h = {{window_h|safe}};
+    var window_infocus = true;
+    var window_outer_w = {{window_w|safe}};
+    var window_outer_h = {{window_h|safe}};
+    var toolbarH = 0;
+    var toolbarW = 0;
+    
+    var keyPressCache = {};
+    var frameCache = {};
+    var eventCache = [];
+    var animationPlaying = false;
+    var timeModes = { "LOGICAL": 0, "REAL_TIME_FIXED_DT": 1, "REAL_TIME": 2, "REAL_TIME_10X": 10, "REAL_TIME_100X": 100, "REAL_TIME_1000X": 1000};
+    var currentTimeMode = timeModes.LOGICAL;
+    
+    var clickCounts = {};
+    var currentClickCount = 0;
+    
+    var userAgent;
+    /* "legend": {
+                  'position': 'tr',
+                  'offsetY' : 810,
+                  'title': 'Mouse Movements'
+              },*/
+    
+    var maxProp = function (array, prop) {
+        var values = array.map(function (el) {
+          return el[prop];
+        });
+        return Math.max.apply(Math, values);
+    };
+    
+    
+    var x_mapping;
+    var y_mapping;
+    function getIndex(target)
+    {
+            if(target && 'tabindex' in target){
+                        return target.tabindex;
+            }else{
+                        return "";
+            }
+            
+    }
+    function getId(target)
+    {
+            if(target && 'id' in target){
+                        return target.id;
+            }else{
+                        return "";
+            }
+            
+    }
+    function displayGraphExample(id, w, h, timeSeconds, clickPts, keyPts, movePts, focusinPts, focusoutPts, wheelPts, scrollPts) {
+		// create an SVG element inside the #graph div that fills 100% of the div
+                //if(movePts.length == 0){
+                //    return;
+                //}
+                var margin = {top: 5, right: 5, bottom: 15, left: 45},
+                    width = w - margin.left - margin.right,
+                    height = h - margin.top - margin.bottom;
+               
+                //var fakeMove1 = [{'time':0, 'x':0, 'y': max_y}];
+                //var fakeMove2 = [{'time':movePts[movePts.length-1].time, 'x':0, 'y': max_y}];
+                
+                //movePts = fakeMove1.concat(movePts);
+                //movePts = movePts.concat(fakeMove2)
+                
+                var zones = {}
+                
+                var zoomed;
+                
+		
+                                         
+		x_mapping = d3.scale.linear().domain([0, timeSeconds]).range([0, width]);
+                
+                y_mapping = d3.scale.ordinal()
+                        .domain(["moves", "clicks", "keys", "focusin","focusout", "scroll"])
+                        .rangePoints([0, height-5]);
+                
+                 var xAxis = d3.svg.axis()
+                            .scale(x_mapping)
+                            .tickPadding(2)
+                            .tickSize(-height)
+                            .tickFormat(function(d) { return d + "s"; })
+                            .orient("bottom");
+                            
+                var yAxis = d3.svg.axis()
+                            .scale(y_mapping)
+                            .ticks(5)
+                            .tickSize(-width)
+                            .tickFormat(function(d) { return d; })
+                            .orient("left");
+                            
+                var zoom = d3.behavior.zoom()
+                        .x(x_mapping)
+                        .scaleExtent([1.0, 20.0])
+                        .on("zoom", zoomed);
+    
+                //var zoom = d3.behavior.zoom()
+                //        .x(x_mapping)
+                //        .y(y)
+                //        .scaleExtent([1, 10])
+                //        .on("zoom", function() {
+                //                    console.log("zoomed");
+                //                    //svg.select(".x.axis").call(xAxis);
+                //                    //svg.select(".y.axis").call(yAxis);
+                //        });
+                
+                var graph = d3.select(id).append("svg:svg")
+                                         .attr("width", width + margin.left + margin.right)
+                                         .attr("height", height + margin.top + margin.bottom)
+                                         .append("g")
+                                         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                                         .append("g")
+                                         .call(zoom);
+                 graph.append("rect")
+                        .attr("width", width)
+                        .attr("height", height)
+                        .attr("x", 0)
+                        .attr("y", 0)
+                        .style("fill", "white")
+                        .style("stroke-width", 0);
+                        
+                var gx = graph.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")");
+                gx.call(xAxis);
+
+                var gy = graph.append("g")
+                            .attr("class", "y axis")
+                            .attr("width", width);
+                gy.call(yAxis);
+                            
+               
+
+                gy.selectAll("g").filter(function(d) { return d; })
+                    .classed("minor", true);
+                gx.selectAll("g").filter(function(d) { return d; })
+                    .classed("minor", true);
+                
+                //var line = d3.svg.line()
+                    // assign the X function to plot our line as we wish
+                //    .x(function(d) { 
+                            // verbose logging to show what's actually being done
+                            //console.log('Plotting X value for data point: ' + d + ' using index: ' + i + ' to be at: ' + x(i) + ' using our xScale.');
+                            // return the X coordinate where we want to plot this datapoint
+                  //          return x_time_mapping((d.time-startTime)/1000.0);
+                  //  })
+                 //   .y(function(d) { 
+                            // verbose logging to show what's actually being done
+                            //console.log('Plotting Y value for data point: ' + d + ' to be at: ' + y(d) + " using our yScale.");
+                            // return the Y coordinate where we want to plot this datapoint
+                  //          return y(d.y); 
+                  //  });
+    
+                // display the line by appending an svg:path element with the data line we created above
+                //graph.append("svg:path").attr("class", "line").attr("d", line(movePts));
+                
+                var line2 = d3.svg.line()
+                    .x(0)
+                    .y(function(d) {return d.y;})
+                
+                graph.append("g").attr("class", "currentGraphTimelinePosition").append("svg:path").attr("class", "line3").attr("d", line2([{'y':0},{'y':h}]));
+                //graph.append("g").attr("class", "hoverGraphTimelinePosition").append("svg:path").attr("class", "line3").attr("d", line2([{'y':0},{'y':h}]));
+                
+                var moveNode = graph.selectAll(".dotMove")
+                    .data(movePts)
+                    .enter().append("g")
+                    .attr("transform", function(d) { return "translate(" + x_mapping((d.time-startTime)/1000.0) + "," + y_mapping("moves") + ")"; });
+                    
+                 moveNode.append("circle")
+                    .attr("class", "dot")
+                    .attr("r", 3.0)
+                    .style("fill", function(d) { return "green"; })
+                    .style("stroke-width", 0)
+                    .style("stroke", '#000')
+                    
+                 moveNode.append("title")
+                        .text(function(d) { return getId(d.target);});
+                    
+                var clickNode = graph.selectAll(".dotClick")
+                    .data(clickPts)
+                    .enter().append("g")
+                    .attr("transform", function(d) { return "translate(" + x_mapping((d.time-startTime)/1000.0) + "," + y_mapping("clicks") + ")"; });
+                    
+                clickNode.append("circle")
+                    .attr("class", "dot")
+                    .attr("r", 5.0)
+                    .style("fill", function(d) { return "#FF6FB7"; })
+                    .style("stroke-width", 1)
+                    .style("stroke", '#000')
+                    .style("fill-opacity", 1.0)
+                    .style("stroke-opacity", 1.0);
+                clickNode.append("title")
+                        .text(function(d) { return getId(d.target);});
+                clickNode.append("text")
+                        .attr("dy", ".4em")
+                        .attr("dx", "-.1em")
+                        .attr("font-size", "6pt")
+                        .style("text-anchor", "middle")
+                        .text(function(d) { return getIndex(d.target); });
+                    
+                var keyNode = graph.selectAll(".dotKey")
+                    .data(keyPts)
+                    .enter().append("g");
+                    
+                keyNode.attr("transform", function(d) { return "translate(" + x_mapping((d.time-startTime)/1000.0) + "," + y_mapping("keys") + ")"; });
+                    
+                keyNode.append("rect")
+                    .attr("class", "dot")
+                    .attr("width", 12.0)
+                    .attr("height", 12.0)
+                    .attr("x", -6)
+                    .attr("y", -6)
+                    .style("fill", function(d) { return "white"; })
+                    .style("stroke-width", 1)
+                    .style("stroke", '#000')
+                    .style("fill-opacity", 1.0)
+                    .style("stroke-opacity", 1.0);
+                 
+                 keyNode.append("title")
+                        .text(function(d) { return my_keycode_dictionary[d.which];});
+                 keyNode.append("text")
+                        .attr("dy", ".4em")
+                        .attr("dx", "-.1em")
+                        .attr("font-size", "6pt")
+                        .style("text-anchor", "middle")
+                        .text(function(d) { return my_keycode_dictionary[d.which][0]; });
+            
+                 var focusNode = graph.selectAll(".dotFocus")
+                    .data(focusinPts)
+                    .enter().append("g")
+                    .attr("transform", function(d) { return "translate(" + x_mapping((d.time-startTime)/1000.0) + "," + y_mapping("focusin") + ")"; });
+                    
+                 focusNode.append("circle")
+                    .attr("class", "dot")
+                    .attr("r", 5.0)
+                    .style("fill", function(d) {
+                        var color = "steelblue";
+                        //console.log('focusin ', color, d);
+                        return color;
+                     })
+                    .style("stroke-width", 1)
+                    .style("stroke", '#000')
+                    .style("fill-opacity", 1.0)
+                    .style("stroke-opacity", 1.0);
+                    
+                 focusNode.append("title")
+                        .text(function(d) { return getId(d.target);});
+                        
+                 focusNode.append("text")
+                        .attr("dy", ".4em")
+                        .attr("dx", "-.1em")
+                        .attr("font-size", "6pt")
+                        .style("text-anchor", "middle")
+                        .text(function(d) { return getIndex(d.target); });
+                 
+                 var focusNode2 = graph.selectAll(".dotFocus2")
+                    .data(focusoutPts)
+                    .enter().append("g")
+                    .attr("transform", function(d) { return "translate(" + x_mapping((d.time-startTime)/1000.0) + "," + y_mapping("focusout") + ")"; });
+                    
+                 focusNode2.append("circle")
+                    .attr("class", "dot")
+                    .attr("r", 5.0)
+                    .style("fill", function(d) {
+                        var color = "red";
+                        //console.log('focusout ', color, d);
+                        return color;
+                     })
+                    .style("stroke-width", 1)
+                    .style("stroke", '#000')
+                    .style("fill-opacity", 1.0)
+                    .style("stroke-opacity", 1.0);
+                 focusNode2.append("title")
+                        .text(function(d) { return d.target.id;});
+                        
+                 focusNode2.append("text")
+                        .attr("dy", ".4em")
+                        .attr("dx", "-.1em")
+                        .attr("font-size", "6pt")
+                        .style("text-anchor", "middle")
+                        .text(function(d) { return d.target.tabindex; });
+               
+                 var scrollNode = graph.selectAll(".dotScroll")
+                    .data(scrollPts)
+                    .enter().append("path")
+                        .attr("class", "point")
+                        .attr("d", function(d) {
+                                    if (d.dir == 1){
+                                                return d3.svg.symbol().type("triangle-up").size(30)();            
+                                    }else{
+                                                return d3.svg.symbol().type("triangle-down").size(30)();
+                                    }
+                                    
+                                    })
+                        .attr("transform", function(d) { return "translate(" + x_mapping((d.time-startTime)/1000.0) + "," + y_mapping("scroll") + ")"; })
+                        .style("fill", function(d) { return "green"; })
+                        .style("stroke-width", 1)
+                        .style("stroke", '#000')
+                        .style("fill-opacity", 0.5)
+                        .style("stroke-opacity", 0.5);
+                 
+                function zoomed() {
+                        gx.call(xAxis);
+                        
+                        moveNode.attr("transform", function(d) { return "translate(" + x_mapping((d.time-startTime)/1000.0) + "," + y_mapping("moves") + ")"; });
+                        clickNode.attr("transform", function(d) { return "translate(" + x_mapping((d.time-startTime)/1000.0) + "," + y_mapping("clicks") + ")"; });
+                        keyNode.attr("transform", function(d) { return "translate(" + x_mapping((d.time-startTime)/1000.0) + "," + y_mapping("keys") + ")"; });
+                        focusNode.attr("transform", function(d) { return "translate(" + x_mapping((d.time-startTime)/1000.0) + "," + y_mapping("focusin") + ")"; });
+                        focusNode2.attr("transform", function(d) { return "translate(" + x_mapping((d.time-startTime)/1000.0) + "," + y_mapping("focusout") + ")"; });
+                        scrollNode.attr("transform", function(d) { return "translate(" + x_mapping((d.time-startTime)/1000.0) + "," + y_mapping("scroll") + ")"; });
+                        d3.select(".currentGraphTimelinePosition").attr("transform", function(d) { return "translate(" + x_mapping((mouseMoves[currentPt].time-startTime)/1000.0) + "," + 0 + ")"; });
+                }
+                
+    }
+    function isDefined(e, prop){
+        return (prop in e) && typeof e[prop] !== 'undefined' && e[prop] != undefined && e[prop] != 'undefined';
+    }
+    
+    function findPrevMouseMove(j){
+      var p = j-1;
+      while(p >= 0){
+        if (mouseMoves[p].type == "mousemove" || mouseMoves[p].type == "click"){
+           return p; 
+        }
+        p--;
+      }
+      return j;
+    }
+    
+    function findNextMouseMove(j){
+      var p = j+1;
+      while(p < mouseMoves.length){
+        if (mouseMoves[p].type == "mousemove" || mouseMoves[p].type == "click"){
+           return p; 
+        }
+        p++;
+      }
+      return j;
+    }
+    
+    
+    function captureElementData(id){
+        var elementData = {};
+        elementData['id'] = id;
+        if(id == "document" || id == "window"){
+            var element = $('iframe').contents().find('body');
+            elementData['width'] = element.width();
+            elementData['height'] = element.height();
+            elementData['innerWidth'] = element.innerWidth();
+            elementData['innerHeight'] =element.innerHeight();
+            elementData['outerWidth'] = element.outerWidth();
+            elementData['outerHeight'] = element.outerHeight();
+            elementData['outerWidthWithMargin'] = element.outerWidth(true);
+            elementData['outerHeightWithMargin'] = element.outerHeight(true);
+            elementData['offset'] = {'left': 0, 'top': 0};
+        }else {
+            //var el = $('iframe').contents().find('#'+id)[0];
+            var element = $('iframe').contents().find('#'+id);
+              
+            elementData['width'] = element.width();
+            elementData['height'] = element.height();
+            elementData['innerWidth'] = element.innerWidth();
+            elementData['innerHeight'] =element.innerHeight();
+            elementData['outerWidth'] = element.outerWidth();
+            elementData['outerHeight'] = element.outerHeight();
+            elementData['outerWidthWithMargin'] = element.outerWidth(true);
+            elementData['outerHeightWithMargin'] = element.outerHeight(true);
+            elementData['offset'] = element.offset();
+            elementData['position'] = element.position();
+            elementData['class'] = element.attr('class');
+        }
+        return elementData;
+    }
+    
+    // Normalized Element Coordinates to Pixel Element Coordinates 
+    function NECtoPEC(element, x_NEC,y_NEC){
+      var w = element['outerWidth'];
+      var h = element['outerHeight'];
+      
+      var x_PEC =  x_NEC *w;
+      var y_PEC =  y_NEC *h;
+      return [x_PEC, y_PEC];
+    }
+    
+    // Pixel Element Coordinates  to Normalized Element Coordinates
+    function PECtoNEC( xOffset,yOffset){
+      var w = window_w;//element['outerWidth'];
+      var h = window_h; //element['outerHeight'];
+      
+      var x_NEC = (xOffset) / w;
+      var y_NEC = (yOffset) / h;
+      
+      return [x_NEC, y_NEC];
+    }
+    
+    
+    // Normalized Element Coordinates to Pixel Window Coordinates 
+    function NECtoPWC(element, x_NEC,y_NEC){
+      var offset = element['offset'];
+      var w = element['outerWidth'];
+      var h = element['outerHeight'];
+      
+      var x_PEC =  offset.left + x_NEC *w;
+      var y_PEC =  offset.top + y_NEC *h;
+      
+      return [x_PEC, y_PEC];
+    }
+    // Pixel Window Coordinates  to Normalized Element Coordinates
+    function PWCtoNEC( element, xPt,yPt){
+      var offset = element['offset'];
+      var w = element['outerWidth'];
+      var h = element['outerHeight'];
+      var x_NEC = (xPt-offset.left) / w;
+      var y_NEC = (yPt-offset.top) / h;
+      return [x_NEC, y_NEC];
+    }
+    
+    function getMousePosition(mouseMove){
+       return [mouseMove.x,mouseMove.y];
+      
+       if(mouseMove.e && mouseMove.e.target){
+        var el = mouseMove.e.target;
+        var el2 = captureElementData(el.id);
+        var mouseMoveRaw = [mouseMove.x,mouseMove.y];
+                            
+        // XXX - Lets fix the option Chrome Bug!!!
+        /*
+        if (userAgent.indexOf("Chrome") != -1){
+          if (el.nodeName == "SELECT" && mouseMove.e.offsetY && mouseMove.e.offsetY < 0){
+            mouseMoveRaw = [mouseMoveRaw[0]+el.offset.left, mouseMoveRaw[1]+el.offset.top];
+            //console.log("mouseMoveRaw: ", mouseMoveRaw);
+          }
+        }else{
+          if (el.nodeName == "OPTION"){
+            el = el.parent;
+            var el2 = captureElementData(el.id);
+            if (mouseMove.e.offsetY && mouseMove.e.offsetY < 0){
+              mouseMoveRaw = [mouseMoveRaw[0]+el.offset.left, mouseMoveRaw[1]+el.offset.top];
+            }
+            //console.log("getMousePosition: option fixed", el, el2);
+          }
+        }
+        */
+        var element = $('iframe').contents().find('#'+el.id);
+        
+        if(element.css( "display" ) == "inline"){
+          return [mouseMove.x,mouseMove.y];
+        }
+        //console.log("getMousePosition", element.css( "display" ));
+        
+        if (isDefined(el2,'offset')){
+           //console.log("PWCtoNEC ", mouseMove);
+           var ptNEC = PWCtoNEC(el, mouseMoveRaw[0],mouseMoveRaw[1]);
+           var ptPWC = NECtoPWC(el2, ptNEC[0],ptNEC[1]);
+           return ptPWC;
+        }else{
+           console.error("getMousePosition failed ", el2);
+           return [mouseMove.x,mouseMove.y];
+        }
+       }else{
+          console.error("getMousePosition failed ", mouseMove);
+          return [mouseMove.x,mouseMove.y];
+       }
+      
+    }
+    function drawClicks(currentPt){
+      var c=document.getElementById("mouseClicks");
+      var ctx=c.getContext("2d");
+      if (currentPt==0){
+        ctx.clearRect ( 0 , 0 , c.width, c.height);
+        c.width = c.width;
+      }
+      
+      if (mouseMoves[currentPt].type == "click"){
+        
+        //console.log("click", mouseMoves[currentPt]);
+        var mousePt = getMousePosition(mouseMoves[currentPt]);
+        
+        //console.log("drawClicks ", mouseMoves[currentPt]);
+        
+        if (!(currentPt in clickCounts)){
+          currentClickCount++;
+          clickCounts[currentPt] = currentClickCount;
+        }
+        var clickCount = clickCounts[currentPt];
+        ctx.moveTo(mousePt[0],mousePt[1]);
+        ctx.beginPath();
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = "#000";
+        ctx.fillStyle = "#FF6FB7";
+        ctx.arc(mousePt[0],mousePt[1], 5, 0, Math.PI * 2, false);
+        ctx.font = "bold 16px Arial";
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.fillStyle = "#FF6FB7";
+        ctx.strokeStyle = "#000";
+        ctx.globalAlpha = 1.0;
+        ctx.fillText(clickCount, mousePt[0]-5,mousePt[1]+20);
+        ctx.strokeText(clickCount, mousePt[0]-5,mousePt[1]+20);
+      }
+    }
+    function drawMouseSpeedline(currentPt){
+       var c=document.getElementById("mouseSpeedline");
+       var ctx=c.getContext("2d");
+       ctx.clearRect ( 0 , 0 , c.width, c.height);
+       c.width = c.width;
+       
+       
+       var element_c=document.getElementById("elementHighlight");
+       var element_ctx=c.getContext("2d");
+       if(mouseMoves[currentPt].e && mouseMoves[currentPt].e.target && mouseMoves[currentPt].e.target.offset){
+           
+           var el = mouseMoves[currentPt].e.target;
+           var el2 = captureElementData(el.id);
+
+           element_ctx.clearRect ( 0 , 0 , element_c.width, element_c.height);
+           element_c.width = element_c.width;
+           element_ctx.beginPath();
+           element_ctx.globalAlpha=0.5;
+           element_ctx.strokeStyle="#339933";
+           if(el2.offset){
+            element_ctx.rect(2+el2.offset.left, 2+el2.offset.top, el2.outerWidth, el2.outerHeight); 
+           }else{
+             element_ctx.rect(2, 2, el2.outerWidth, el2.outerHeight); 
+           }
+           
+           element_ctx.stroke();
+       }
+        // Draw pageX and pageY of the points
+        ctx.beginPath();
+        for (i=0; i < 30; i++)
+         {
+           var ind = currentPt-i;
+           if (ind >= 0 &&  mouseMoves[ind].type == "mousemove"){
+            
+             var mousePt = getMousePosition(mouseMoves[ind]);
+             ctx.lineTo(mousePt[0],mousePt[1]);
+             
+             //ctx.lineTo(mouseMoves[ind].x,mouseMoves[ind].y);
+             var t =1.0 - (i/20);
+             ctx.globalAlpha = t;
+             ctx.lineWidth = 3;
+             ctx.strokeStyle = "#EA1D24";
+             ctx.stroke();
+           }else{
+             break;
+           }
+         }
+           
+           
+         
+        
+    }
+    var prevSelText= "";
+    var mouseMoveCount = 0;
+    function drawMouseMovePath(currentPt){
+       var c=document.getElementById("mouseMovementPath");
+       var ctx=c.getContext("2d");
+
+        if (currentPt==0){
+            ctx.clearRect ( 0 , 0 , c.width, c.height);
+            c.width = c.width;
+            mouseMoveCount = 0;
+            
+        }
+
+        if (mouseMoves[currentPt].type == "mousemove"){
+          
+              mouseMoveCount++;
+              var p = findPrevMouseMove(currentPt)
+              /*
+              ctx.beginPath();
+              ctx.moveTo(mouseMoves[p].x,mouseMoves[p].y);
+              ctx.lineTo(mouseMoves[currentPt].x,mouseMoves[currentPt].y);
+              ctx.strokeStyle = "#ccc";
+              ctx.globalAlpha = 0.8;
+              ctx.stroke();
+              ctx.closePath();
+              */
+              var prevMousePt = getMousePosition(mouseMoves[p]);
+              var currMousePt = getMousePosition(mouseMoves[currentPt]);
+
+              ctx.beginPath();
+              ctx.lineWidth = 2;
+              ctx.strokeStyle = "#999";
+              //ctx.fillStyle = "#999";
+              ctx.globalAlpha = 0.5;
+              
+              
+              var drawTiangles = false; //((mouseMoveCount % 2)==0);
+              var thickness = 4;
+
+               if(mouseMoves[currentPt].e.buttons > 0){
+                 ctx.lineWidth = 4;
+                 //thickness *= 3;
+              }
+              
+              // Check if text is selected
+              if ("selectedText" in mouseMoves[currentPt].extra){
+                if(mouseMoves[currentPt].extra.selectedText.length > 0){
+                  //var sel = showSelectedText(currentPt);
+                  if(false){
+                    
+                  
+                  var selText = sel.toString();
+                  if(selText != prevSelText){
+                    prevSelText = selText;
+                    ctx.strokeStyle = "#0000FF";
+                    //ctx.fillStyle = "#0000FF";
+                    //console.log(mouseMoves[currentPt].e);
+                  }
+                  
+                  }
+                  
+                }else{
+                  prevSelText ="";
+                }
+              }else{
+                prevSelText ="";
+              }
+              
+              // draw line
+              ctx.moveTo(prevMousePt[0],prevMousePt[1]);
+              ctx.lineTo(currMousePt[0],currMousePt[1]);
+              ctx.stroke();
+              ctx.closePath();
+              
+              if(drawTiangles){
+                ctx.beginPath();
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = "#000";
+                ctx.fillStyle = "#999";
+                var dx = prevMousePt[0]-currMousePt[0];
+                var dy = prevMousePt[1]-currMousePt[1];
+                var len = Math.sqrt(dx*dx + dy*dy);
+                
+                var PtNorm = [dx,dy];
+                //if (len < 1){
+                //  return;
+                //}
+                //if (len < 4){
+                //PtNorm = [(dx/len)*thickness, (dy/len)*thickness];
+                //}
+                PtNorm = [(dx), (dy)];
+                var perpPt = [-dy, dx];
+                var perpPtNorm = [(perpPt[0]/len)*thickness, (perpPt[1]/len)*thickness];
+                
+                ctx.moveTo(prevMousePt[0]-perpPtNorm[0],prevMousePt[1]-perpPtNorm[1]);
+                ctx.lineTo(prevMousePt[0]-PtNorm[0],prevMousePt[1]-PtNorm[1]);
+                ctx.lineTo(prevMousePt[0]+perpPtNorm[0],prevMousePt[1]+perpPtNorm[1]);
+                ctx.lineTo(prevMousePt[0]-perpPtNorm[0],prevMousePt[1]-perpPtNorm[1]);
+                ctx.fill();
+                ctx.stroke();
+              }
+
+        }
+      
+    }
+    
+    function drawMouseMoveHeatmap(currentPt){
+        if (currentPt==0){
+            heatmap.store.setDataSet({ max: 10, data: []});
+            heatmap2.store.setDataSet({ max: 10, data: []});
+        }
+        
+        
+        
+        if (mouseMoves[currentPt].type == "mousemove"){
+            
+              var t1 = mouseMoves[currentPt].time;
+              var t2 = t1;
+              if (currentPt < (totalPts-1)){
+                t2 = mouseMoves[currentPt+1].time;
+              }
+              var delay = 1+(t2-t1);
+              var currMousePt = getMousePosition(mouseMoves[currentPt]);
+              heatmap.store.addDataPoint(currMousePt[0], currMousePt[1], delay);
+              heatmap2.store.addDataPoint(currMousePt[0], currMousePt[1], 1);  
+        }
+      
+    }
+    
+    function drawWindow(currentPt){
+          var c=document.getElementById("windowBox");
+          var ctx=c.getContext("2d");
+          for (var j=0; j <= currentPt; j++)
+          {
+            if(mouseMoves[j]['extra'] && mouseMoves[j]['extra']['zoom']){
+                pixelRatio = mouseMoves[j]['extra']['zoom']['devicePixelRatio'];
+            }
+            if (mouseMoves[j].type == "init"){
+              //console.log("window init", mouseMoves[j]);
+              userAgent = mouseMoves[j]['extra']['navigator']['userAgent']; 
+              x_offset = 0;
+              y_offset = 0;
+              scroll_offset_x = 0;
+              scroll_offset_y = 0;
+              
+              screen_h =  mouseMoves[j]['extra']['screen']['height']; 
+              screen_w =  mouseMoves[j]['extra']['screen']['width']; 
+              
+              screen_pos_x = mouseMoves[j]['extra']['window']['screenX'];
+              screen_pos_y = mouseMoves[j]['extra']['window']['screenY'];
+              
+              window_w = mouseMoves[j]['extra']['window']['width'];
+              window_h = mouseMoves[j]['extra']['window']['height'];
+              
+              window_outer_w = mouseMoves[j]['extra']['window']['outerWidth'];
+              window_outer_h = mouseMoves[j]['extra']['window']['outerHeight'];
+              
+              window_w = window_w;
+              window_h = window_h;
+                
+              if (userAgent.indexOf("Chrome") == -1 && userAgent.indexOf("Windows") == -1){
+                // Chrome for some reason does not handle outerWidth/Height the same as Firefox
+                window_outer_w = window_outer_w;
+                window_outer_h = window_outer_h;   
+              }
+
+              toolbarH = window_outer_h-window_h;
+              toolbarW = window_outer_w-window_w;
+              
+              if (mouseMoves[j]['extra']['window']['offset'] && mouseMoves[j]['extra']['window']['offset']['left']){
+                window_offset_x = mouseMoves[j]['extra']['window']['offset']['left'];
+                window_offset_y = mouseMoves[j]['extra']['window']['offset']['top'];
+              }else{
+                window_offset_x = screen_pos_x;
+                window_offset_y = screen_pos_y+toolbarH;
+              }
+              
+              //console.log(userAgent, pixelRatio);
+              
+            }if (mouseMoves[j].type == "scroll"){
+               
+               scroll_offset_x = mouseMoves[j].dx;
+               scroll_offset_y = mouseMoves[j].dy;
+              
+            } else if (mouseMoves[j].type == "resize"){
+               
+              //console.log("resize", mouseMoves[j], pixelRatio);
+              
+              screen_pos_x = mouseMoves[j]['extra']['window']['screenX'];
+              screen_pos_y = mouseMoves[j]['extra']['window']['screenY'];
+              
+              if (mouseMoves[j]['extra']['window']['offset'] && mouseMoves[j]['extra']['window']['offset']['left']){
+                window_offset_x = mouseMoves[j]['extra']['window']['offset']['left'];
+                window_offset_y = mouseMoves[j]['extra']['window']['offset']['top'];
+              }else{
+                window_offset_x = screen_pos_x;
+                window_offset_y = screen_pos_y+toolbarH;
+              }
+              
+              
+              window_w = mouseMoves[j]['extra']['window']['width'];
+              window_h = mouseMoves[j]['extra']['window']['height'];
+              
+              window_outer_w = mouseMoves[j]['extra']['window']['outerWidth'];
+              window_outer_h = mouseMoves[j]['extra']['window']['outerHeight'];
+              
+              window_w = window_w;
+              window_h = window_h;
+                
+              if (userAgent.indexOf("Chrome") == -1 && userAgent.indexOf("Windows") == -1){
+                
+                window_outer_w = window_outer_w;
+                window_outer_h = window_outer_h;   
+              }
+              
+              toolbarH = window_outer_h-window_h;
+              toolbarW = window_outer_w-window_w;
+              
+            }
+          }
+          
+          document_pos_x = window_offset_x;
+          document_pos_y = window_offset_y;
+          
+          $("#userCanvas").width(window_w);
+          
+          $("#userCanvas").css('top', document_pos_y + "px");
+          $("#userCanvas").css('left', document_pos_x + "px");
+          
+          //$('iframe').contents().find('#outerDiv').css('zoom', (pixelRatio*100) + "%");
+          //$('iframe').contents().find('#outerDiv').css('MozTransform','scale(' + pixelRatio + ')');
+          
+          $("#heatmapArea").css('top', document_pos_y + "px");
+          $("#heatmapArea").css('left', document_pos_x + "px");
+          
+          $("#heatmapArea2").css('top', document_pos_y + "px");
+          $("#heatmapArea2").css('left', document_pos_x + "px");
+          
+          $("#mouseMovementPath").css('top', document_pos_y + "px");
+          $("#mouseMovementPath").css('left', document_pos_x + "px");
+          
+          $("#mouseClicks").css('top', document_pos_y + "px");
+          $("#mouseClicks").css('left', document_pos_x + "px");
+          
+          $("#mouseSpeedline").css('top', document_pos_y + "px");
+          $("#mouseSpeedline").css('left', document_pos_x + "px");
+          
+          $("#highlightSelection").css('top', document_pos_y + "px");
+          $("#highlightSelection").css('left', document_pos_x + "px");
+
+          //console.log("scroll", x_offset, y_offset, window_w, window_h);
+          
+          ctx.clearRect ( 0 , 0 , screen_h, c.height);
+          c.width = c.width;
+          
+          // Screen
+          ctx.beginPath();
+          ctx.globalAlpha=0.2;
+          ctx.fillStyle="gray"; 
+          ctx.fillRect ( scroll_offset_x , scroll_offset_y , screen_w, screen_h);
+          
+          ctx.beginPath();
+          ctx.globalAlpha=0.5;
+          ctx.fillStyle = "gray";
+          ctx.font = "bold 16px Arial";
+          ctx.fillText("Screen: " + screen_w + " x " + screen_h, scroll_offset_x+4 , scroll_offset_y+16);
+  
+          // Browser
+          ctx.beginPath();
+          ctx.globalAlpha=0.4;
+          ctx.fillStyle="gray"; 
+          ctx.rect(screen_pos_x+scroll_offset_x,screen_pos_y+scroll_offset_y,window_outer_w,window_outer_h);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.globalAlpha=0.5;
+          ctx.fillStyle = "#333";
+          ctx.font = "bold 12px Arial";
+          ctx.fillText("Browser: "+ window_outer_w + " x " + window_outer_h +" "+userAgent, screen_pos_x+scroll_offset_x+4,screen_pos_y+scroll_offset_y+16);
+
+          // Document
+          ctx.beginPath();
+          ctx.globalAlpha=1.0;
+          ctx.clearRect (screen_pos_x+scroll_offset_x , document_pos_y+scroll_offset_y , window_w,window_h);
+          ctx.strokeStyle="red"; 
+          ctx.rect(screen_pos_x+scroll_offset_x, document_pos_y+scroll_offset_y,window_w,window_h);
+          ctx.stroke();
+          if(!window_infocus){
+            console.log("blur the window");
+            ctx.fillStyle = "#111";
+            ctx.fill();
+          }
+
+         // ctx.strokeStyle="red"; 
+         // ctx.stroke();
+    }
+    function keys(obj)
+    {
+        var keys = [];
+        for(var key in obj){
+            if(obj.hasOwnProperty(key)){
+                keys.push(key);
+            }
+        }
+        return keys;
+    }
+    /*
+    function SelectText(elementID, textstring) {
+      var element = $('iframe').contents().find(elementID);
+      var bodyElement = $('iframe').contents().find("body")[0];
+      var documentElement = $('iframe')[0].contentWindow.document;
+      var windowElement = $('iframe')[0].contentWindow;
+      var range, selection;
+      
+      element.focus();
+      console.log(bodyElement, documentElement, windowElement);
+      if (bodyElement.createTextRange) {
+          range = bodyElement.createTextRange();
+          range.moveToElementText(element[0]);
+          range.select();
+      } else if (windowElement.getSelection) {
+          selection = windowElement.getSelection();
+          range = documentElement.createRange();
+          range.selectNodeContents(element[0]);
+          selection.removeAllRanges();
+          selection.addRange(range);
+      }
+    }*/
+    
+
+    function showSelectedText(currentPt)
+    {
+      if ("selectedText" in mouseMoves[currentPt].extra){
+        //SelectText(elementID, mouseMoves[currentPt].extra.selectedText);
+        var documentElement = $('iframe')[0].contentWindow.document.documentElement;
+        var windowElement = $('iframe')[0].contentWindow;
+        var bodyElement = $('iframe').contents().find("body")[0];
+        var rootElement = $('iframe').contents().find("#mainForm")[0];
+        if(mouseMoves[currentPt].extra.selectedText.length > 0){
+          //console.log("selectedText ", mouseMoves[currentPt].extra.selectedText);
+          try{
+            //console.log(mouseMoves[currentPt].extra.selectedText, rootElement, windowElement);
+            rangy.deserializeSelection(mouseMoves[currentPt].extra.selectedText, rootElement, windowElement);
+            //allSelections.push(sel);
+            //cssApplier.applyToSelection(windowElement);
+            //var newHighlights = highlighter.highlightSelection("highlight", sel, documentElement.id);
+            //console.log("highlighter applied ", newHighlights);
+            
+             
+          }catch(err){
+            console.error("error parsing selection: ", err, mouseMoves[currentPt].extra.selectedText, rootElement, windowElement);
+            
+          }
+        }else{
+          var sel = rangy.getSelection();
+          sel.removeAllRanges();
+          
+        }
+      }
+      return null;
+      
+    }
+    
+    function drawScroll(currentPt)
+    {
+      var c=document.getElementById("mouseClicks");
+      var ctx=c.getContext("2d");
+      if (currentPt==0){
+        ctx.clearRect ( 0 , 0 , c.width, c.height);
+        c.width = c.width;
+      }
+      if (mouseMoves[currentPt].type == "scroll" ){
+        
+        var prevId = findPrevMouseMove(currentPt);
+        var mousePt = getMousePosition(mouseMoves[prevId]);
+        //console.log("getMousePosition ", mouseMoves[currentPt]);
+        
+        
+        ctx.beginPath();
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = "#000";
+        ctx.fillStyle = "green";
+        
+        if (scroll_offset_y > mouseMoves[currentPt].dy){
+          //scoll up
+          ctx.moveTo(mousePt[0]-5, mousePt[1]+5);
+          ctx.lineTo(mousePt[0]+5, mousePt[1]+5);
+          ctx.lineTo(mousePt[0], mousePt[1]+5);
+          ctx.lineTo(mousePt[0]-5, mousePt[1]+5);
+        }else{
+          //scroll down
+          ctx.moveTo(mousePt[0]-5, mousePt[1]-5);
+          ctx.lineTo(mousePt[0]+5, mousePt[1]-5);
+          ctx.lineTo(mousePt[0], mousePt[1]+5);
+          ctx.lineTo(mousePt[0]-5, mousePt[1]-5);
+        }
+        
+        
+        //ctx.rect(mousePt[0]-5,mousePt[1]-5, 10, 10);
+        ctx.fill();
+        ctx.stroke();
+        
+      }
+      
+    }
+    
+    function updateWindowFocus(currentPt)
+    {
+      var c=document.getElementById("mouseClicks");
+      var ctx=c.getContext("2d");
+      if (currentPt==0){
+        ctx.clearRect ( 0 , 0 , c.width, c.height);
+        c.width = c.width;
+      }
+      
+      /*
+      if (mouseMoves[currentPt].type == "click"){
+        //console.log("click", mouseMoves[currentPt]);
+        var mousePt = getMousePosition(mouseMoves[currentPt]);
+        //console.log("getMousePosition ", mouseMoves[currentPt]);
+        
+        ctx.moveTo(mousePt[0],mousePt[1]);
+        ctx.beginPath();
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = "#000";
+        ctx.fillStyle = "#FF6FB7";
+        ctx.arc(mousePt[0],mousePt[1], 5, 0, Math.PI * 2, false);
+        ctx.fill();
+        ctx.stroke();
+      }*/
+      
+      if (mouseMoves[currentPt].type == "blur" && mouseMoves[currentPt].e.target.id == "window"){
+        window_infocus = false;
+        
+        var prevId = findPrevMouseMove(currentPt);
+        var mousePt = getMousePosition(mouseMoves[prevId]);
+        //console.log("getMousePosition ", mouseMoves[currentPt]);
+        
+        ctx.moveTo(mousePt[0]-5,mousePt[1]-5);
+        ctx.beginPath();
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = "#000";
+        ctx.fillStyle = "red";
+        ctx.rect(mousePt[0]-5,mousePt[1]-5, 10, 10);
+        ctx.fill();
+        ctx.stroke();
+        
+      } else if(mouseMoves[currentPt].type == "focus" && mouseMoves[currentPt].e.target.id == "window"){
+        window_infocus = true;
+        var nextId = findNextMouseMove(currentPt);
+        var mousePt = getMousePosition(mouseMoves[nextId]);
+        
+        ctx.moveTo(mousePt[0]-5,mousePt[1]-5);
+        ctx.beginPath();
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = "#000";
+        ctx.fillStyle = "blue";
+        ctx.rect(mousePt[0]-5,mousePt[1]-5, 10, 10);
+        ctx.fill();
+        ctx.stroke();
+        //console.log(mouseMoves[currentPt].type, mouseMoves[currentPt]);
+      }
+      
+    }
+    
+    function simulateEvent(currentPt)
+    {
+      if (mouseMoves[currentPt].type == "mousedown"){
+        var mousePt = getMousePosition(mouseMoves[currentPt]);
+        var elementID = "#"+mouseMoves[currentPt].e.target.id;
+        var element = $('iframe').contents().find(elementID);
+        element.focus();
+        if(elementID != "#submit"){
+          element.simulate(mouseMoves[currentPt].type);
+        }
+
+      }
+      if (mouseMoves[currentPt].type == "mouseup"){
+        var mousePt = getMousePosition(mouseMoves[currentPt]);
+        var elementID = "#"+mouseMoves[currentPt].e.target.id;
+        var element = $('iframe').contents().find(elementID);
+        if(elementID != "#submit"){
+          element.simulate(mouseMoves[currentPt].type);
+        }
+      }
+      if (mouseMoves[currentPt].type == "mousemove"){
+        var mousePt = [mouseMoves[currentPt].x, mouseMoves[currentPt].y];//getMousePosition(mouseMoves[currentPt]);
+        var elementID = "#"+mouseMoves[currentPt].e.target.id;
+        var element = $('iframe').contents().find(elementID);
+        element.focus();
+        element.simulate(mouseMoves[currentPt].type, {pageX: mousePt[0], pageY: mousePt[1]});
+      }
+      if (mouseMoves[currentPt].type == "click" || mouseMoves[currentPt].type == "dblclick"){
+        var mousePt = getMousePosition(mouseMoves[currentPt]);
+        var elementID = "#"+mouseMoves[currentPt].e.target.id;
+        var element = $('iframe').contents().find(elementID);
+        element.focus();
+        if(elementID != "#submit"){
+          element.simulate(mouseMoves[currentPt].type);
+        }
+        if(element[0] && element[0].nodeName && element[0].nodeName == "OPTION"){
+          var parent = mouseMoves[currentPt].e.target.parent;
+          element.attr('selected', true);
+        }
+      }
+      if (mouseMoves[currentPt].type == "focusout" || mouseMoves[currentPt].type == "blur"){
+        var elementID = "#"+mouseMoves[currentPt].e.target.id;
+        var element = $('iframe').contents().find(elementID);
+        element.blur();
+        //if(element[0] && element[0].nodeName && element[0].nodeName == "SELECT"){
+          //var event = jQuery.Event(mouseMoves[currentPt].type);
+          //element.trigger(event);
+          
+        //}else{
+        //  element.blur();
+          //element.simulate(mouseMoves[currentPt].type);
+          
+        //}
+        
+        
+      }
+      if (mouseMoves[currentPt].type == "focusin" || mouseMoves[currentPt].type == "focus"){
+        var elementID = "#"+mouseMoves[currentPt].e.target.id;
+        var element = $('iframe').contents().find(elementID);
+        element.focus();
+        //  var event = jQuery.Event(mouseMoves[currentPt].type);
+        //  element.trigger(event);
+        //  element.simulate(mouseMoves[currentPt].type);
+      }
+     
+      if (mouseMoves[currentPt].type == "keydown" ){ //|| mouseMoves[currentPt].type == "keypress"){
+        var elementID = mouseMoves[currentPt].e.target.id;
+        var element = $('iframe').contents().find("#"+elementID);
+        //console.log("simulateEvent: ", mouseMoves[currentPt].type, elementID, element, my_keycode_dictionary[mouseMoves[currentPt].e.which]);
+        //var press = jQuery.Event(mouseMoves[currentPt].type);
+        //press.ctrlKey = mouseMoves[currentPt].e.ctrlKey;
+        //press.altKey = mouseMoves[currentPt].e.altKey;
+        //press.shiftKey = mouseMoves[currentPt].e.shiftKey;
+        //press.which = mouseMoves[currentPt].e.which;
+        //press.keyCode = mouseMoves[currentPt].e.which;
+        //press.charCode = mouseMoves[currentPt].e.which;
+        //element.trigger(press);
+        if(!(elementID in keyPressCache)){
+          keyPressCache[elementID] = {};
+        }
+        keyPressCache[elementID][currentPt] = mouseMoves[currentPt].e.which;
+        var sorted_keys = keys(keyPressCache[elementID]).sort();
+        var currText = "";
+        for (var i = 0; i < sorted_keys.length; ++i) {
+          var sKey = sorted_keys[i];
+          if(sKey <= currentPt){
+            if (keyPressCache[elementID][sKey] ==  8){
+            //8: "backspace",
+            currText = currText.substring(0,currText.length-2);
+            }else{
+              currText += my_keycode_dictionary[keyPressCache[elementID][sKey]]; 
+            }
+            element.focus();
+            element.val(currText);
+            //console.log("setting: ", currText, element.val());
+          }
+          
+        }
+        
+        
+      }
+
+    }
+    
+    function draw(currentPt){
+       if(!mouseMoves[currentPt]){return;}
+       
+       //if (mouseMoves[currentPt].type == "mousewheel" ){
+            //console.log(mouseMoves[currentPt]);
+       //}
+       //var currentTime = mouseMoves[currentPt].time;
+
+        //drawMouseMoveHeatmap(currentPt);
+        drawMouseMovePath(currentPt);
+        drawMouseSpeedline(currentPt);
+        drawClicks(currentPt);
+        drawScroll(currentPt);
+        for (var j=0; j < eventCache.length; j++){
+          var c = eventCache[j];
+          if (mouseMoves[c].time <= mouseMoves[currentPt].time){
+            $("#event_"+c).toggleClass( "disabled", false).toggleClass( "enabled", true);
+          }else{
+            $("#event_"+c).toggleClass( "disabled", true).toggleClass( "enabled", false);
+          }
+        }
+        updateWindowFocus(currentPt);
+        drawWindow(currentPt);
+        simulateEvent(currentPt);
+        showSelectedText(currentPt);
+        
+    } // draw
+    function animatedDraw()
+    {
+          if(currentTimeMode == timeModes.REAL_TIME_FIXED_DT){
+            if(currentTime >= maxTime || currentPt >= (totalPts) || !animationPlaying){
+              console.log("finished playing.");
+              animationPlaying = false;
+              $("#play_button").html('<i class="icon-play"></i> Play');
+              currentTime = 0;
+              return;
+            }  
+            var dT = 100; // ms
+            currentTime += dT;
+            $("#time").val(currentTime/1000.0);
+            d3.select(".currentGraphTimelinePosition").attr("transform","translate("+x_mapping(currentTime/1000.0)+",0)");
+            //console.log((mouseMoves[currentPt+1].time-startTime), currentTime)
+            drawMouseMoveHeatmap(currentPt);
+            
+            while(currentPt < (totalPts-1) && ((mouseMoves[currentPt+1].time-startTime) < currentTime)){
+              currentPt++;
+            
+              //$( "#slider-vertical" ).slider( "option", "value", -currentPt );
+              $("#eventNum").val(currentPt);
+              drawMouseMovePath(currentPt);
+              drawMouseSpeedline(currentPt);
+              drawClicks(currentPt);
+              for (var j=0; j < eventCache.length; j++){
+                var c = eventCache[j];
+                if (mouseMoves[c].time <= mouseMoves[currentPt].time){
+                  $("#event_"+c).toggleClass( "disabled", false).toggleClass( "enabled", true);
+                }else{
+                  $("#event_"+c).toggleClass( "disabled", true).toggleClass( "enabled", false);
+                }
+              }
+              drawWindow(currentPt);
+            }  
+            setTimeout(function(){ animatedDraw(currentPt); },0);
+            
+            
+           
+            
+          }else{
+            draw(currentPt);
+            //$( "#slider-vertical" ).slider( "option", "value", -currentPt );
+            $("#eventNum").val(currentPt);
+            var t = (mouseMoves[currentPt].time-startTime)/1000.0;
+            $("#time").val(t);
+            d3.select(".currentGraphTimelinePosition").attr("transform","translate("+x_mapping(t)+",0)");
+           
+            
+            currentPt++;
+            
+            if (currentPt >= (totalPts) || !animationPlaying){
+              console.log("finished playing.");
+              animationPlaying = false;
+              $("#play_button").html('<i class="icon-play"></i> Play');
+              return;
+            }
+  
+            if(currentTimeMode == timeModes.LOGICAL){
+              setTimeout(function(){ animatedDraw(currentPt); },0);
+              
+              //animatedDraw();
+              
+            }else {
+              var t1 = mouseMoves[currentPt].time;
+              var t2 = t1;
+              if (currentPt < (totalPts-1)){
+                t2 = mouseMoves[currentPt+1].time;
+              }
+              var delay = (t2-t1) / currentTimeMode;
+              setTimeout(function(){ animatedDraw(currentPt); },delay);
+            }
+          }
+          
+          
+          
+          
+    }
+    
+    /*
+    $( "#slider-vertical" ).slider({
+      orientation: "vertical",
+      min: -mouseMoves.length,
+      max: 0,
+      value: 0,
+      step: 1,
+      slide: function(event, ui) {
+        $("#eventNum").val(Math.abs(ui.value));
+        //var value = mouseMoves.length - ui.value-1;
+        var value = Math.abs(ui.value);
+        if ( value < mouseMoves.length){
+          var t = (mouseMoves[value].time-mouseMoves[0].time)/1000.0;
+          $("#time").val(t);
+          d3.select(".currentGraphTimelinePosition").attr("transform","translate("+x_time_mapping(t)+",0)");
+          draw(value);
+        }
+        
+      }
+    });*/
+    //$( "#eventNum" ).val( $( "#slider-vertical" ).slider( "value" ) );
+    //var t = (mouseMoves[value].time-mouseMoves[0].time)/1000.0;
+    //$("#time").val(t);
+    
+    function nextFrame()
+    {
+       //var currentPt = Math.abs($( "#slider-vertical" ).slider( "value" ))
+       currentPt++;
+       if (currentPt >= totalPts){
+          return;
+       }
+       draw(currentPt);
+       //$( "#slider-vertical" ).slider( "option", "value", -currentPt );
+       $("#eventNum").val(currentPt);
+       var t = (mouseMoves[currentPt].time-mouseMoves[0].time)/1000.0;
+       $("#time").val(t);
+       d3.select(".currentGraphTimelinePosition").attr("transform","translate("+x_mapping(t)+",0)");
+      
+    }
+    function prevFrame()
+    {
+       //var currentPt = Math.abs($( "#slider-vertical" ).slider( "value" ))
+       currentPt--;
+       if (currentPt < 0){
+          return;
+       }
+       draw(currentPt);
+       //$( "#slider-vertical" ).slider( "option", "value", -currentPt );
+       $("#eventNum").val(currentPt);
+       var t = (mouseMoves[currentPt].time-mouseMoves[0].time)/1000.0;
+       $("#time").val(t);
+       d3.select(".currentGraphTimelinePosition").attr("transform","translate("+x_mapping(t)+",0)");
+      
+    }
+    
+    $("#prev_button").click(function(e){prevFrame();});
+    
+    $("#next_button").click(function(e){nextFrame();});
+    
+    $(window).keydown(function(e) {
+      if(e.which == 100 || e.which == 37){ //num_4
+        prevFrame();
+      }else if(e.which == 102 || e.which == 39){ //num_6
+        nextFrame();
+        
+      }
+    });
+    
+    $("#play_button").click(function() {
+            //for(var i=0; i < totalPts; i++){
+            //  draw(i);
+            //  $("#eventNum").val(Math.abs(ui.value));
+           // }
+           if (!animationPlaying){
+            animationPlaying = true;
+             
+            //var cValue = 0; //Math.abs($( "#slider-vertical" ).slider( "value" ))
+            //if (cValue >= totalPts-1){
+            //   $( "#slider-vertical" ).slider( "option", "value", -mouseMoves.length );
+            //   cValue = 0;
+           // }
+            //$("#play_icon").toggleClass( "icon-pause", true);
+            //$("#play_icon").toggleClass( "icon-play", false);
+            $("#play_button").html('<i class="icon-pause"></i> Pause');
+            if (currentPt >= totalPts-1){
+               currentPt = 0;
+            }
+            animatedDraw();
+            
+            
+            
+           }else{
+            animationPlaying = false;
+            //$("#play_icon").toggleClass( "icon-pause", false);
+            //$("#play_icon").toggleClass( "icon-play", true);
+            $("#play_button").html('<i class="icon-play"></i> Play');
+           }
+           
+          // var currentPt = $( "#slider-vertical" ).slider( "value" );
+          //if (currentPt >= totalPts){
+          //  currentPt = 0;
+       
+          //}
+         //  currentPt+=1;
+        
+        //if (currentPt >= totalPts){
+        //    currentPt = 0;
+        //    //alert("End")
+        //    return currentPt;
+        //}
+        
+        //if (delay == 0 && speedup==0){
+        //  setTimeout(draw,0); 
+        //}else{
+        //  if (speedup != 0){
+        //     setTimeout(draw,(t2-t1)/speedup); 
+        //  }else{
+        //     setTimeout(draw,delay); 
+        //  }
+        //}
+    });
+    /*
+    
+    for (var i=0; i < totalPts; i++)
+    {
+      
+      var t_sec = (mouseMoves[i].time - startTime)/ 1000.0;
+      if(t_sec < 0){
+        t_sec = mouseMoves[i].time;
+      }
+      if (mouseMoves[i].type == "keydown"){
+        $("#eventList").append('<li id="event_'+i+'" class="event disabled">'+t_sec + 's - ' +  my_keycode_dictionary[mouseMoves[i].key]+'</li>');
+        eventCache.push(i);
+      }else if (mouseMoves[i].type == "click"){
+        $("#eventList").append('<li id="event_'+i+'" class="event disabled">'+t_sec + 's - click</li>');
+        eventCache.push(i);
+        
+      }else if (mouseMoves[i].type == "blur"){
+        $("#eventList").append('<li id="event_'+i+'" class="event disabled">'+t_sec + 's - blur</li>');
+        eventCache.push(i);
+        
+      }else if (mouseMoves[i].type == "focus"){
+        $("#eventList").append('<li id="event_'+i+'" class="event disabled">'+t_sec + 's - focus</li>');
+        eventCache.push(i);
+        
+      }
+      
+      
+    }*/
+    function clearHighlight(){
+      var c=document.getElementById("highlightSelection");
+      var ctx=c.getContext("2d");
+      ctx.clearRect ( 0 , 0 , c.width, c.height);
+      c.width = c.width;
+     
+    }
+    function drawHighlight(x,y){
+      var c=document.getElementById("highlightSelection");
+      var ctx=c.getContext("2d");
+      ctx.clearRect ( 0 , 0 , c.width, c.height);
+      c.width = c.width;
+      ctx.moveTo(x,y);
+      ctx.beginPath();
+      ctx.strokeStyle = "green";
+      ctx.arc(x,y, 10, 0, Math.PI * 2, false);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    /*
+    $( document ).on( "click", "li.event", function(e) {
+      var target = e.target;
+      var currentPt = target.id.split("_")[1];
+      
+      $( "#slider-vertical" ).slider( "option", "value", -currentPt );
+      $("#eventNum").val(currentPt);
+      var t = (mouseMoves[currentPt].time-startTime)/1000.0;
+      $("#time").val(t);
+      d3.select(".currentGraphTimelinePosition").attr("transform","translate("+x_time_mapping(t)+",0)");
+      //console.log(currentPt, "click");
+      draw(currentPt);
+    });
+      
+    $( document ).on( "mouseenter", "li.event", function(e) {
+      var target = e.target;
+      var id = target.id.split("_")[1];
+      if (mouseMoves[id].type == "keydown"){
+        id = findPrevMouseMove(id);
+      }
+      var t = (mouseMoves[id].time-startTime)/1000.0;
+      d3.select(".hoverGraphTimelinePosition").attr("transform","translate("+x_time_mapping(t)+",0)");
+      if (mouseMoves[id].x){
+        //console.log(mouseMoves[id].x, mouseMoves[id].y);
+        drawHighlight(mouseMoves[id].x, mouseMoves[id].y);
+      }
+      
+    });
+    $( document ).on( "mouseleave", "li.event", function(e) {
+      clearHighlight();
+    });
+    
+    $('#time_select').change(function() {
+        currentTimeMode = this.value;
+        //console.log( this.value ); 
+    });
+    */
+    draw(0);
+    
+    var mMoves =[];
+    var clickPts = [];
+    var keyPts = [];
+    var focusinPts = [];
+    var focusoutPts = [];
+    var wheelPts = [];
+    var scrollPts = [];
+    var lastDy = 0;
+    for (var i=0; i< mouseMoves.length; i++){
+      var p = mouseMoves[i];
+      if(p.type == "keydown"){
+        keyPts.push({'time': p.time, 'which': p.e.which, 'id':i, 'target': p.e.target});
+      }
+      else if(p.type == "click"){
+        clickPts.push({'time': p.time, 'which': p.e.which, 'id':i, 'target': p.e.target});
+      }
+      else if(p.type == "mousemove"){
+        mMoves.push({'time': p.time, 'id':i, 'target': p.e.target});
+      }
+      else if(p.type == "focus" || p.type == "focusin"){
+        focusinPts.push({'time': p.time, 'type':p.type, 'target': p.e.target});
+      }
+      else if(p.type == "blur" || p.type == "focusout"){
+        focusoutPts.push({'time': p.time, 'type':p.type, 'target': p.e.target});
+      }
+      else if(p.type == "mousewheel"){
+        wheelPts.push({'time': p.time, 'type':p.type, 'id':i});
+      }
+      else if(p.type == "scroll"){
+        //console.log("scroll", p.dy);
+        var dir = 0;
+        if(lastDy > p.dy){
+            dir = 1;
+        }
+        lastDy = p.dy;
+        scrollPts.push({'time': p.time, 'type':p.type, 'id':i, 'dir': dir});
+      }
+      
+    }
+    //console.log(mMoves);
+    
+    //var timelineWidth = $("body").width()-300;
+    displayGraphExample("#timelineGraph", 1000, 100, maxTime/1000.0, clickPts, keyPts, mMoves, focusinPts, focusoutPts, wheelPts, scrollPts);
+    
+    //$(window).resize(function( e ) {
+    //     $("#timelineGraph").html("");
+    //     var timelineWidth = $("body").width()-300;
+    //     displayGraphExample("#timelineGraph", timelineWidth, 100, maxTime/1000.0, clickPts, keyPts, mMoves, focusinPts, focusoutPts, wheelPts, scrollPts);
+    //});
+    
+    
+    var form = $('iframe').contents().find('#mainForm');
+    form.unbind("submit");
+    
+    
+    $('body').layout({
+		minSize: 100,
+		north__size: 100,
+		stateManagement__enabled: true, 
+  });
+});
+});
+});
+  </script>
+{% endblock %}
+
+
+{% block content %}
+<div class="ui-layout-north" style="padding: 2px; margin:0px;">
+   <div class="row">
+     <div class="span3">
+        
+     
+        <a id="start_button" title="First Frame" class="btn btn-mini" href="#"><i class="icon-fast-backward"></i></a>
+        <a id="prev_button" title="Previous Frame" class="btn btn-mini" href="#"><i class="icon-step-backward"></i></a>
+        <a id="play_button" title="Play" class="btn btn-mini" href="#"><i class="icon-play"></i>Play</a>
+        <a id="next_button" title="Next Frame" class="btn btn-mini" href="#"><i class="icon-step-forward"></i></a>
+        <a id="end_button" title="Last Frame" class="btn btn-mini" href="#"><i class="icon-fast-forward"></i></a>
+        <br>
+        <div id="timelineContainer" class="row-fluid">
+            
+           
+        <div class="span2">
+        <div class="btn-group" style="padding-top: 10px;">
+            <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">
+              <i class="icon-cog"></i>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a id="time_select_0" style="font-weight: bolder;">Logical Time</a></li>
+              <li><a id="time_select_1">Real-Time</a></li>
+            </ul>
+        </div>
+        </div>
+        <div class="span8" style="padding-top: 10px;">
+            <table class="table table-bordered table-condensed">
+                        <tbody>
+                                    <tr>
+                                                <td><label class="control-label" for="eventNum" style="margin: 0px; padding:0px;">Event</label></td>
+                                                <td><input type="text" name="eventNum" id="eventNum" class="input-small" style="width: 50px; height: 16px; border: 0px; color:#f6931f; font-weight:bold; margin: 0px; padding: 0px;"></td>
+                                    </tr>
+                                    <tr>
+                                                <td><label class="control-label" style="margin: 0px; padding:0px;" for="time">Time</label></td>
+                                                <td><input type="text" name="time" id="time" class="input-small" style="width: 50px; height: 16px; border: 0px; color:#f6931f; font-weight:bold; margin: 0px; padding: 0px;"></td>
+                                    </tr>
+                        </tbody>
+            </table>
+        </div>
+        </div>
+<!--
+        <form class="form-horizontal" style="margin: 0px; padding:0px;">
+            <div class="control-group" style="margin: 0px;padding:0px;">
+              <label class="control-label" for="inputEvent" style="margin: 0px; padding:0px;">Event</label>
+              <div class="controls" style="margin: 0px; padding:0px;">
+                <input type="text" id="eventNum" class="span1 input-small" style="border: 0px; color:#f6931f; font-weight:bold;">
+              </div>
+            </div>
+            <div class="control-group" style="margin: 0px; padding:0px;">
+              <label class="control-label" style="margin: 0px; padding:0px;" for="inputPassword">Time</label>
+              <div class="controls" style="margin: 0px; padding:0px;">
+                <input type="text" id="time" class="span1 input-small" style="border: 0px; color:#f6931f; font-weight:bold;">
+              </div>
+            </div>
+        </form>
+        </div>
+        
+          </div>
+        
+      <div class="controls controls-row">
+            <label class="span1">Event:</label>
+            <label class="span1">Time:</label>
+           
+      </div>
+      <div class="controls controls-row">
+            <input type="text" id="eventNum" class="span1 input-small" style="border:0; color:#f6931f; font-weight:bold;">
+            <input type="text" id="time" class="span1 input-small" style="border:0; color:#f6931f; font-weight:bold;">
+      </div>
+        -->
+     </div>
+     <div class="span7">  
+      <div id="timelineGraph" class="aGraph"></div>
+     </div>
+   </div>
+</div>
+
+<div class="ui-layout-center">
+  
+   <div style="position:absolute;top:0px;left:0px;z-index:2;">
+        <iframe id="userCanvas" width="1500" height="2000" style="position: absolute; top:0;left:0;z-index: 5" src="{% url "survey_admin.views.debug_question" question.id %}?condition={{condition}}"></iframe>
+        <canvas id="mouseMovementPath" width="1500" height="2000" style="position: absolute; left: 0; top: 0; z-index: 30;"></canvas>
+        <canvas id="mouseClicks" width="1500" height="2000" style="position: absolute; left: 0; top: 0; z-index: 40;"></canvas>
+        <canvas id="mouseSpeedline" width="1500" height="2000" style="position: absolute; left: 0; top: 0; z-index: 5;"></canvas>
+        <canvas id="windowBox" width="1500" height="2500" style="position: absolute; left: 0; top: 0; z-index: 60;"></canvas>
+        <canvas id="highlightSelection" width="1500" height="2500" style="position: absolute; left: 0; top: 0; z-index: 70;"></canvas>
+        <canvas id="elementHighlight" width="1500" height="2500" style="position: absolute; left: 0; top: 0; z-index: 80;"></canvas>
+        <canvas id="windowFocus" width="1500" height="2500" style="position: absolute; left: 0; top: 0; z-index: 70;"></canvas>
+        
+        
+            </div>
+  
+
+</div>
+
+
+
+      
+      
+     
+     
+      
+{% endblock content %}

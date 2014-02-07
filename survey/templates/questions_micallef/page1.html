@@ -1,0 +1,87 @@
+{% load staticfiles %}
+<script type="text/javascript">
+    head.ready(function() {
+    $(document).ready(function() {
+        var questionData = {{ question|safe}};
+        var questionCondition = {{ condition|safe}};
+        //console.log("we are filling out stuff now: ", questionData, questionCondition);
+        
+        
+        $('#mainForm').submit(function() {
+            var a1 = $('select[name=ready] option:selected').val();
+            
+            //console.log(b);
+            if(!a1){
+                alert('Please answer the above question first.');
+                //$("#error").html("Please answer the above question first.");
+                return false;     
+            }
+            var concatAnswer = {'answer':a1};
+            var concatAnswerString = JSON.stringify(concatAnswer);
+            var concatLogBuffer = JSON.stringify(logBuffer);
+           
+            
+            //var compressed2 = JSON.stringify(LZW.compress(concatLogBuffer));
+            //console.log(concatLogBuffer.length,compressed.length, compressed2.length, lzw_encode(concatLogBuffer));
+            
+            $("#answer").val(concatAnswerString);
+            $("#mouseData").val(concatLogBuffer);
+            logBuffer = [];
+            $(window).unbind('beforeunload');
+            
+            //var uncompressed = LZString.decompressFromBase64(compressed);
+            //var uncompreeedLogBuffer = jQuery.parseJSON( uncompressed );
+            //console.log(uncompressed.length);
+            //console.log(uncompreeedLogBuffer);
+            return true;
+        });
+
+
+        $(window).on('beforeunload', function(){
+          // Save the questions
+          var concatLogBuffer = JSON.stringify(logBuffer);
+          $.post("./survey/save_question/", { 'mouseData': concatLogBuffer, 'csrfmiddlewaretoken': '{{ csrf_token }}'} );
+          return ''; //Are you sure you want to leave?';
+        });
+    });
+    });
+</script>
+
+<form id="mainForm" action="/?WorkerId={{worker_id}}" method="post">{% csrf_token %}
+    <input type="hidden" id="mouseData" name="mouseData" value="">
+    <input type="hidden" id="currentQ" name="currentQ" value="{{qnum}}">
+    <input type="hidden" id="answer" name="answer" value="">
+    <input type="hidden" name="WorkerID" value="{{worker_id}}">
+    
+<!-- FORM PAGE 1 - GENERAL INSTRUCTIONS -->
+
+<div id="page1">
+<p id="page_count">Page 1/4</p><hr id="hr1">
+
+<center id="center1"><h5 id="page_title">Scientific Study on Judgment and Visualization</h5></center>
+
+<center id="center2"><p id="p1"><img id="teaser_image" src="{% static 'img\micallef\teaser.jpg' %}"></p></center>
+
+<h5 id="description_title1">Important:</h5>
+
+<p id="description_paragraph1">You can participate in this series of experiments <b id="bold1">only once</b>. If you have already completed a HIT with the same title (even a while ago), you <b id="bold2">cannot</b> complete this one and we would have to reject your HIT.</p>
+
+<p id="description_paragraph2">This HIT takes about 5 minutes to complete.</p>
+
+<p id="description_paragraph3">Read the instructions carefully and answer all questions before proceeding to the next page. HITs that are not completed carefully will be <b id="bold3">rejected</b> and the worker will not be paid.</p>
+
+<p id="description_paragraph4">You should remain focused, and once you start the HIT, you must not stop unless you have completed all the pages. Special attention must be given to the next page.</p>
+
+<p id="question1">Are you ready to start the HIT?</p>
+
+<select id="input" class="input-small" name="ready">
+<option id="input_option1" value=""></option>
+<option id="input_option2" value="yes">Yes</option>
+</select>
+<hr id="hr2">
+<input id="submit" type="submit" name="submit" value="Next page">
+<font id="font1" color="#999999"><div id="firstbuttonmessage">(you cannot return to this page afterwards)</div></font>
+</div>
+
+</form>
+   

@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+/* tell the SVG path to be a thin blue line without any area fill */
+.axis text {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis .minor line {
+  stroke: #777;
+  stroke-dasharray: 2,2;
+}
+.line {
+   /*fill: steelblue;*/
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+path.line1 {
+        stroke: steelblue;
+        stroke-width: 1;
+        fill: none;
+}
+
+path.line2 {
+        stroke: red;
+        stroke-width: 1;
+        fill: none;
+}
+.dotClick {
+  stroke-width: 1;
+  stroke: #000;
+  fill: red;
+}
+
+.dotKey {
+  stroke-width: 1;
+  stroke: #000;
+  fill: steelblue;
+}
+</style>
+    
+{% endblock head %}
+
+{% block extra_head %}
+ <script src="http://d3js.org/d3.v2.min.js?2.10.0"></script>
+  <script type="text/javascript">
+    var maxProp = function (array, prop) {
+        var values = array.map(function (el) {
+          return el[prop];
+        });
+        return Math.max.apply(Math, values);
+    };
+
+    function displayGraphExample(id, timeSeconds, clickPts, keyPts, movePts) {
+		// create an SVG element inside the #graph div that fills 100% of the div
+                if(movePts.length == 0){
+                    return;
+                }
+                var margin = {top: 5, right: 5, bottom: 15, left: 5},
+                    width = 500 - margin.left - margin.right,
+                    height = 90 - margin.top - margin.bottom;
+                var zoneCount = 6;
+                var max_y1 = maxProp(clickPts, 'y');
+                var max_y2 = maxProp(keyPts, 'y');
+                var max_y3 = maxProp(movePts, 'y');
+                var max_y = Math.max(max_y1, max_y2, max_y3);
+                //var fakeMove1 = [{'time':0, 'x':0, 'y': max_y}];
+                //var fakeMove2 = [{'time':movePts[movePts.length-1].time, 'x':0, 'y': max_y}];
+                
+                //movePts = fakeMove1.concat(movePts);
+                //movePts = movePts.concat(fakeMove2)
+                
+                var zones = {}
+                /*
+                zones[0] = [{'x':0, 'y':0, 'w':200,'h':200}, // 0 - Question
+                            {'x':0, 'y':0, 'w':200,'h':200}, // 1 - Viz
+                            {'x':0, 'y':0, 'w':200,'h':200}, // 2 - Legend
+                            {'x':0, 'y':0, 'w':200,'h':200}, // 3 - Confidence
+                            {'x':0, 'y':0, 'w':200,'h':200}, // 4 - Answer
+                            {'x':0, 'y':0, 'w':200,'h':200}, // 5 - Submit
+                            ]
+                */
+		var graph = d3.select(id).append("svg:svg")
+                                         .attr("width", width + margin.left + margin.right)
+                                         .attr("height", height + margin.top + margin.bottom)
+                                         .append("g")
+                                         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                                         
+		var x = d3.scale.linear().domain([0, timeSeconds]).range([0, width]);
+		var y = d3.scale.linear().domain([0, max_y]).range([0, height]);
+                
+                 var xAxis = d3.svg.axis()
+                            .scale(x)
+                            .tickPadding(2)
+                            .tickSize(5)
+                            .tickFormat(function(d) { return d + "s"; })
+                            .orient("bottom");
+                var yAxis = d3.svg.axis()
+                            .scale(y)
+                            .ticks(zoneCount)
+                            .tickSize(4)
+                            .tickFormat(function(d) { return d; })
+                            .orient("right");
+                            
+                graph.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(xAxis);
+
+                var gy = graph.append("g")
+                            .attr("class", "y axis")
+                            .call(yAxis);
+                //gy.selectAll("g").filter(function(d) { return d; })
+                //    .classed("minor", true);
+                
+                var line = d3.svg.line()
+                    // assign the X function to plot our line as we wish
+                    .x(function(d) { 
+                            // verbose logging to show what's actually being done
+                            //console.log('Plotting X value for data point: ' + d + ' using index: ' + i + ' to be at: ' + x(i) + ' using our xScale.');
+                            // return the X coordinate where we want to plot this datapoint
+                            return x(d.time/1000.0);
+                    })
+                    .y(function(d) { 
+                            // verbose logging to show what's actually being done
+                            //console.log('Plotting Y value for data point: ' + d + ' to be at: ' + y(d) + " using our yScale.");
+                            // return the Y coordinate where we want to plot this datapoint
+                            return y(d.y); 
+                    })
+                
+                // display the line by appending an svg:path element with the data line we created above
+                graph.append("svg:path").attr("class", "line").attr("d", line(movePts));
+                /*
+                graph.selectAll(".dotMove")
+                    .data(movePts)
+                    .enter().append("circle")
+                    .attr("class", "dot")
+                    .attr("r", 1.0)
+                    .attr("cx", function(d) { return x(d.time/1000.0); })
+                    .attr("cy", function(d) { return y(d.y); })
+                    .style("fill", function(d) { return "green"; })
+                    .style("stroke-width", 0)
+                    .style("stroke", '#000');*/
+                
+                
+                graph.selectAll(".dotClick")
+                    .data(clickPts)
+                    .enter().append("circle")
+                    .attr("class", "dot")
+                    .attr("r", 3.0)
+                    .attr("cx", function(d) { return x(d.time/1000.0); })
+                    .attr("cy", function(d) { return y(d.y); })
+                    .style("fill", function(d) { return "red"; })
+                    .style("stroke-width", 1)
+                    .style("stroke", '#000');
+                    
+                graph.selectAll(".dotKey")
+                    .data(keyPts)
+                    .enter().append("circle")
+                    .attr("class", "dot")
+                    .attr("r", 3.0)
+                    .attr("cx", function(d) { return x(d.time/1000.0); })
+                    .attr("cy", function(d) { return y(d.y); })
+                    .style("fill", function(d) { return "steelblue"; })
+                    .style("stroke-width", 1)
+                    .style("stroke", '#000');
+                
+                
+    }
+                
+   head.ready(function() {
+   $(document).ready(function() {
+                         var g_condition_count = 5;
+                         var g_questions = [];
+                         var g_survey = 0;
+                         $("#compStatsTable").hide();
+                         $("#answers").hide();
+                                
+                         $("select#study").change(function() {
+                             if ($(this).val() == 'Z') {
+                                 $("select#question").html("<option>Select a question</option>");
+                                 $("select#question").attr('disabled', true);
+                                 $("#compStatsTable").hide();
+                                 $("#answers").hide();
+                                 
+                             }
+                             else {
+                                
+                                 g_survey = $(this).val()
+                                 var url = '{% url "json_all_questions" "999" %}'.replace (999, g_survey);
+                                 
+                                 $.getJSON(url, function(questions) {
+                                     var options = '<option value="-1">Select a question</option>';
+                                     for (var i = 0; i < questions.length; i++) {
+                                        options += '<option value="' + questions[i].pk + '" title="'+questions[i].fields['slug']+'">' + questions[i].fields['slug'] + '</option>';
+                                        g_questions[questions[i].pk] = questions[i]
+                                     }
+                                     $("select#question").html(options);
+                                     $("select#question option:first").attr('selected', 'selected');
+                                     $("select#question").attr('disabled', false);
+                                     
+                                 });
+                             }
+                         });
+
+
+                         $("select#question").change(function() {
+                             var question_id = $(this).val();
+                             if (question_id == -1) {
+                                 $("#compStatsTable").hide();
+                                 $("#answers").hide();
+                                 $("#question_text").html("");
+                                 return;
+                             }
+                             $("#compStatsTable").show();
+                             $("#answers").show();
+                             $("#question_text").html(g_questions[question_id].fields['slug']);
+                             var url = '{% url "json_answers" "111" "222" %}'.replace (111, g_survey).replace (222, question_id);
+                             $.getJSON(url, function(answers) {
+                                console.log(answers);
+                                var a = '<tr><th>Count</th> \
+                                         <th>User ID</th> \
+                                         <th>Answer</th> \
+                                         <th>Condition</th> \
+                                         <th>Time (seconds)</th> \
+                                         <th>Clicks</th> \
+                                         <th>Conf</th> \
+                                         <th>Click-Key-Graph</th> \
+                                         <th>Heatmap</th> \
+                                         <th>Static Paths</th> \
+                                         <th>Animated Paths</th> \
+                                         <th>Map</th> \
+                                        </tr>';
+                                for (var i = 0; i < answers['data'].length; i++) {
+                                  //$("#answers").html(answers);
+                                  var graphID = "graphID" + i.toString();
+                                  a += "<tr>";
+                                  a += "<td>" + (i+1) + "</td>";
+                                  a += "<td>" + answers['data'][i]['user'] + "</td>";
+                                  a += "<td>" + answers['data'][i]['answer'] + "</td>";
+                                  a += "<td>" + answers['data'][i]['condition'] + "</td>";
+                                  a += "<td>" + answers['data'][i]['time'] + "</td>";
+                                  a += "<td>" + answers['data'][i]['clicks'] + "</td>";
+                                  a += "<td>" + answers['data'][i]['confidence'] + "</td>";
+                                  a += "<td>" + '<div id="'+ graphID +'" class="aGraph" style="width:520px; height:100px;"></div>' +'</td>';
+                                  var url1 = '{% url "heatmap" "999" %}'.replace (999, answers['data'][i]['id']);
+                                  var url2 = '{% url "static_mouse_paths" "999" %}'.replace (999, answers['data'][i]['id']);
+                                  var url3 = '{% url "animated_mouse_paths" "999" %}'.replace (999, answers['data'][i]['id']);
+                                  var url4 = '{% url "expmap" "999" %}'.replace (999, answers['data'][i]['experiment_id']);
+                                  a += "<td>" + '<a href="' + url1 + '" target="_blank">HeatMap</a></td>';
+                                  a += "<td>" + '<a href="' + url2 + '" target="_blank">Static Paths</a></td>';
+                                  a += "<td>" + '<a href="' + url3 + '" target="_blank">Animated Paths</a></td>';
+                                  a += "<td>" + '<a href="' + url4 + '" target="_blank">Map</a></td>';
+                                 
+                                  
+                                  
+                                  a += "</tr>";
+                                  //$('#answers tr:last').after('<tr>'+a+'</tr>');
+                                }
+                                $('#answers').html(a);
+                                for (var i = 0; i < answers['data'].length; i++) {
+                                    var graphID = "graphID" + i.toString();
+                                    displayGraphExample("#"+graphID, answers['data'][i]['time'], answers['data'][i]['clickPts'], answers['data'][i]['keyPts'], answers['data'][i]['movePts']);
+                                }
+                                
+                                var a_stat = [];
+                                for(var c=0; c < g_condition_count; c++){
+                                    
+                                    a_stat[c] = "";
+                                   
+                                    for (v in answers['stats'][c]['data']){
+                                        if (typeof answers['stats'][c]['data'][v] === 'number'){
+                                            a_stat[c] += v + ": <b>" + answers['stats'][c]['data'][v] + "</b><br>";
+                                        }else{
+                                            a_stat[c] += "<b>"+v+"</b>:<br/> "
+                                            for(v2 in answers['stats'][c]['data'][v]){
+                                                 a_stat[c] += v2+":" + answers['stats'][c]['data'][v][v2] + "<br>";    
+                                            }
+                                           
+                                        }
+                                        
+                                    }
+                                    $('#answer_stat_'+c).html(a_stat[c]);
+                                
+                               
+                                
+                                    var url1 = '{% url "comp_heatmap" "111" "222" "333" %}'.replace (111, g_survey).replace (222, question_id).replace (333, c);
+                                    var url2 = '{% url "comp_static_mouse_paths" "111" "222" "333" %}'.replace (111, g_survey).replace (222, question_id).replace (333, c);
+                                    var url3 = '{% url "comp_animated_mouse_paths" "111" "222" "333" %}'.replace (111, g_survey).replace (222, question_id).replace (333, c);
+                                    var url4 = '{% url "comp_expmap" "111" "222" %}'.replace (111, g_survey).replace (222, question_id);
+                                    
+                                    $('#composite_heatmap_'+c).attr("href", url1);
+                                    $('#composite_paths_'+c).attr("href", url2);
+                                    $('#composite_animated_paths_'+c).attr("href", url3);
+                                    $('#composite_map_'+c).attr("href", url4);
+                                    $('#time_stat_'+c).html(answers['stats'][c]['meanTime'].toFixed(2)+" &plusmn; "+answers['stats'][c]['stdTime'].toFixed(2));
+                                    $('#click_stat_'+c).html(answers['stats'][c]['meanClicks'].toFixed(2)+" &plusmn; "+answers['stats'][c]['stdClicks'].toFixed(2));
+                                }
+
+                             });
+                             //myAwesomeFunctionToCallWhenAModelIsSelected();
+                         });
+                         
+                     });
+                });
+                
+    
+  </script>
+{% endblock %}
+
+
+
+{% block content %}
+   
+          <form action="" method="get" accept-charset="utf-8">
+          Survey: <select name="study" id="study">
+              <option value="Z">Select a survey</option>
+              {% for study in surveys %}
+                  <option value="{{ study.id}}">{{ study.slug }}</option>
+              {% endfor %}
+          </select>
+          Question: <select name="question" id="question" disabled="true">
+              <option>Select a question</option>
+          </select>
+        </form>
+        <hr>        
+        <div id="question_text"></div>        
+        <hr>
+        <table id="compStatsTable" class="dataTable">
+          <tr>
+              <th>Condition</th>
+              <th>Answers</th>
+              <th>Avarage Time</th>
+              <th>Avarage Clicks</th>
+              <th>Heatmap</th>
+              <th>Static Paths</th>
+              <th>Animated Paths</th>
+              <th>Map</th>
+              
+          </tr>
+          <tr>
+              <td><div id="condition_0">No Viz</div></td>
+              <td><div id="answer_stat_0"></div></td>
+              <td><div id="time_stat_0"></div></td>
+              <td><div id="click_stat_0"></div></td>
+              <td><a id="composite_heatmap_0" href="" target="_blank">Heatmap</a></td>
+              <td><a id="composite_paths_0" href="" target="_blank">Static Paths</a></td>
+              <td><a id="composite_animated_paths_0" href="" target="_blank">Animated Paths</a></td>
+              <td><a id="composite_map_0" href="" target="_blank">Map</a></td>
+          </tr>
+          <tr>
+              <td><div id="condition_1">Tree Diagram</div></td>
+              <td><div id="answer_stat_1"></div></td>
+              <td><div id="time_stat_1"></div></td>
+              <td><div id="click_stat_1"></div></td>
+              <td><a id="composite_heatmap_1" href="" target="_blank">Heatmap</a></td>
+              <td><a id="composite_paths_1" href="" target="_blank">Static Paths</a></td>
+              <td><a id="composite_animated_paths_1" href="" target="_blank">Animated Paths</a></td>
+              <td><a id="composite_map_1" href="" target="_blank">Map</a></td>
+          </tr>
+          <tr>
+              <td><div id="condition_2">Icon Array</div></td>
+              <td><div id="answer_stat_2"></div></td>
+              <td><div id="time_stat_2"></div></td>
+              <td><div id="click_stat_2"></div></td>
+              <td><a id="composite_heatmap_2" href="" target="_blank">Heatmap</a></td>
+              <td><a id="composite_paths_2" href="" target="_blank">Static Paths</a></td>
+              <td><a id="composite_animated_paths_2" href="" target="_blank">Animated Paths</a></td>
+              <td><a id="composite_map_2" href="" target="_blank">Map</a></td>
+          </tr>
+          <tr>
+              <td><div id="condition_3">Venn Diagram</div></td>
+              <td><div id="answer_stat_3"></div></td>
+              <td><div id="time_stat_3"></div></td>
+              <td><div id="click_stat_3"></div></td>
+              <td><a id="composite_heatmap_3" href="" target="_blank">Heatmap</a></td>
+              <td><a id="composite_paths_3" href="" target="_blank">Static Paths</a></td>
+              <td><a id="composite_animated_paths_3" href="" target="_blank">Animated Paths</a></td>
+              <td><a id="composite_map_3" href="" target="_blank">Map</a></td>
+          </tr>
+           <tr>
+              <td><div id="condition_4">Sankey</div></td>
+              <td><div id="answer_stat_4"></div></td>
+              <td><div id="time_stat_4"></div></td>
+              <td><div id="click_stat_4"></div></td>
+              <td><a id="composite_heatmap_4" href="" target="_blank">Heatmap</a></td>
+              <td><a id="composite_paths_4" href="" target="_blank">Static Paths</a></td>
+              <td><a id="composite_animated_paths_4" href="" target="_blank">Animated Paths</a></td>
+              <td><a id="composite_map_4" href="" target="_blank">Map</a></td>
+          </tr>
+        </table>
+        <hr>
+        <table id="answers" class="dataTable">
+        </table>
+     
+    
+{% endblock %}

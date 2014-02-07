@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block head %}
+ <style>
+
+.bar rect {
+  fill: #CCCCCC;
+}
+
+.bar2 rect {
+  fill: #000000;
+}
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+</style>
+ 
+ {% endblock head %}
+
+
+{% block extra_head %}
+ 
+ <script src="http://d3js.org/d3.v2.min.js?2.10.0"></script>
+  <script type="text/javascript">
+   head.ready(function() {
+   $(document).ready(function() {
+                         var g_condition_count = 5;
+                         var g_questions = [];
+                         var g_survey = 0;
+                         var g_condition_lables = ['No Visualization','DoubleTree Diagram','Venn Diagram','Icon Array','Sankey']
+                         $("#compStatsTable").hide();
+                         $("#answers").hide();
+                                
+                         $("select#study").change(function() {
+                             if ($(this).val() == 'Z') {
+                                 $("select#question").html("<option>Select a question</option>");
+                                 $("select#question").attr('disabled', true);
+                                 $("#compStatsTable").hide();
+                                 $("#answers").hide();
+                                 
+                             }
+                             else {
+                                
+                                 g_survey = $(this).val()
+                                 var url = '{% url "json_all_questions" "999" %}'.replace (999, g_survey);
+                                 
+                                 $.getJSON(url, function(questions) {
+                                     var options = '<option value="-1">Select a question</option>';
+                                     for (var i = 0; i < questions.length; i++) {
+                                        options += '<option value="' + questions[i].pk + '" title="'+questions[i].fields['slug']+'">' + questions[i].fields['slug'] + '</option>';
+                                        g_questions[questions[i].pk] = questions[i]
+                                     }
+                                     $("select#question").html(options);
+                                     $("select#question option:first").attr('selected', 'selected');
+                                     $("select#question").attr('disabled', false);
+                                     
+                                 });
+                             }
+                         });
+
+
+                         $("select#question").change(function() {
+                             var question_id = $(this).val();
+                             if (question_id == -1) {
+                                 return;
+                             }
+                             
+                             var url = '{% url "json_analysis" "111" "222" %}'.replace (111, g_survey).replace (222, question_id);
+                             console.log(url);
+                             $.getJSON(url, function(indata) {
+                                console.log(indata);
+                                
+                                for (var i = 0; i < indata.length; i++) {
+                                   
+                                   //For each condition make a new graph of bias
+                                   var bias = indata[i]["bias"];
+                                   
+                                   //var values = d3.range(1000).map(d3.random.irwinHall(10));
+                                   
+                                   // A formatter for counts.
+                                   var formatCount = d3.format(",.0f");
+                                   
+                                   var margin = {top: 10, right: 30, bottom: 30, left: 30},
+                                       width = 500 - margin.left - margin.right,
+                                       height = 200 - margin.top - margin.bottom;
+                                   var bin_count = 40;
+                                   var bar_width =width/bin_count;
+                                   var x = d3.scale.linear()
+                                       .domain([-1, 1])
+                                       .range([0, width]);
+                                   
+                                   var tx = d3.scale.linear()
+                                       .domain([-1, 1])
+                                       .range([(bar_width/2.0), width-(bar_width/2.0)]);
+                                   
+                                   var data = d3.layout.histogram().bins(x.ticks(bin_count+1))(bias);
+                                   var data_correct = 0;
+                                   for(var j=0; j < data.length; j++){
+                                     if(data[j].x == 0){
+                                       data_correct = data[j].length;
+                                     }
+                                   }
+                                   
+                                   
+                                   console.log(data)
+                                   var y = d3.scale.linear()
+                                       .domain([0, d3.max(data, function(d) { return d.y; })])
+                                       .range([height, 0]);
+                                   
+                                   var xAxis = d3.svg.axis()
+                                       .scale(x)
+                                       .orient("bottom");
+                                   
+                                   var svg = d3.select("#graphs").append("div").append("svg")
+                                       .attr("width", width + margin.left + margin.right)
+                                       .attr("height", height + margin.top + margin.bottom)
+                                       .append("g")
+                                       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                                   
+                                   var bar = svg.selectAll(".bar")
+                                       .data(data)
+                                     .enter().append("g")
+                                       .attr("class", "bar")
+                                       .attr("transform", function(d) { return "translate(" + x(d.x) + "," + y(d.y) + ")"; });
+                                   
+                                   bar.append("rect")
+                                       .attr("x", function(d) {
+                                             return 1;
+                                             if(d.x > 0 ) {
+                                                 return (bar_width/2.0);
+                                             } else {
+                                                return -(bar_width/2.0);
+                                             }})
+                                       .attr("width", width/bin_count) //x(data[0].dx) - 1)
+                                       .attr("height", function(d) { return height - y(d.y); });
+                                   
+                                    var bar2 = svg.append("g")
+                                       .attr("class", "bar2")
+                                       .attr("transform", "translate(" + x(0) + "," + y(data_correct) + ")");
+                                   
+                                   bar2.append("rect")
+                                       .attr("x", 1)//-(bar_width/2.0))
+                                       .attr("width", width/bin_count) //x(data[0].dx) - 1)
+                                       .attr("height", function(d) { return height - y(data_correct); });
+                                   
+                                   //bar.append("text")
+                                   //    .attr("dy", ".75em")
+                                   //    .attr("y", 6)
+                                   //    .attr("x", x(data[0].dx) / 2)
+                                   //    .attr("text-anchor", "middle")
+                                   //    .text(function(d) { return formatCount(d.y); });
+                                   
+                                   svg.append("g")
+                                       .attr("class", "x axis")
+                                       .attr("transform", "translate(0," + height + ")")
+                                       .call(xAxis);
+                                   
+                                   svg.append("text")
+                                       .attr("dy", ".75em")
+                                       .attr("y",0)
+                                       .attr("x", width/2.0)
+                                       .attr("text-anchor", "middle")
+                                       .text(g_condition_lables[i]);
+
+                                }
+
+                             });
+                             //myAwesomeFunctionToCallWhenAModelIsSelected();
+                         });
+                         
+                     });
+                });
+                
+    
+  </script>
+{% endblock %}
+
+
+
+{% block content %}
+   
+          <form action="" method="get" accept-charset="utf-8">
+          Survey: <select name="study" id="study">
+              <option value="Z">Select a survey</option>
+              {% for study in surveys %}
+                  <option value="{{ study.id}}">{{ study.slug }}</option>
+              {% endfor %}
+          </select>
+          Question: <select name="question" id="question" disabled="true">
+              <option>Select a question</option>
+          </select>
+        </form>
+        <hr>        
+         <div id="graphs"></div>
+     
+    
+{% endblock %}

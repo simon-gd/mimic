@@ -1,0 +1,67 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}experiscope{% endblock title %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
+    <link href="{% static 'css/project.css' %}" rel="stylesheet">
+
+    <!-- Use this to quickly test CSS changes in a template,
+        then move to project.css -->
+    {% block extra_css %}{% endblock extra_css %}
+    <script type="text/javascript" src="{% static 'js/lib/bowser.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/modernizr.custom.20963.js' %}"></script>
+    <script>
+       //head.ready(function() {
+        var nsURL = "{% url 'survey.views.not_supported' %}";
+        if ((!Modernizr.canvas || !Modernizr.inlinesvg) && window.location.href.indexOf(nsURL) == -1) {
+          window.location.href = nsURL;
+        }
+        if( (bowser.msie && bowser.version >= 9) ||
+            (bowser.chrome && bowser.version >= 14) ||
+            (bowser.firefox && bowser.version >= 4.0) ||
+            (bowser.safari && bowser.version >= 5) ||
+            (bowser.opera && bowser.version >= 11.0) ||
+            window.location.href.indexOf(nsURL) != -1) {
+          // We are good
+        }else{
+          window.location.href = nsURL;
+        }
+        //window.location.href = "{% url 'survey.views.not_supported' %}";
+      //});
+    </script>
+    
+    <script type="text/javascript" src="{% static 'js/lib/head.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/jquery-2.0.3.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/bootstrap-2.3.2.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/json2.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/app/nameDictionary.js' %}"></script>
+    
+    
+    
+    
+    <script>
+      //head.js();
+      //head.js("{% static 'js/lib/jquery-2.0.3.js' %}",
+      //        "{% static 'js/lib/bootstrap-2.3.2.js' %}",
+      //        "{% static 'js/lib/modernizr.custom.20963.js' %}");
+    </script>
+    {% block head %}{% endblock head %}
+  </head>
+
+  <body>
+    {% block extra_head %}{% endblock extra_head %}
+
+    <div class="container">
+      {% block content %}
+        <p>Use this document as a way to quick start any new project.</p>
+      {% endblock content %}
+
+    </div> <!-- /container -->
+  </body>
+</html>

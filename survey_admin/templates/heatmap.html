@@ -1,0 +1,23 @@
+{% extends "base_admin.html" %}{% load i18n %}{% load static %}{% block extra_head %}  <script type="text/javascript" src="{% static "js/lib/heatmap.js" %}" ></script>     <script type="text/javascript">    head.ready(function() {    $(document).ready(function(){
+        var config = {
+          "radius": 10,
+          "element": "heatmapArea",
+          "visible": true,
+          "opacity": 40,
+          "width":2000,
+          "height":2000,
+          "gradient": { 0.45: "rgb(0,0,255)", 0.55: "rgb(0,255,255)", 0.65: "rgb(0,255,0)", 0.95: "yellow", 1.0: "rgb(255,0,0)" }
+        };
+        var heatmap = heatmapFactory.create(config);
+                var el = {{mouseMoves|safe}};
+        //var el_s = el.data.slice(0, 20000);
+        //console.log(el_s.length);
+        //console.log(el.data.length);
+        
+        var dataShort = {'max': 1000, 'data': el};
+        //var obj = eval('('+el+')');        // call the heatmap's store's setDataSet method in order to set static data        heatmap.store.setDataSet(dataShort);    });
+    
+    }); //head.ready(function() {      </script>{% endblock %}{% block body_start %}    {% endblock %}{% block content %}
+        <iframe id="userCanvas" width="1500" height="2000" style="position: absolute; top:0;left:0;z-index: 5" src="{% url "survey_admin.views.debug_question" question.id %}?condition={{condition}}"></iframe>
+        <div id="heatmapArea" style="position:absolute;top:0;left:0;width:1000px;height:1000px;"><br><br><br><br><br><br><br><br><br><br></div>
+{% endblock content %}

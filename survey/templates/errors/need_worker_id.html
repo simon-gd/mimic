@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>Survey</h1>
+<h3>{{ directions }}</h3>
+<form action="" method="post">{% csrf_token %}
+<div id="choice">
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+{% endfor %}
+{% for field in form.visible_fields %}
+    {{ field.errors }}
+    {{ field }}
+{% endfor %}
+</div>
+<input type="submit" id="next_question" value="{% trans "Submit" %}"/>
+</form>
+{% endblock %}
+

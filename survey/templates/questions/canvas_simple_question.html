@@ -1,0 +1,6 @@
+<form id="mainForm" action="." method="post">{% csrf_token %}
+    <input type="hidden" id="mouseData" name="mouseData" value="">
+    <input type="hidden" id="currentQ" name="currentQ" value="{{qnum}}">
+    <input type="hidden" id="answer" name="answer" value="">
+</form>
+<div id="container"><canvas id="myCanvas" width="2000" height="900"></canvas></div>

@@ -1,0 +1,567 @@
+{% extends "base_admin.html" %}
+{% load i18n %}
+{% load static %}
+{% block htmlid %} id="landingpage"{% endblock htmlid %}
+{% block extra_head %}
+<style type="text/css" media="screen">
+  html, body {
+		background:	#666;
+		padding:	0;
+		margin:		0;
+		overflow:	auto; /* when page gets too small */
+	}
+
+  .ui-layout-pane {
+            border: 0; /* override layout-default-latest.css */
+            padding: 0px;
+	    
+}
+    #editor_data { 
+	height: 100%;
+	width: 100%
+    }
+    #editor_code { 
+	height: 90%;
+	width: 100%
+    }
+    
+    .fileSelect{
+      width: 515px;
+      height: 500px;
+    }
+    
+    .fileName{
+      width: 500px;
+    }
+    
+/* editor labels */
+.window_label { border: solid 1px #F1F1F1; background: #fff; display: inline-block; height: 22px; padding: 0 6px; line-height: 22px; position: absolute; top: 7px; right: 6px; text-align: center; font-size: 12px; color: #777; border-radius: 1px; z-index: 30; }
+
+.bar rect {
+  fill: #CCCCCC;
+}
+
+.bar2 rect {
+  fill: #000000;
+}
+
+.bar text {
+  fill: #000000;
+  font: 8px sans-serif;
+}
+
+.axis text {
+  font: 8px sans-serif;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.box {
+  font: 10px sans-serif;
+}
+
+.box line,
+.box rect,
+.box circle {
+  fill: #fff;
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+
+.box .center {
+  stroke-dasharray: 3,3;
+}
+
+.box .outlier {
+  fill: none;
+  stroke: #ccc;
+}
+
+</style>
+<link type="text/css" rel="stylesheet" href="{% static 'css/layout-default-latest.css' %}" />
+
+<script src="http://d3js.org/d3.v2.min.js?2.10.0"></script>
+<script src="{% static 'js/lib/d3-plugins/box/box.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery-ui.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/ace-builds-master/src-min-noconflict/ace.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery.layout-latest.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/hypothesis-testing-master/js/jstat-git/jstat.min.js' %}"></script>
+<script src="{% static 'js/app/micallef_data.js' %}"></script>
+
+<script type="text/javascript">
+    var editor_data;
+    var editor_code;
+    var current_code_file = 0;
+    var data = [];
+    function log10(val) {
+      return Math.log(val) / Math.LN10;
+    }
+    function updateCode()
+    {
+      var code = editor_code.getValue();
+      eval(code);
+    }
+    
+    
+    
+    function get_stat_similarity()
+    {
+      var groups = [];
+      var callback = arguments[0]
+      for (var i = 1; i < arguments.length; i++) {
+         groups.push(arguments[i]);
+      }
+      groupsJSON = JSON.stringify(groups);
+      $.when(
+	$.ajax({
+       type: "POST",
+       url: "{% url "survey_admin.views.get_stat_similarity" %}",
+       async: false,
+       timeout: 30000,
+       data: { 'groups': groupsJSON, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+       dataType: "json"
+     })).then(function( data ) {
+	  callback(data);
+	  return data;
+       });
+    }
+    
+     function get_stat_correlation()
+    {
+      var groups = [];
+      var callback = arguments[0]
+      for (var i = 1; i < arguments.length; i++) {
+         groups.push(arguments[i]);
+      }
+      groupsJSON = JSON.stringify(groups);
+      $.when(
+	$.ajax({
+       type: "POST",
+       url: "{% url "survey_admin.views.get_stat_correlation" %}",
+       async: false,
+       timeout: 30000,
+       data: { 'groups': groupsJSON, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+       dataType: "json"
+     })).then(function( data ) {
+	  callback(data);
+	  return data;
+       });
+    }
+    function clearConsole()
+    {
+      $("#console").html("");
+    }
+    function printConsole(data, name)
+    {
+      var id = Math.random().toString(36).substring(7);
+      var dataJSON = JSON.stringify(data, null, 4);
+      if(name){
+	$("#console").append("<div>"+name+":</div>");
+      }
+      $("#console").append('<div id="editor_'+id+'" style="width:800px; height: 120px;">"++"</div><br/>');
+      $( "#editor_"+id ).resizable();
+      var editor= ace.edit("editor_"+id);
+      editor.setTheme("ace/theme/solarized_light");
+      editor.getSession().setMode("ace/mode/javascript");
+      editor.setValue(dataJSON);
+    }
+    
+    function get_statistics(numbers)
+    {
+      
+      var x_vector = new jStat(numbers);
+      var  x_n = x_vector[0].length;
+      var x_mean = x_vector.mean();
+      var x_median = x_vector.median();
+      var x_stdev = x_vector.stdev();
+      var x_variance = x_stdev*x_stdev;
+      var x_min = x_vector.min();
+      var x_max = x_vector.max();
+      
+      var stats= { mean: x_mean,
+       median: x_median,
+       stdev: x_stdev,
+       variance: x_variance,
+       min: x_min,
+       max: x_max
+      }
+      return stats;
+      
+    }
+    function resetGraph()
+    {
+      $('#graphs').html("");
+      $('#graphs2').html("");
+    }
+    
+    function iqr(k) {
+       return function(d, i) {
+	var q1 = d.quartiles[0],
+	    q3 = d.quartiles[2],
+	    iqr = (q3 - q1) * k,
+	    i = -1,
+	    j = d.length;
+	while (d[++i] < q1 - iqr);
+	while (d[--j] > q3 + iqr);
+	return [i, j];
+      };
+    }
+    function createBoxPlot(mydata, w, h, label, correct_count){
+      //alert("updateGraph");
+      console.log("createBoxPlot- mydata is: ", mydata);
+      var minVal = Infinity,
+	  maxVal = -Infinity;
+      for(var i=0; i < mydata.length; ++i){
+	var m_minVal = d3.min(mydata[i]);
+	var m_maxVal = d3.max(mydata[i]);
+	if(m_minVal < minVal){ minVal =  m_minVal;}
+	if(m_maxVal > maxVal){ maxVal =  m_maxVal;}
+      }
+      var data = mydata;
+     // var t = [];
+     //  data.push(t);
+     //  for(var i=0; i < mydata.length; ++i){
+	//data[0].push(mydata[i]);
+      // }
+       //console.log("createBoxPlot- mydata is: ", minVal, maxVal, mydata);
+	//var values = d3.range(1000).map(d3.random.irwinHall(10));
+	
+	// A formatter for counts.
+	var formatCount = d3.format(",.0f");
+	
+	var margin = {top: 20, right: 30, bottom: 30, left: 30},
+	    width = w - margin.left - margin.right,
+	    height = h - margin.top - margin.bottom;
+	
+	var chart = d3.box()
+	  .whiskers(iqr(1.5))
+	  .width(w -margin.left -  margin.right)
+	  .height(h -margin.top - margin.bottom);
+        chart.domain([minVal, maxVal]);
+	
+	
+	
+	
+	var vis = d3.select("#graphs2").selectAll("svg")
+       .data(data)
+       .enter().append("svg:svg")
+       .attr("class", "box")
+       .attr("width", w)
+       .attr("height", h)
+     .append("svg:g")
+       .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+       .call(chart);
+       
+       vis.append("text")
+	    .attr("dy", ".5em")
+	    .attr("y",-(margin.top/2.0))
+	    .attr("x",0)
+	    .attr("text-anchor", "middle")
+	    .text(function(d, i){ return label[i]; });
+    }
+    function createHistogram(mydata, w, h, bin_count, label, correct_count, correct_val, minMax){
+      
+      //alert("updateGraph");
+      
+      var minVal = Math.min.apply(null, mydata);
+      var maxVal = Math.max.apply(null, mydata);
+      if(minMax && minMax.length == 2){
+	minVal = minMax[0];
+	maxVal = minMax[1];
+      }
+       //console.log("updateGraph- mydata is: ", minVal, maxVal, mydata);
+	//var values = d3.range(1000).map(d3.random.irwinHall(10));
+	
+	// A formatter for counts.
+	var formatCount = d3.format(",.0f");
+	var formatPercent = d3.format(".0%");
+	
+	var margin = {top: 10, right: 30, bottom: 30, left: 30},
+	    width = w - margin.left - margin.right,
+	    height = h - margin.top - margin.bottom;
+	var bar_width = width/(bin_count+5);
+	var x = d3.scale.linear()
+	    .domain([minVal, maxVal])
+	    .range([0, width]);
+	
+	//var x = d3.scale.linear()
+	//   .domain([minVal, maxVal])
+	//   .range([(bar_width/2.0), width-(bar_width/2.0)]);
+	
+	var data = d3.layout.histogram().bins(x.ticks(bin_count+1))(mydata);
+	//console.log("updateGraph- data is", data, d3.layout.histogram().bins(x.ticks(bin_count+1)));
+	
+	//var data_correct = 0;
+	//for(var j=0; j < data.length; j++){
+	//  if(data[j].x < 0.000001 && data[j].x > -0.000001){
+	//    data_correct = data[j].length;
+	//  }
+	//}
+	
+	
+	
+	var y = d3.scale.linear()
+	    .domain([0, d3.max(data, function(d) { return d.y; })])
+	    .range([height, 0]);
+	
+	var xAxis = d3.svg.axis()
+	    .scale(x)
+	    .orient("bottom");
+	
+	var svg = d3.select("#graphs").append("div").append("svg")
+	    .attr("width", width + margin.left + margin.right)
+	    .attr("height", height + margin.top + margin.bottom)
+	    .append("g")
+	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	
+	var bar = svg.selectAll(".bar")
+	    .data(data)
+	  .enter().append("g")
+	    .attr("class", "bar")
+	    .attr("transform", function(d) { return "translate(" + x(d.x) + "," + y(d.y) + ")"; });
+	
+	bar.append("rect")
+	    .attr("x", function(d) {
+		  //return 1;
+		  //return -(bar_width/2.0);
+		  if(d.x > 0 ) {
+		      return -(bar_width/2.0);
+		  } else {
+		     return (bar_width/2.0);
+		  }
+	    })
+	    .attr("width", bar_width-3) //x(data[0].dx) - 1)
+	    .attr("height", function(d) { return height - y(d.y); });
+	//bar.append("text")
+	//    .attr("dy", "1.0em")
+	//    .attr("y", 1)
+	//    .attr("x", function(d) { return (d.x > 0) ? 0 : bar_width; })
+	//    .attr("text-anchor", "middle")
+	//    .text(function(d) { return (d.y > 0) ? (d.y / mydata.length * 100)  : ""; });
+	    
+	bar.append("title")
+                        .text(function(d) { return "x: "+d.x +", y: "+formatCount(d.y); });
+	var bar2 = svg.append("g")
+	    .attr("class", "bar2")
+	    .attr("transform", "translate(" + x(correct_val) + "," + y(correct_count) + ")");
+	
+	bar2.append("rect")
+	    .attr("x",-(bar_width/2.0))
+	    .attr("width", bar_width-3) //x(data[0].dx) - 1)
+	    .attr("height", function(d) { return height - y(correct_count); });
+	
+	
+	bar2.append("title")
+                        .text(function(d) { return "x: "+correct_val+", y: "+correct_count; });
+	
+	
+	
+	svg.append("g")
+	    .attr("class", "x axis")
+	    .attr("transform", "translate(0," + height + ")")
+	    .call(xAxis);
+	
+	svg.append("text")
+	    .attr("dy", ".5em")
+	    .attr("y",0)
+	    .attr("x",0)
+	    .attr("text-anchor", "left")
+	    .text(label);
+
+      
+    }
+    function updateData(newData){
+      var newDataString  = JSON.stringify(newData, null, 4);
+      data = newData;
+      editor_data.setValue("data = "+newDataString+";");
+      editor_data.getSession().foldAll();
+      editor_data.getSession().unfold(1, false);
+      //updateCode();
+      //console.log("foldAll");
+      
+      //setTimeout(function() { editor_data.getSession().foldAll(null, null, 3); });
+      
+    }
+    
+    
+    
+    
+    $(document).ready(function() {
+      
+        
+	  console.log("$(document).ready");
+          editor_data = ace.edit("editor_data");
+	  editor_data.setTheme("ace/theme/solarized_light");
+	  editor_data.getSession().setMode("ace/mode/javascript");
+	  
+	  editor_code = ace.edit("editor_code");
+	  editor_code.setTheme("ace/theme/textmate");
+	  editor_code.getSession().setMode("ace/mode/javascript");
+       var cookiestring = $.cookie('my_code');
+        if(cookiestring.length > 0){
+	    var cookiedata = $.parseJSON(cookiestring);
+	    editor_code.setValue(cookiedata.code);
+	    //$('#doc_title').html(cookiedata.name);
+	}
+	
+       $('#run').click(function() {
+	  updateCode();
+	});
+	 
+	$('body').layout({
+		minSize: 100,
+		stateManagement__enabled: true,
+		onresize: function(){ editor_data.resize(); editor_code.resize();}
+	});
+	
+	$('#saveSelect').change(function() {
+	  $("#saveName").val($(this).val());
+	});
+	
+	$('#mySaveModal').on('show', function () {
+	    var url = "{% url "survey_admin.views.get_file_list" %}";
+	    $.getJSON(url, function(files) {
+	      $("#saveSelect").html("");
+	      console.log( "Existing Files: ", files );
+	      var filenames = files; //$.parseJSON(files);
+	      for (var i=0; i < filenames.length; ++i){
+		$("#saveSelect").append("<option>"+filenames[i]+"</option>");
+	      }
+	      
+	    });
+	});
+	$('#myOpenModal').on('show', function () {
+	    var url = "{% url "survey_admin.views.get_file_list" %}";
+	    $.getJSON(url, function(files) {
+	      $("#openSelect").html("");
+	      var filenames = files; //$.parseJSON(files);
+	      for (var i=0; i < filenames.length; ++i){
+		$("#openSelect").append("<option>"+filenames[i]+"</option>");
+	      }
+	      
+	    });
+	});
+	
+	
+	$('#open_button').click(function() {
+	  var filename = $('#openSelect').val();
+	  //alert(filename);
+	  var code = editor_code.getValue();
+	  if (filename == 0){
+	      console.log("need a name....");
+	  }else{
+	      $.get( "{% url "survey_admin.views.open_analysis_file" %}", { filename: filename} ).done(function( data ) {
+		console.log( "Data Loaded: " , filename, data );
+		editor_code.setValue(data.code);
+		$('#filenamebox').html(data.name);
+		var my_code = {'id': data.id, 'name': filename, 'code': code};
+		$.cookie('my_code', JSON.stringify(my_code));
+		var cookie = $.cookie('my_code');
+		console.log(cookie);
+		$('#myOpenModal').modal("hide");
+	      });
+	      
+	  }
+	});
+	$('#save_button').click(function() {
+	  var filename = $("#saveName").val();
+	  
+	  var code = editor_code.getValue();
+	  if (filename == 0){
+	      console.log("need a name....");
+	  }else{
+	      $.post( "{% url "survey_admin.views.save_analysis_file" %}", { 'name': filename, 'code': code, 'csrfmiddlewaretoken': '{{ csrf_token }}'} ).done(function( data ) {
+		var my_code = {'id': data.id, 'name': filename, 'code': code};
+		$.cookie('my_code', JSON.stringify(my_code));
+		$('#mySaveModal').modal("hide");
+	      });
+	      
+	  }
+	});
+	
+	
+	
+	
+    });
+  </script>
+{% endblock %}
+
+{% block content %}
+<div id="mySaveModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+    <h3 id="myModalLabel">Save As</h3>
+  </div>
+  <div class="modal-body">
+    <select class="fileSelect" id="saveSelect" multiple="multiple" size="10">
+    </select><br/>
+    <input class="fileName" id="saveName" type="text" placeholder="Name">
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button id="save_button" class="btn btn-primary">Save</button>
+  </div>
+</div>
+
+<div id="myOpenModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+    <h3 id="myModalLabel">Open</h3>
+  </div>
+  <div class="modal-body">
+    <select class="fileSelect" id="openSelect" multiple="multiple" size="10">
+    </select>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button class="btn btn-primary" id="open_button">Open</button>
+  </div>
+</div>
+
+
+<div id="data_pane" class="ui-layout-west" style="top: 0px; padding: 0px; margin:0px;">
+        <div id="editor_data">loading...</div>
+	<span class="window_label" >Data</span>
+</div>
+<div class="ui-layout-center" style="top: 0px; padding: 0px; margin:0px;">
+  <div class="btn-group" style="margin: 3px;">
+  <button  class="btn btn-small" id="run">Run <i class="icon-play"></i></button>
+  <a  class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-file"></i> File  <span class="caret"></span></a>
+  <ul class="dropdown-menu" style="width: 50px;">
+    
+     <li><a href="#mySaveModal" role="button" data-toggle="modal">Save As</a></li>
+     <li><a href="#myOpenModal" role="button" data-toggle="modal">Open</a></li>
+  </ul>
+  </div>
+  <div id="editor_code">var mydata = [];
+for (var i = 0; i < data.length; i++) {
+    var correct_p = data[i]["correct_a1"] / data[i]["correct_a2"];
+    var p = data[i]["a1"] / data[i]["a2"];
+    var bais = log10(p/correct_p);
+    var error = Math.abs(bais);
+	mydata.push(bais);
+}
+      
+createHistogram(mydata);</div>
+       
+<form id="mainForm" action="." method="post">{% csrf_token %}
+	
+</form>
+<span id="filenamebox" class="window_label" >Code</span>
+</div>
+<div class="ui-layout-south" style="top: 0px; padding: 0px; margin:0px;">
+    
+    <div id="graphs"></div>
+    <div id="graphs2"></div>
+    <div id="console"></div>
+    <span class="window_label" >Visualization</span>
+</div>
+
+
+
+{% endblock %}
+

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block htmlid %} id="landingpage"{% endblock htmlid %}
+{% block extra_head %}
+  <script type="text/javascript" src="{% static "js/lib/easeljs-0.6.0.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/lib/tweenjs-0.4.0.min.js" %}"></script>
+  <script type="text/javascript" src="http://code.createjs.com/preloadjs-0.3.1.min.js"></script>
+  <script type="text/javascript" src="{% static "js/lib/d3.v3.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/lib/colorbrewer/colorbrewer.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/lib/numeric-1.2.6.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/lib/d3-plugins/venn/venn.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/lib/d3-plugins/sankey/sankey.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/lib/d3-plugins/icon-array/icon-array.js" %}"></script>
+  
+  <script type="text/javascript" src="{% static "js/app/arEasel/style.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/RadioButton.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/RadioContainer.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/PushButton.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/QuestionLink.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/checkBrowserClose.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/layout.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/TreeDiagram.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/VennDiagram.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/PartitionDiagram.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/SankeyDiagram.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/IconArray.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/StatisticsLegend.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/layoutEquation.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/BezierMotionGuidePlugin.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/Tooltip.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/Bezier.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/app/arEasel/TextBezier.js" %}"></script>
+  <script type="text/javascript">
+	createjs.MotionGuidePlugin.install();
+	createjs.BezierMotionGuidePlugin.install();
+	var canvas;
+	var stage;
+	
+	
+    $(document).ready(function() {
+	  canvas = document.getElementById("myCanvas");
+	  stage = new createjs.Stage(canvas);
+	  stage.enableMouseOver(20);
+	  var tooltip = new arEasel.Tooltip();
+	  tooltip.visible = true;
+	  stage.addEventListener("stagemousemove",tooltip); 
+	  
+	  stage.tooltip = tooltip;
+	  var outerGroup = new createjs.Container();
+	  stage.addChild(outerGroup);
+	  stage.addChild(tooltip);
+	  
+	  createjs.Ticker.addEventListener("tick", tick);
+	  var queue = new createjs.LoadQueue();
+	  queue.addEventListener("complete", handleComplete);
+	   queue.loadManifest([
+	    {id: "pattern1", src:"{% static 'img/pattern3_1.png' %}"},
+	    //{id: "pattern2", src:"{% static 'img/pattern3_2.png' %}"},
+	    //{id: "pattern3", src:"{% static 'img/pattern3_3.png' %}"},
+	    //{id: "pattern4", src:"{% static 'img/pattern3_4.png' %}"},
+	    //{id: "pattern5", src:"{% static 'img/pattern3_5.png' %}"},
+	    //{id: "pattern6", src:"{% static 'img/pattern2.png' %}"},
+	    //{id: "pattern7", src:"{% static 'img/pattern3.png' %}"},
+	    //{id: "pattern8", src:"{% static 'img/pattern4.png' %}"},
+	    //{id: "pattern9", src:"{% static 'img/pattern5.png' %}"},
+	    //{id: "pattern10", src:"{% static 'img/pattern6.png' %}"},
+         ]);
+          function handleComplete() {
+	    genarateGraph($('#data').val(), $('#canvas_width').val(), $('#canvas_height').val());
+	  }
+	  
+	  function createDaigram(data, width, height){
+		 patterns = [];
+		 patterns.push(queue.getResult("pattern1"));
+		 //patterns.push(queue.getResult("pattern2"));
+		 //patterns.push(queue.getResult("pattern3"));
+		 //patterns.push(queue.getResult("pattern4"));
+		 //patterns.push(queue.getResult("pattern5"));
+		 //patterns.push(queue.getResult("pattern6"));
+		 //patterns.push(queue.getResult("pattern7"));
+		 //patterns.push(queue.getResult("pattern8"));
+		 //patterns.push(queue.getResult("pattern9"));
+		 //patterns.push(queue.getResult("pattern10"));
+		 
+		 var diagram = null;
+		 if (data.name === "Tree Diagram"){
+			diagram =  new arEasel.TreeDiagram(data.graph, width, height, data.interactionLevel);
+		 }else if (data.name === "Venn Diagram"){
+			diagram =  new arEasel.VennDiagram(data.graph, width, height, data.interactionLevel,patterns);
+		 }else if (data.name === "Partition Diagram"){
+			diagram =  new arEasel.PartitionDiagram(data.graph);
+		 }else if (data.name === "Sankey Diagram"){
+			diagram =  new arEasel.SankeyDiagram(data.graph, width, height, data.interactionLevel, data.valueDisplay);
+			createjs.Ticker.addEventListener("tick", diagram.handleTick());
+		 }else if (data.name === "IconArray Diagram"){
+			diagram =  new arEasel.IconArrayDiagram(data.graph, width, height, data.interactionLevel, data.valueDisplay);
+		 }
+		  return diagram;
+	  }
+	  function genarateGraph(data, width, height){
+	  
+		canvas.width = parseInt(width)+800;
+	    canvas.height = parseInt(height)+200;
+		
+		outerGroup.removeAllChildren();
+		
+		var data = eval("(" + data + ')'); //jQuery.parseJSON(data);
+		var diagram = null;
+		var diagramGroup = null;
+		if(data){
+			diagramGroup = new createjs.Container();
+			diagram = createDaigram(data, width, height);
+			diagramGroup.addChild(diagram);
+			arEasel.gridLayout(diagramGroup, {vSpace: 0, hSpace: 0});
+			
+			
+			outerGroup.addChild(diagramGroup);
+		}
+	  }
+
+	  
+	  $('.target').change(function() {
+		genarateGraph($('#data').val(), $('#canvas_width').val(), $('#canvas_height').val());
+	  });
+    });
+	
+	function tick() {
+        stage.update();
+    }
+	
+	
+	
+  </script>
+{% endblock %}
+
+{% block content %}
+    
+      
+
+                <form id="mainForm" action="." method="post">{% csrf_token %}
+				<textarea class="target" id="data" rows="10" cols="200">
+{name: "Venn Diagram", interactionLevel: 1, graph: {name:"Woman over 40", size:1000, units:"Women", detail: "Woman over 40", 
+				children: 
+				[
+				{name:"A", detail: "Have Breast Cancer", size: 10, units:"Women", 
+					children:[{name:"B", size: 8, units:"Women", detail: "Got Positive Mammography"}, 
+							  {name:"B'", size: 2,units:"Women", detail: "Got Negative Mammography"}]},
+				 {name:"A'", detail: "Does Not Have Breast Cancer", size: 990, units:"Women", 
+					children:[{name:"B", size: 95, units:"Women", detail: "Got Positive Mammography"}, 
+					          {name:"B'", size: 895, units:"Women", detail: "Got Negative Mammography"}]},
+				
+				]},
+}
+				</textarea>
+                Width:<input class="target" type="text"  name="canvas_width" id="canvas_width" value="700">
+				Height:<input class="target" type="text"  name="canvas_height" id="canvas_height" value="700">
+               
+                </form>
+				<div id="container"><canvas id="myCanvas" width="900" height="900" style="border: 0px #000 solid;"></canvas></div>
+		
+
+{% endblock %}
+
