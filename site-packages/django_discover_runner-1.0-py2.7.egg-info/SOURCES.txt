@@ -1,0 +1,13 @@
+AUTHORS
+LICENSE
+MANIFEST.in
+README.rst
+setup.cfg
+setup.py
+discover_runner/__init__.py
+discover_runner/runner.py
+discover_runner/settings.py
+django_discover_runner.egg-info/PKG-INFO
+django_discover_runner.egg-info/SOURCES.txt
+django_discover_runner.egg-info/dependency_links.txt
+django_discover_runner.egg-info/top_level.txt
