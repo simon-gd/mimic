@@ -1,17 +1,15 @@
 from django.conf.urls import patterns, include, url
+from django.views.generic import TemplateView
 
-# Uncomment the next two lines to enable the admin:
-# from django.contrib import admin
-# admin.autodiscover()
+from django.contrib import admin
+admin.autodiscover()
 
 urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'mimic.views.home', name='home'),
-    # url(r'^mimic/', include('mimic.mimic.urls')),
+    url(r'^$', 'survey.views.home', name='home'),
+    url(r'^survey/admin/', include('survey_admin.urls')),
+    url(r'^survey/', include('survey.urls')),
 
-    # Uncomment the admin/doc line below to enable admin documentation:
-    # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-    # Uncomment the next line to enable the admin:
-    # url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    
 )

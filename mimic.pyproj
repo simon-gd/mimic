@@ -5,6 +5,15 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>mimic</Name>
     <RootNamespace>mimic</RootNamespace>
+    <IsWindowsApplication>False</IsWindowsApplication>
+    <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
+    <InterpreterVersion>2.7</InterpreterVersion>
+    <CommandLineArguments />
+    <InterpreterPath />
+    <InterpreterArguments />
+    <DjangoSettingsModule>$(MSBuildProjectName).settings.local</DjangoSettingsModule>
+    <WebBrowserUrl />
+    <WebBrowserPort />
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -28,11 +37,40 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="browser_info\simple_devices.py" />
+    <Compile Include="browser_info\tests.py" />
+    <Compile Include="browser_info\__init__.py" />
+    <Compile Include="fts\models.py" />
+    <Compile Include="fts\test_admin.py" />
+    <Compile Include="fts\test_questions.py" />
+    <Compile Include="fts\test_smoke.py" />
+    <Compile Include="fts\__init__.py" />
     <Compile Include="manage.py" />
+    <Compile Include="mimic\settings\base.py" />
+    <Compile Include="mimic\settings\local.py" />
+    <Compile Include="mimic\settings\production.py" />
+    <Compile Include="mimic\settings\__init__.py" />
     <Compile Include="mimic\__init__.py" />
-    <Compile Include="mimic\settings.py" />
     <Compile Include="mimic\urls.py" />
     <Compile Include="mimic\wsgi.py" />
+    <Compile Include="survey\admin.py" />
+    <Compile Include="survey\forms.py" />
+    <Compile Include="survey\migrations\0001_initial.py" />
+    <Compile Include="survey\migrations\__init__.py" />
+    <Compile Include="survey\models.py" />
+    <Compile Include="survey\tests\test_models.py" />
+    <Compile Include="survey\tests\test_views.py" />
+    <Compile Include="survey\tests\__init__.py" />
+    <Compile Include="survey\urls.py" />
+    <Compile Include="survey\views.py" />
+    <Compile Include="survey\__init__.py" />
+    <Compile Include="survey_admin\admin.py" />
+    <Compile Include="survey_admin\migrations\0001_initial.py" />
+    <Compile Include="survey_admin\migrations\__init__.py" />
+    <Compile Include="survey_admin\models.py" />
+    <Compile Include="survey_admin\urls.py" />
+    <Compile Include="survey_admin\views.py" />
+    <Compile Include="survey_admin\__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <WebPiReference Include="https://www.microsoft.com/web/webpi/3.0/toolsproductlist.xml%3fDjango">
@@ -45,6 +83,78 @@
       <ProductId>Python27</ProductId>
       <FriendlyName>Python 2.7</FriendlyName>
     </WebPiReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="browser_info\" />
+    <Folder Include="fts\" />
+    <Folder Include="fts\fixtures\" />
+    <Folder Include="fts\media\" />
+    <Folder Include="mimic\" />
+    <Folder Include="mimic\settings\" />
+    <Folder Include="survey\" />
+    <Folder Include="survey\fixtures\" />
+    <Folder Include="survey\migrations\" />
+    <Folder Include="survey\templates\" />
+    <Folder Include="survey\templates\admin\" />
+    <Folder Include="survey\templates\errors\" />
+    <Folder Include="survey\templates\questions\" />
+    <Folder Include="survey\templates\questions_micallef\" />
+    <Folder Include="survey\tests\" />
+    <Folder Include="survey_admin\" />
+    <Folder Include="survey_admin\fixtures\" />
+    <Folder Include="survey_admin\migrations\" />
+    <Folder Include="survey_admin\templates\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="fts\fixtures\admin_user.json" />
+    <Content Include="fts\fixtures\survey_data.json" />
+    <Content Include="survey\templates\done.html" />
+    <Content Include="survey\templates\errors\need_worker_id.html" />
+    <Content Include="survey\templates\errors\not_supported.html" />
+    <Content Include="survey\templates\errors\no_active_survey.html" />
+    <Content Include="survey\templates\questions\canvas_illustrated_question.html" />
+    <Content Include="survey\templates\questions\canvas_simple_question.html" />
+    <Content Include="survey\templates\questions\html_cancer_spacific.html" />
+    <Content Include="survey\templates\questions\html_dropdown.html" />
+    <Content Include="survey\templates\questions\html_fill_number.html" />
+    <Content Include="survey\templates\questions\html_fill_number_of_number_with_confidence.html" />
+    <Content Include="survey\templates\questions\html_fill_number_of_number_with_confidence_no_setup.html" />
+    <Content Include="survey\templates\questions\html_fill_number_optional.html" />
+    <Content Include="survey\templates\questions\html_fill_percentage.html" />
+    <Content Include="survey\templates\questions\html_fill_percentage_with_confidence_no_setup.html" />
+    <Content Include="survey\templates\questions\html_fill_text.html" />
+    <Content Include="survey\templates\questions\html_radio_buttons.html" />
+    <Content Include="survey\templates\questions\html_simple_question.html" />
+    <Content Include="survey\templates\questions\html_texfield.html" />
+    <Content Include="survey\templates\questions_micallef\page1.html" />
+    <Content Include="survey\templates\questions_micallef\page2.html" />
+    <Content Include="survey\templates\questions_micallef\page2_figure1.html" />
+    <Content Include="survey\templates\questions_micallef\page3.html" />
+    <Content Include="survey\templates\questions_micallef\page4.html" />
+    <Content Include="survey\templates\question_v0.html" />
+    <Content Include="survey\templates\question_v1.html" />
+    <Content Include="survey\templates\question_v1_no_tracking.html" />
+    <Content Include="survey\templates\question_v2.html" />
+    <Content Include="survey\templates\question_v2_no_tracking.html" />
+    <Content Include="survey\templates\README.txt" />
+    <Content Include="survey\templates\survey.html" />
+    <Content Include="survey_admin\fixtures\initial_data.json" />
+    <Content Include="survey_admin\templates\comp_mouse_paths_animated.html" />
+    <Content Include="survey_admin\templates\custom_viz.html" />
+    <Content Include="survey_admin\templates\heatmap.html" />
+    <Content Include="survey_admin\templates\ip_map.html" />
+    <Content Include="survey_admin\templates\mouse_paths.html" />
+    <Content Include="survey_admin\templates\mouse_paths_animated.html" />
+    <Content Include="survey_admin\templates\mouse_paths_animated_v2.html" />
+    <Content Include="survey_admin\templates\mouse_paths_animated_v3.html" />
+    <Content Include="survey_admin\templates\mouse_paths_static_v3.html" />
+    <Content Include="survey_admin\templates\survey_admin.html" />
+    <Content Include="survey_admin\templates\survey_admin_v2.html" />
+    <Content Include="survey_admin\templates\survey_analysis.html" />
+    <Content Include="survey_admin\templates\viz_debug.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="{9a7a9026-48c1-4688-9d5d-e5699d47d074}\2.7" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Python Tools\Microsoft.PythonTools.Django.targets" />
   <ProjectExtensions>

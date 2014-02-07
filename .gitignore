@@ -243,4 +243,5 @@ docs/_build/
 *.log
 *.pot
 *.pyc
-local_settings.py
+mimic/settings/local.py
+mimic/settings/production.py
