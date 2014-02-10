@@ -24,6 +24,8 @@ from survey_admin.models import CodeFile
 from django.conf import settings
 from scipy import stats
 
+# Survey Admin Views
+
 @staff_member_required
 def get_stat_similarity(request):
     groups = json.loads(request.POST["groups"])
