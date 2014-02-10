@@ -191,7 +191,6 @@ $RECYCLE.BIN/
 __pycache__/
 *.py[co]
 
-
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
