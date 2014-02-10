@@ -1,0 +1,23 @@
+Metadata-Version: 1.1
+Name: patsy
+Version: 0.2.1
+Summary: A Python package for describing statistical models and for
+building design matrices.
+Home-page: https://github.com/pydata/patsy
+Author: Nathaniel J. Smith
+Author-email: njs@pobox.com
+License: 2-clause BSD
+Description: A Python package for describing statistical models and for
+        building design matrices.
+        It is closely inspired by and compatible with the 'formula'
+        mini-language used in `R <http://www.r-project.org/>`_ and
+        `S <https://secure.wikimedia.org/wikipedia/en/wiki/S_programming_language>`_.
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Financial and Insurance Industry
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Scientific/Engineering

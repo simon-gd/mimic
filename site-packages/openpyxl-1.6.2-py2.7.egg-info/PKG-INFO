@@ -1,0 +1,18 @@
+Metadata-Version: 1.1
+Name: openpyxl
+Version: 1.6.2
+Summary: A Python library to read/write Excel 2007 xlsx/xlsm files
+Home-page: http://openpyxl.readthedocs.org
+Author: Eric Gazoni
+Author-email: eric.gazoni@gmail.com
+License: MIT/Expat
+Download-URL: http://bitbucket.org/ericgazoni/openpyxl/downloads
+Description: openpyxl is a pure python reader and writer of Excel OpenXML files.  It is ported from the PHPExcel project
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
