@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- saved from url=(0057)http://staging.knockoutmouse.org/mockups/venn-mockup4.php -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" class="js"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>js-venn demo 1</title>
+    <!-- required files -->
+    <script type="text/javascript" src="raphael-min.js"></script>
+    <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="venn.js"></script>
+    <link media="all" href="venn.css" type="text/css" rel="stylesheet">
+     
+     <!-- custom library of jquery UI for the tab widget in this demo (not needed for js-venn to work)-->
+    <script type="text/javascript" src="jquery-ui-1.8.22.custom.min.js"></script>
+    <link media="all" href="jquery-ui-1.8.22.custom.css" type="text/css" rel="stylesheet">
+ <script> 
+ 
+     var showDemo1 = function () {
+        drawVenn("canvas1",300, 
+            {labels:["Conditional Alleles","Gene Traps","Deletion Alleles"],
+               colors:["#f30","#0C1","#06f","#cc0","#c0c","#0cc","#333"],
+               data:[8897,9583,3622,
+               875,4347,1528,
+               376] ,
+               colored_labels:true,
+			   highlight:true
+            });
+      };
+      
+      var showDemo2 = function () {
+        drawVenn("canvas2",300, 
+            {labels:["Toasters","Ovens"],
+               colors:["#c20","#0cf","#cc0"],
+               data:[545,973,115],
+               highlight:true
+            });
+      };
+          
+     $(document).ready(function() {
+       showDemo1();
+       showDemo2();
+       $( "#tabs" ).tabs();
+     });     
+      
+    </script> 
+  </head>
+  <body>
+     <div id="tabs">
+          <ul>
+               <li><a href="#tabs-1">3 Circle Demo</a></li>
+               <li><a href="#tabs-2">2 Circle Demo</a></li>
+          </ul>
+               
+          <div id="tabs-1" class="content">
+               <p>A proportional 3 circle venn with color matching labels.</p>
+              <div id="canvas1"></div>
+          </div>
+          <div id="tabs-2" class="content">
+               <p>A 2 circle venn that highlights areas on mouseover.</p>
+              <div id="canvas2"></div>  
+          </div>
+     </div>
+</body></html>

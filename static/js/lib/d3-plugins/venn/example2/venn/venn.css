@@ -1,0 +1,18 @@
+ .venn-label
+{   
+    font-weight: bold;
+    font-size: 120%;
+    font-family:"Times New Roman",Georgia,Serif;
+}   
+.venn-data
+{   
+    font-weight: bold;
+    font-size: 150%;
+    text-decoration:underline;
+    font-family:"Times New Roman",Georgia,Serif;
+}   
+.venn-data a
+{   
+    color: black;
+}   
+

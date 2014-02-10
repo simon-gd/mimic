@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="author" content="Helen Lu">
+    <title>Area-proportional Venn diagrams</title>
+    <style type="text/css">
+h1 { 
+    text-align: center; font-size: 30px; 
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", sans-serif; 
+    font-weight: 300;
+}
+body { 
+    font-size: 30px; 
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", sans-serif; 
+    font-weight: 300;
+}
+table { 
+    margin-left:auto; 
+    margin-right:auto; 
+}
+    </style>
+    
+    <script type="text/javascript" src="d3.v2.js"></script>
+    <script type="text/javascript" src="numeric-1.2.4.js"></script>
+    <script type="text/javascript" src="venn.js"></script>
+    
+</head>
+
+<body>
+<table><tr><td>
+
+<h1>Animated area-proportional Venn diagram example</h1>
+</td></tr><tr><td id="vis">
+<script type="text/javascript">
+
+// Initialize data
+var groups = ["A", "B", "C", "D", "E", "F"];
+var data = [];
+for (var i=0; i<Math.pow(2, 6); i++)
+    data[i] = 0;
+
+var A=0, B=1, C=2, D=3, E=4, F=5;
+data[1<<A] = 4; data[1<<B] = 6; data[1<<C] = 3; data[1<<D] = 2; 
+data[1<<E] = 7; data[1<<F] = 3;
+data[1<<A|1<<B] = 2; data[1<<A|1<<F] = 2; data[1<<B|1<<C] = 2; 
+data[1<<B|1<<D] = 1; data[1<<B|1<<F] = 2; data[1<<C|1<<D] = 1; 
+data[1<<D|1<<E] = 1; data[1<<E|1<<F] = 1;
+data[1<<A|1<<B|1<<F] = 1; data[1<<B|1<<C|1<<D] = 1;
+
+// Standard D3
+var color = d3.scale.category10();
+var venn = d3.layout.venn().size([800, 600]);
+var circle = d3.svg.arc().innerRadius(0).startAngle(0).endAngle(2*Math.PI);
+
+var vis = d3.select("#vis")
+  .append("svg")
+    .data([data])
+    .attr("width", 900).attr("height", 700);
+
+var circles = vis.selectAll("g.arc")
+    .data(venn)              
+  .enter().append("g")
+    .attr("class", "arc")
+    .attr("transform", function(d, i){ return "translate(" + (50 + d.x) + "," + (50 + d.y) + ")"; });
+circles.append("path")
+    .attr("fill", function(d, i) { return color(i); })
+    .attr("opacity", 0.5)
+    .attr("d", circle);
+circles.append("text")
+    .attr("text-anchor", "middle")
+    .text(function(d, i) { return groups[i]; })
+    .attr("fill", function(d, i) { return color(i); })
+    .attr("x", function(d, i) { return d.labelX; })
+    .attr("y", function(d, i) { return d.labelY; });
+    
+// Modify data
+data[1<<B] = 4; data[1<<E] = 1;
+data[1<<A|1<<B|1<<F] = 3;
+data[1<<B|1<<C|1<<D] = 2;
+
+// D3 animation
+vis.selectAll("path")
+    .data(venn).transition().duration(2000).delay(1000)
+    .attr("d", circle);
+vis.selectAll("g.arc")
+    .data(venn).transition().duration(2000).delay(1000)
+    .attr("transform", function(d, i){ return "translate(" + (50 + d.x) + "," + (50 + d.y) + ")"; }); 
+vis.selectAll("text")
+    .data(venn).transition().duration(2000).delay(1000)
+    .attr("x", function(d, i) { return d.labelX; })
+    .attr("y", function(d, i) { return d.labelY; });
+</script>
+</td></tr></table>
+</body>
+
+
+
+</html>

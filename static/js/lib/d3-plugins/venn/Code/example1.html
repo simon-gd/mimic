@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="author" content="Helen Lu">
+    <title>Area-proportional Venn diagrams</title>
+    <style type="text/css">
+h1 { 
+    text-align: center; font-size: 30px; 
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", sans-serif; 
+    font-weight: 300;
+}
+body { 
+    font-size: 30px; 
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", sans-serif; 
+    font-weight: 300;
+}
+table { 
+    margin-left:auto; 
+    margin-right:auto; 
+}
+    </style>
+    
+    <script type="text/javascript" src="d3.v2.js"></script>
+    <script type="text/javascript" src="numeric-1.2.4.js"></script>
+    <script type="text/javascript" src="venn.js"></script>
+    
+</head>
+
+<body>
+<table><tr><td>
+
+<h1>Area-proportional Venn diagram example</h1>
+</td></tr><tr><td id="vis">
+<script type="text/javascript">
+
+// Initialize data
+var A="Friends", B="High School", C="College", D="Work", E="Sports";
+var groups = [A, B, C, D, E];
+
+var data = [];
+for (var i=0; i<3; i++) data.push([A]);
+for (var i=0; i<4; i++) data.push([A, B]);
+for (var i=0; i<6; i++) data.push([A, C]);
+data.push([C]);
+for (var i=0; i<2; i++) data.push([C, D]);
+data.push([A, D]);
+data.push([A, C, D]); 
+for (var i=0; i<4; i++) data.push([D]);
+for (var i=0; i<3; i++) data.push([E]);
+for (var i=0; i<2; i++) data.push([A, E]);
+
+// Standard D3
+var color = d3.scale.category10();
+var venn = d3.layout.venn().size([800, 600]);
+var circle = d3.svg.arc().innerRadius(0).startAngle(0).endAngle(2*Math.PI);
+
+var vis = d3.select("#vis")
+  .append("svg")
+    .data([data])
+    .attr("width", 900).attr("height", 700);
+
+var circles = vis.selectAll("g.arc")
+    .data(venn)              
+  .enter().append("g")
+    .attr("class", "arc")
+    .attr("transform", function(d, i){ return "translate(" + (50 + d.x) + "," + (50 + d.y) + ")"; });
+circles.append("path")
+    .attr("fill", function(d, i) { return color(i); })
+    .attr("opacity", 0.5)
+    .attr("d", circle);
+circles.append("text")
+    .attr("text-anchor", "middle")
+    .text(function(d, i) { return d.label; })
+    .attr("fill", function(d, i) { return color(i); })
+    .attr("x", function(d, i) { return d.labelX; })
+    .attr("y", function(d, i) { return d.labelY; });
+
+</script>
+</td></tr></table>
+</body>
+
+
+
+</html>
