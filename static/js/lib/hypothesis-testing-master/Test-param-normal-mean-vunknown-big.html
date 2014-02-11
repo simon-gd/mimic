@@ -1,0 +1,371 @@
+	<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery.dialog.extra.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.ks.js"></script>
+
+		<!-- Configuracion -->
+ 		<script type="text/javascript" src="js/_settings.js"></script>
+		<script type="text/javascript" src="js/_ui.js"></script>
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+
+	</head>
+	<body>
+		<div class="main ui-widget">
+			<div class="ui-widget-header ui-corner-top">
+				<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+			</div>
+
+			<div class="ui-widget-content">
+
+				<div id="tabs-0"><!-- TAB: Entrada -->
+					<form name="data">
+						<label for="vectorX">Vector de datos X:</label>
+						<br />
+						<textarea id="vectorX" class="vector"></textarea>
+
+						<div class="clear"></div>
+						
+						<label for="vectorY">Vector de datos Y:</label>
+						<br />
+						<textarea id="vectorY" class="vector"></textarea>
+					</form>
+				</div><!-- /TAB: Entrada -->
+
+				<div class="accordion">
+
+					<!-- ****************************************************** -->
+					<!-- Media (&#956;) de una variable normal (&#963; desconocida) de muestra grande (n &gt; 30). -->
+					<!-- ****************************************************** -->
+					<h3><a href="#">Media (&#956;) de una variable normal (&#963; desconocida) de muestra grande (n &gt; 30).</a></h3>
+					<div>
+
+						<div class="ui-state-highlight">
+							<p>X: Variable aleatoria continua.</p>
+							<p>Se somete a comprobaci&oacute;n la media muestral contra una media poblacional, usando un valor propuesto (&#956;<sub>0</sub>).</p>
+							<p>El constraste se realiza comparando un valor experimental contra una <a target="_blank" href="http://es.wikipedia.org/wiki/Distribuci%C3%B3n_t_de_Student">distribuci&oacute;n Normal</a> tipificada, estimando la varianza (&#963;<sup>2</sup>) desde la muestra (s<sup>2</sup>).</p>
+							<div class="left">
+								<table>
+									<tr>
+										<td><input type="radio" id="ht-test-normal-mean-vunknown-big-radio-1" name="ht-test-normal-mean-vunknown-big-radio" value="eq" checked></td>
+										<td>
+											<label for="ht-test-normal-mean-vunknown-big-radio-1">
+												Bilateral <br>
+												H<sub>0</sub> &equiv; (&#956; = &#956;<sub>0</sub>) <br>
+												H<sub>1</sub> &equiv; (&#956; &ne; &#956;<sub>0</sub>) <br>
+											</label>
+										</td>
+										<td><input type="radio" id="ht-test-normal-mean-vunknown-big-radio-2" name="ht-test-normal-mean-vunknown-big-radio" value="le"></td>
+										<td>
+											<label for="ht-test-normal-mean-vunknown-big-radio-1">
+												Cola derecha <br>
+												H<sub>0</sub> &equiv; (&#956; &le; &#956;<sub>0</sub>)<br>
+												H<sub>1</sub> &equiv; (&#956; &gt; &#956;<sub>0</sub>)<br>	
+											</label>
+										</td>
+										<td><input type="radio" id="ht-test-normal-mean-vunknown-big-radio-3" name="ht-test-normal-mean-vunknown-big-radio" value="ge"></td>
+										<td>
+											<label for="ht-test-normal-mean-vunknown-big-radio-3">
+												Cola izquierda <br>
+												H<sub>0</sub> &equiv; (&#956; &ge; &#956;<sub>0</sub>)<br>
+												H<sub>1</sub> &equiv; (&#956; &lt; &#956;<sub>0</sub>)<br>	
+											</label>
+										</td>	
+									</tr>
+								</table>
+							</div>
+							<div class="right">
+								<button id="ht-test-normal-mean-vunknown-big-get-button">Obtener Datos Muestrales</button>
+								<button id="ht-test-normal-mean-vunknown-big-start-button">Calcular</button>
+							</div>
+							<div class="clear"></div>							
+						</div>
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Nivel de Significaci&oacute;n (&#945;)</h4>
+
+							<p>
+								<input type="text" id="ht-test-normal-mean-vunknown-big-alpha" readonly />
+							</p>
+							<p>
+								<button id="ht-test-normal-mean-vunknown-big-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-normal-mean-vunknown-big-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-normal-mean-vunknown-big-slider-alpha"></div>
+						</div><!-- / -->
+
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Datos Muestrales</h4>
+
+							<form name="ht-test-normal-mean-vunknown-big">
+
+								<label for="ht-test-normal-mean-vunknown-big-xmean-input">Media muestral (X&#772;)</label><br />
+								<input type="text" name="ht-test-normal-mean-vunknown-big-xmean-input" id="ht-test-normal-mean-vunknown-big-xmean-input" value="0" /><br />
+
+								<label for="ht-test-normal-mean-vunknown-big-xs-input">Desviaci&oacute;n Estándar (s<sub>x</sub>)</label><br />
+								<input type="text" name="ht-test-normal-mean-vunknown-big-xs-input" id="ht-test-normal-mean-vunknown-big-xs-input" value="1" /><br />
+
+								<label for="ht-test-normal-mean-vunknown-big-xn-input">Tama&ntilde;o muestral (n<sub>x</sub>)</label><br />
+								<input type="text" name="ht-test-normal-mean-vunknown-big-xn-input" id="ht-test-normal-mean-vunknown-big-xn-input" value="30" /><br />
+							</form>
+						</div>
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Par&aacute;metros</h4>
+
+							<form name="ht-test-normal-mean-vunknown-big">
+
+								<label for="ht-test-normal-mean-vunknown-big-mu_0-input">Media Propuesta (&#956;<sub>0</sub>)</label><br />
+								<input type="text" name="ht-test-normal-mean-vunknown-big-mu_0-input" id="ht-test-normal-mean-vunknown-big-mu_0-input" value="0" /><br />
+							</form>
+						</div>
+
+						<div id="ht-test-normal-mean-vunknown-big-result" title="Resultados" class="">
+
+							<h4>Variable X:</h4>
+							<table>
+								<tr>
+									<td>Z<sub>exp</sub>: </td>
+									<td><div id="ht-test-normal-mean-vunknown-big-result-z_exp"></div></td>
+								</tr>
+								<tr id="ht-test-normal-mean-vunknown-big-result-p_value-row">
+									<td>Valor P: </td>
+									<td><div id="ht-test-normal-mean-vunknown-big-result-p_value"></div></td>
+								</tr>
+
+								<tr id="ht-test-normal-mean-vunknown-big-result-Za-row">
+									<td>Z<sub>&#945;</sub>: </td>
+									<td><div id="ht-test-normal-mean-vunknown-big-result-za"></div></td>
+								</tr>
+								<tr id="ht-test-normal-mean-vunknown-big-result-Zaa-row">
+									<td>Z<sub>&#945;/2</sub>: </td>
+									<td><div id="ht-test-normal-mean-vunknown-big-result-Zaa"></div></td>
+								</tr>
+								<tr id="ht-test-normal-mean-vunknown-big-result-Zab-row">
+									<td>Z<sub>1-&#945;/2</sub>: </td>
+									<td><div id="ht-test-normal-mean-vunknown-big-result-Zab"></div></td>
+								</tr>
+
+								<tr>
+									<td>Interpretaci&oacute;n: </td>
+									<td><div id="ht-test-normal-mean-vunknown-big-result-H0"></div></td>
+								</tr>
+							</table>
+
+						</div>
+
+						<div id="ht-test-normal-mean-vunknown-big-error" title="Error" class=""></div>			
+					
+						<script type="text/javascript">
+							//* <![CDATA[ */
+							$(document).ready(function() {
+
+								$("#ht-test-normal-mean-vunknown-big-result").hide();
+
+								/** Slider para valor alfa  */
+								$("#ht-test-normal-mean-vunknown-big-slider-alpha").slider({
+									range : "min",
+									value : 0.05,
+									min : 0,
+									max : 0.5,
+									step : 0.005,
+									create : function(event, ui) {
+										$("#ht-test-normal-mean-vunknown-big-alpha").val(ui.value);
+									},
+									slide : function(event, ui) {
+										$("#ht-test-normal-mean-vunknown-big-alpha").val(ui.value);
+									},
+									change : function(event, ui) {
+										$("#ht-test-normal-mean-vunknown-big-alpha").val(ui.value);
+									}
+								});
+								$("#ht-test-normal-mean-vunknown-big-alpha").val($("#ht-test-normal-mean-vunknown-big-slider-alpha").slider('value'));
+
+								$('#ht-test-normal-mean-vunknown-big-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-normal-mean-vunknown-big-slider-alpha").slider("value", $("#ht-test-normal-mean-vunknown-big-slider-alpha").slider('value') + $("#ht-test-normal-mean-vunknown-big-slider-alpha").slider('option', 'step'));
+
+								});
+								$('#ht-test-normal-mean-vunknown-big-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-normal-mean-vunknown-big-slider-alpha").slider("value", $("#ht-test-normal-mean-vunknown-big-slider-alpha").slider('value') - $("#ht-test-normal-mean-vunknown-big-slider-alpha").slider('option', 'step'));
+
+								});
+
+								/** Boton GET */
+								$("#ht-test-normal-mean-vunknown-big-get-button").button().click(function() {
+									x_vector = $.hypothesistesting('parseFloatArray', $('#vectorX').val());
+									x_vector = new jStat(x_vector);
+
+									x_n = x_vector[0].length;
+									x_mean = x_vector.mean();
+									x_stdev = x_vector.stdev();
+
+									$('#ht-test-normal-mean-vunknown-big-xn-input').val(x_n);
+									$('#ht-test-normal-mean-vunknown-big-xs-input').val(x_stdev);
+									$('#ht-test-normal-mean-vunknown-big-xmean-input').val(x_mean);
+								});
+
+								/** Boton de calculo */
+								$("#ht-test-normal-mean-vunknown-big-start-button").button({
+									icons : {
+										secondary : "ui-icon-play"
+									},
+									text : true
+								}).click(function() {
+
+									$('#ht-test-normal-mean-vunknown-big-result-Zaa-row').hide();
+									$('#ht-test-normal-mean-vunknown-big-result-Zab-row').hide();
+
+									alpha = + $("#ht-test-normal-mean-vunknown-big-alpha").val();
+
+									n = + $('#ht-test-normal-mean-vunknown-big-xn-input').val();
+									s = + $('#ht-test-normal-mean-vunknown-big-xs-input').val();
+									x = + $('#ht-test-normal-mean-vunknown-big-xmean-input').val();
+
+									//console.log(n,s,x);
+
+									if(n < 30)
+                                    {
+                                        $('#ht-test-normal-mean-vunknown-big-error').dialog({modal: true}).html('Muestra (X) demasiado peque&ntilde;a.');
+
+                                        return;
+                                    }
+
+									mu_0 = + $('#ht-test-normal-mean-vunknown-big-mu_0-input').val();
+									//console.log('n', n, 'x', x, 'mu_0', mu_0, 'stdev', stdev);
+									
+									z_exp = (x - mu_0) / (s / Math.sqrt(n) );
+									$('#ht-test-normal-mean-vunknown-big-result-z_exp').text(z_exp);
+									
+									za= jStat.normal.inv(1-alpha, 0, 1);
+									za2= jStat.normal.inv(1-(alpha/2), 0, 1);
+
+									//console.log(za, za2);
+
+									H0 = $('input[name=ht-test-normal-mean-vunknown-big-radio]:checked').val();
+									//console.log(H0);
+
+									var rechazarH0;
+
+									switch (H0) {
+										case 'eq':
+
+											$('#ht-test-normal-mean-vunknown-big-result-Zaa').text(-za2);
+											$('#ht-test-normal-mean-vunknown-big-result-Zab').text(za2);
+											
+											//$('#ht-test-normal-mean-vunknown-big-result-p_value-row').hide();
+											$('#ht-test-normal-mean-vunknown-big-result-Za-row').hide();
+											$('#ht-test-normal-mean-vunknown-big-result-Zaa-row').show();
+											$('#ht-test-normal-mean-vunknown-big-result-Zab-row').show();
+
+											// SOLO POR SIMETRIA DE LA NORMAL
+											p_value =  2*(1-jStat.normal.cdf( Math.abs(z_exp), 0, 1));
+
+											//console.log('p_value', p_value, 'alpha/2', alpha/2, '(p_value < alpha/2)', (p_value < alpha/2));
+											rechazarH0 = (p_value < alpha) ? true : false;
+											//rechazarH0 = ( Math.abs(z_exp) >= Math.abs( za2 ) ) ? true : false;
+
+										break;
+										case 'le':
+
+											$('#ht-test-normal-mean-vunknown-big-result-p_value-row').show();
+											$('#ht-test-normal-mean-vunknown-big-result-Za-row').show();
+											$('#ht-test-normal-mean-vunknown-big-result-za').text(za);
+
+											p_value =  1-jStat.normal.cdf( z_exp, 0, 1);
+											//console.log('p_value', p_value, 'alpha', alpha, '(p_value < alpha)', (p_value < alpha));
+											rechazarH0 = (p_value < alpha) ? true : false;
+											//rechazarH0 = ( z_exp >= -za ) ? true : false;
+
+										break;
+										case 'ge':
+
+											$('#ht-test-normal-mean-vunknown-big-result-p_value-row').show();
+											$('#ht-test-normal-mean-vunknown-big-result-Za-row').show();
+											$('#ht-test-normal-mean-vunknown-big-result-za').text(-za);
+
+											p_value =  jStat.normal.cdf( z_exp, 0, 1);
+											rechazarH0 = (p_value < alpha) ? true : false;
+											//rechazarH0 = ( z_exp <= za ) ? true : false;
+
+										break;
+									}
+
+									$('#ht-test-normal-mean-vunknown-big-result-p_value').text(p_value);
+
+									(rechazarH0) ? 
+										$('#ht-test-normal-mean-vunknown-big-result-H0').html('Se rechaza H<sub>0</sub>') :
+										$('#ht-test-normal-mean-vunknown-big-result-H0').html('NO se rechaza H<sub>0</sub>') ;
+
+									$("#ht-test-normal-mean-vunknown-big-result").dialog({
+										modal: true,
+										canMaximize: true,
+										buttons: {
+											Ok: function() {
+												$( this ).dialog( "close" );
+											}
+										}
+									}).dialog('maximize');
+
+								});
+							});
+							/* ]]> */
+						</script>
+						
+						<div class="clear"></div>
+					</div>
+					<!-- ****************************************************** -->
+
+				</div><!-- /accordion -->
+			</div><!-- /Content -->
+
+				<div id="footer" class="ui-widget-content">
+				<p class="center">
+					Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+				</p>
+				<p class="center">
+					&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+				</p>
+			</div><!-- End footer -->
+		</div><!-- End main -->
+	</body>
+</html>

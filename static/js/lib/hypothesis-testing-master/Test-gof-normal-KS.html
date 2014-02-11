@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery.dialog.extra.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.ks.js"></script>
+
+		<!-- Configuracion -->
+ 		<script type="text/javascript" src="js/_settings.js"></script>
+		<script type="text/javascript" src="js/_ui.js"></script>
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+
+	</head>
+	<body>
+		<div class="main ui-widget">
+			<div class="ui-widget-header ui-corner-top">
+				<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+			</div>
+
+			<div class="ui-widget-content">
+
+				<form name="data">
+					<label for="vectorX">Vector de datos primario:</label>
+					<br />
+					<textarea id="vectorX" class="vector"></textarea>
+
+					<div class="clear"></div>
+
+				</form>
+
+				<div class="accordion">
+
+					<!-- ****************************************************** -->
+					<!-- Prueba Kolgomorov-Smirnov Normal -->
+					<!-- ****************************************************** -->
+					<h3><a href="#">Prueba Kolgomorov-Smirnov (Normal)</a></h3>
+					<div>
+
+						<div class="ui-state-highlight">
+							<div class="left">
+								<p>X: Variable aleatoria continua.</p>
+								<p>H<sub>0</sub>: "La muestra proviene de una distribuci&oacute;n Normal"</p>
+								<p>H<sub>1</sub>: "La muestra NO proviene de una distribuci&oacute;n Normal"</p>
+							</div>
+							<div class="right">
+								<button id="ht-test-gof-normal-KS-get-button">Obtener desde datos Muestrales</button>
+
+								<button id="ht-test-gof-normal-KS-start-button">Calcular</button>
+							</div>
+							<div class="clear"></div>
+						</div>
+
+						<div>
+							<div class="left ht-widget">
+								<h4 class="ui-widget-header">Nivel de significaci&oacute;n (&#945;)</h4>
+								<p class="radio-buttonset">
+									<input type="radio" id="ht-test-gof-normal-KS-radio-1" name="ht-test-gof-normal-KS-radio" value="0.01">
+									<label for="ht-test-gof-normal-KS-radio-1">0.01</label>
+
+									<input type="radio" id="ht-test-gof-normal-KS-radio-2" name="ht-test-gof-normal-KS-radio" value="0.02" >
+									<label for="ht-test-gof-normal-KS-radio-2">0.02</label>
+									
+									<input type="radio" id="ht-test-gof-normal-KS-radio-3" name="ht-test-gof-normal-KS-radio" value="0.05" checked>
+									<label for="ht-test-gof-normal-KS-radio-3">0.05</label>
+
+									<input type="radio" id="ht-test-gof-normal-KS-radio-4" name="ht-test-gof-normal-KS-radio" value="0.1">
+									<label for="ht-test-gof-normal-KS-radio-4">0.1</label>
+
+									<input type="radio" id="ht-test-gof-normal-KS-radio-5" name="ht-test-gof-normal-KS-radio" value="0.2">
+									<label for="ht-test-gof-normal-KS-radio-5">0.2</label>
+								</p>
+								<p>Valores tabulados, N &lt;= 40.</p>
+								<p>Aproximados con N &gt; 40.</p>
+							</div>
+
+							<div class="left ht-widget">
+								<h4 class="ui-widget-header">Par&aacute;metros</h4>
+
+								<form name="ht-test-gof-normal-KS">
+									<label for="ht-test-gof-normal-KS-mean-input">Media (&#956;)</label><br />
+									<input type="text" name="ht-test-gof-normal-KS-mean-input" id="ht-test-gof-normal-KS-mean-input" value="0" /><br>
+
+									<label for="ht-test-gof-normal-KS-stdev-input">Desviaci&oacute;n Estándar (&#963;)</label><br />
+									<input type="text" name="ht-test-gof-normal-KS-stdev-input" id="ht-test-gof-normal-KS-stdev-input" value="1" />
+
+
+								</form>
+							</div>
+
+							<div class="clear"></div>
+
+							<div id="ht-test-gof-normal-KS-result" title="Resultados" class="">
+
+								<table>
+									<tr>
+										<td>Valor D: </td>
+										<td><div id="ht-test-gof-normal-KS-result-d-value"></div></td>
+									</tr>
+									<tr>
+										<td>Valor D<sub>&#945;</sub>: </td>
+										<td><div id="ht-test-gof-normal-KS-result-dalpha-value"></div></td>
+									</tr>
+									<tr>
+										<td>Sugerencia: </td>
+										<td><div id="ht-test-gof-normal-KS-result-suggest"></div></td>
+									</tr>
+								</table>
+
+							<div class="clear"></div>
+
+						</div>
+
+						<div id="ht-test-gof-normal-KS-error" title="Error" class="">
+							<div class="ui-state-error ui-corner-all"><span class="left ui-icon ui-icon-alert"></span><p id="ht-test-gof-normal-KS-error-message"></p></div>
+						</div>
+
+						
+						</div>
+						<script type="text/javascript">
+							//* <![CDATA[ */
+							$(document).ready(function() {
+
+								//console.log( 
+									$.hypothesistesting('randomVector', 1000, 0, 1, 4)
+								//);
+
+								//$("#vectorX").val('1.9, 2.3, 3.3, 3.4, 4.5, 4.5, 4.8, 4.8, 5.6, 6.0');
+
+								$("#ht-test-gof-normal-KS-result").hide();
+								$("#ht-test-gof-normal-KS-error").hide();
+
+								/** Boton GET */
+								$("#ht-test-gof-normal-KS-get-button").button().click(function() {
+									x_vector = $.hypothesistesting('parseFloatArray', $('#vectorX').val());
+									x_vector = new jStat(x_vector);
+
+									x_n = x_vector[0].length;
+									x_mean = x_vector.mean();
+									x_stdev = x_vector.stdev();
+
+									$('#ht-test-gof-normal-KS-nx-input').val(x_n);
+									$('#ht-test-gof-normal-KS-mean-input').val(x_mean);
+									$('#ht-test-gof-normal-KS-stdev-input').val(x_stdev);
+								});
+
+								/** Boton de calculo */
+								$("#ht-test-gof-normal-KS-start-button").button({
+									icons : {
+										secondary : "ui-icon-play"
+									},
+									text : true
+								}).click(function()
+								{
+
+									vector = $.hypothesistesting('parseFloatArray', $('#vectorX').val())
+									vector = $.hypothesistesting('sort', vector);
+									vector = new jStat(vector);
+									n = vector[0].length;
+
+									if(n < 2)
+									{
+										$('#ht-test-gof-normal-KS-error-message').html('Muestra muy peque&ntilde;a. Ingrese m&aacute;s n&uacute;meros en el vector X de entrada.');
+
+										$('#ht-test-gof-normal-KS-error').dialog({modal: true});
+										
+										return;
+									}
+
+									mean = $('#ht-test-gof-normal-KS-mean-input').val();
+									stdev = $('#ht-test-gof-normal-KS-stdev-input').val();
+
+									alpha = $('input[name=ht-test-gof-normal-KS-radio]:checked').val();
+									alpha = parseFloat(alpha);
+
+									d = $.hypothesistesting.test.ks('normal', vector, mean, stdev);
+									dalpha = $.hypothesistesting.test.ks('getDNormal', n, alpha);
+
+									$('#ht-test-gof-normal-KS-result-d-value').text(d);
+									$('#ht-test-gof-normal-KS-result-dalpha-value').text(dalpha);
+
+									if(d < dalpha)
+										$('#ht-test-gof-normal-KS-result-suggest').html('Conservar H<sub>0</sub>');
+									else 
+										$('#ht-test-gof-normal-KS-result-suggest').html('Rechazar H<sub>0</sub>');
+
+									$("#ht-test-gof-normal-KS-result").dialog({
+										modal: true,
+										canMaximize: true,
+										buttons: {
+											Ok: function() {
+												$( this ).dialog( "close" );
+											}
+										}
+									}).dialog('maximize');
+								});
+
+							});
+							/* ]]> */
+						</script>
+					</div>
+					<!-- ****************************************************** -->
+				
+				</div><!-- /accordion -->
+			</div><!-- /Content -->
+
+				<div id="footer" class="ui-widget-content">
+				<p class="center">
+					Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+				</p>
+				<p class="center">
+					&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+				</p>
+			</div><!-- End footer -->
+		</div><!-- End main -->
+</html>

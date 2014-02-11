@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.ks.js"></script>
+
+		<!-- Configuracion -->
+ 		<script type="text/javascript" src="js/_settings.js"></script>
+		<script type="text/javascript" src="js/_ui.js"></script>
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+
+	</head>
+	<body>
+		<div class="main ui-widget">
+			<div class="ui-widget-header ui-corner-top">
+				<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+			</div>
+
+			<div class="ui-widget-content">
+
+				<div id="tabs-0"><!-- TAB: Entrada -->
+					<form name="data">
+						<label for="vectorX">Vector de datos X:</label>
+						<br />
+						<textarea id="vectorX" class="vector"></textarea>
+
+						<div class="clear"></div>
+						
+						<label for="vectorY">Vector de datos Y:</label>
+						<br />
+						<textarea id="vectorY" class="vector"></textarea>
+					</form>
+				</div><!-- /TAB: Entrada -->
+
+				<div class="accordion">
+
+
+					<!-- ****************************************************** -->
+					<!-- Generaci&oacute;n aleatoria de n&uacute;meros reales -->
+					<!-- ****************************************************** -->
+					<h3><a href="#">Generaci&oacute;n aleatoria de n&uacute;meros reales</a></h3>
+					<div>
+
+						<div class="ui-state-highlight">
+							<div class="left">
+								<p>Se generar&aacute;n N n&uacute;meros aleatorios en un intervalo [a;b].</p>
+								<p>Pueden copiarse los resultados al vector X o Y de entrada.</p>
+							</div>
+							<div class="right">
+								<button id="ht-randomgen-generate-button">Generar</button>
+								<button id="ht-randomgen-copyX-button">Copiar a X</button>
+								<button id="ht-randomgen-copyY-button">Copiar a Y</button>
+							</div>
+							<div class="clear"></div>
+						</div>
+					
+
+						<div>
+							<div class="left ht-widget">
+								<h4 class="ui-widget-header">Par&aacute;metros</h4>
+								<p>
+									<label for="ht-randomgen-n-input">Cantidad (N)</label><br />
+									<input type="text" id="ht-randomgen-n-input" />
+								</p>
+								<p>
+									<button id="ht-randomgen-n-leveldown">
+										Disminuir
+									</button>
+									<button id="ht-randomgen-n-levelup">
+										Aumentar
+									</button>
+								</p>
+
+								<div id="ht-randomgen-n-slider"></div>
+
+								<p>
+									<label for="ht-randomgen-d-input">Cifras significativas (.*)</label><br />
+									<input type="text" id="ht-randomgen-d-input" />
+								</p>
+								<p>
+									<button id="ht-randomgen-d-leveldown">
+										Disminuir
+									</button>
+									<button id="ht-randomgen-d-levelup">
+										Aumentar
+									</button>
+								</p>
+
+								<div id="ht-randomgen-d-slider"></div>
+
+							</div>
+							<div class="left ht-widget">
+								<h4 class="ui-widget-header">Intervalo</h4>
+
+								<p>
+									<label for="ht-randomgen-a-input">Desde (a)</label><br />
+									<input type="text" id="ht-randomgen-a-input" />
+								</p>
+								<p>
+									<button id="ht-randomgen-a-leveldown">
+										Disminuir
+									</button>
+									<button id="ht-randomgen-a-levelup">
+										Aumentar
+									</button>
+								</p>
+
+								<div id="ht-randomgen-a-slider"></div>
+
+								<p>
+									<label for="ht-randomgen-b-input">Hasta (b)</label><br />
+									<input type="text" id="ht-randomgen-b-input" />
+								</p>
+								<p>
+									<button id="ht-randomgen-b-leveldown">
+										Disminuir
+									</button>
+									<button id="ht-randomgen-b-levelup">
+										Aumentar
+									</button>
+								</p>										
+
+								<div id="ht-randomgen-b-slider"></div>
+							</div><!-- / -->
+
+							<div class="left ht-widget">
+								<h4 class="ui-widget-header">Salida</h4>											
+								<textarea id="ht-randomgen-output"></textarea>
+								<br>
+							</div>
+							
+									
+
+						</div>
+						<script type="text/javascript">
+							//* <![CDATA[ */
+							$(document).ready(function() {
+								
+								$("#ht-randomgen-result").hide();
+								$("#ht-randomgen-error").hide();
+
+								/** Slider para valor n  */
+								$("#ht-randomgen-n-slider").slider({
+									range : "min",
+									value : 100,
+									min : 0,
+									max : 10000,
+									step : 1,
+									slide : function(event, ui) {
+										$("#ht-randomgen-n-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										$("#ht-randomgen-n-input").val(ui.value);
+									}
+								});
+								$("#ht-randomgen-n-input").val($("#ht-randomgen-n-slider").slider('value'));
+
+								$('#ht-randomgen-n-levelup').button({
+										icons : {
+											primary : "ui-icon-plus"
+										},
+										text : true
+									}).mousehold(function() {
+								$("#ht-randomgen-n-slider").slider("value", $("#ht-randomgen-n-slider").slider('value') + $("#ht-randomgen-n-slider").slider('option', 'step'));
+
+									});
+								$('#ht-randomgen-n-leveldown').button({
+										icons : {
+											primary : "ui-icon-minus"
+										},
+										text : true
+									}).mousehold(function() {
+								$("#ht-randomgen-n-slider").slider("value", $("#ht-randomgen-n-slider").slider('value') - $("#ht-randomgen-n-slider").slider('option', 'step'));
+
+								});
+
+								/** Slider para valor a  */
+								$("#ht-randomgen-a-slider").slider({
+									range : "min",
+									value : 0,
+									min : 0,
+									max : 10000,
+									step : 1,
+									create : function(event, ui) {
+										$("#ht-randomgen-a-input").val(ui.value);
+									},
+									slide : function(event, ui) {
+										n = + $("#ht-randomgen-b-slider").slider('value');
+										if (n < ui.value)
+										{
+											$("#ht-randomgen-b-slider").slider('value', ui.value);
+										}
+										$("#ht-randomgen-a-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										n = + $("#ht-randomgen-b-slider").slider('value');
+										if (n < ui.value)
+										{
+											$("#ht-randomgen-b-slider").slider('value', ui.value);
+										}
+										$("#ht-randomgen-a-input").val(ui.value);
+									}
+								});
+								$("#ht-randomgen-a-input").val($("#ht-randomgen-a-slider").slider('value'));
+
+								$('#ht-randomgen-a-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-randomgen-a-slider").slider("value", $("#ht-randomgen-a-slider").slider('value') + $("#ht-randomgen-a-slider").slider('option', 'step'));
+
+								});
+								$('#ht-randomgen-a-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-randomgen-a-slider").slider("value", $("#ht-randomgen-a-slider").slider('value') - $("#ht-randomgen-a-slider").slider('option', 'step'));
+
+								});
+
+								/** Slider para b */
+								$("#ht-randomgen-b-slider").slider({
+									range : "min",
+									value : 100,
+									min : 1,
+									max : 10000,
+									step : 1,
+									create : function(event, ui) {
+										$("#ht-randomgen-b-input").val(ui.value);
+									},
+									slide : function(event, ui) {
+										x = + $("#ht-randomgen-a-slider").slider('value');
+										if (x > ui.value)
+										{
+											$("#ht-randomgen-a-slider").slider('value', ui.value);
+										}
+										$("#ht-randomgen-b-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										x = + $("#ht-randomgen-a-slider").slider('value');
+										if (x > ui.value)
+										{
+											$("#ht-randomgen-a-slider").slider('value', ui.value);
+										}
+										$("#ht-randomgen-b-input").val(ui.value);
+									}
+								});
+								$("#ht-randomgen-b-input").val($("#ht-randomgen-b-slider").slider('value'));
+
+								$('#ht-randomgen-b-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-randomgen-b-slider").slider("value", $("#ht-randomgen-b-slider").slider('value') + $("#ht-randomgen-b-slider").slider('option', 'step'));
+
+								});
+								$('#ht-randomgen-b-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-randomgen-b-slider").slider("value", $("#ht-randomgen-b-slider").slider('value') - $("#ht-randomgen-b-slider").slider('option', 'step'));
+
+								});
+
+								/** Slider para valor d  */
+								$("#ht-randomgen-d-slider").slider({
+									range : "min",
+									value : 10,
+									min : 0,
+									max : 10,
+									step : 1,
+									slide : function(event, ui) {
+										$("#ht-randomgen-d-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										$("#ht-randomgen-d-input").val(ui.value);
+									}
+								});
+								$("#ht-randomgen-d-input").val($("#ht-randomgen-d-slider").slider('value'));
+
+								$('#ht-randomgen-d-levelup').button({
+										icons : {
+											primary : "ui-icon-plus"
+										},
+										text : true
+									}).mousehold(function() {
+								$("#ht-randomgen-d-slider").slider("value", $("#ht-randomgen-d-slider").slider('value') + $("#ht-randomgen-d-slider").slider('option', 'step'));
+
+									});
+								$('#ht-randomgen-d-leveldown').button({
+										icons : {
+											primary : "ui-icon-minus"
+										},
+										text : true
+									}).mousehold(function() {
+								$("#ht-randomgen-d-slider").slider("value", $("#ht-randomgen-d-slider").slider('value') - $("#ht-randomgen-d-slider").slider('option', 'step'));
+
+								});
+
+								/** Boton de generacion */
+								$("#ht-randomgen-generate-button").button().click(function()
+								{
+									n = + $('#ht-randomgen-n-input').val();
+									a = + $('#ht-randomgen-a-input').val();
+									b = + $('#ht-randomgen-b-input').val();
+									d = + $('#ht-randomgen-d-input').val();
+
+									$('#ht-randomgen-output').val($.hypothesistesting('randomVector', n, a, b, d).join(','));
+								});
+
+								/** Boton de copia X */
+								$("#ht-randomgen-copyX-button").button().click(function()
+								{
+									$('#vectorX').val($('#ht-randomgen-output').val());
+								});
+
+								/** Boton de copia Y */
+								$("#ht-randomgen-copyY-button").button().click(function()
+								{
+									$('#vectorY').val($('#ht-randomgen-output').val());
+
+								});
+							});
+							/* ]]> */
+						</script>
+						<div class="clear"></div>
+					</div>
+					<!-- ****************************************************** -->
+				</div><!-- /accordion -->
+			</div><!-- /Content -->
+
+			<div id="footer" class="ui-widget-content">
+				<p class="center">
+					Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+				</p>
+				<p class="center">
+					&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+				</p>
+			</div><!-- End footer -->
+		</div><!-- End main -->
+	</body>
+</html>

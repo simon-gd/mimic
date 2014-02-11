@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery.dialog.extra.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.ks.js"></script>
+
+		<!-- Configuracion -->
+ 		<script type="text/javascript" src="js/_settings.js"></script>
+		<script type="text/javascript" src="js/_ui.js"></script>
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+
+	</head>
+	<body>
+		<div class="main ui-widget">
+			<div class="ui-widget-header ui-corner-top">
+				<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+			</div>
+
+			<div class="ui-widget-content">
+
+				<div id="tabs-0"><!-- TAB: Entrada -->
+					<form name="data">
+						<label for="vectorX">Vector de datos X:</label>
+						<br />
+						<textarea id="vectorX" class="vector"></textarea>
+
+						<div class="clear"></div>
+						
+						<label for="vectorY">Vector de datos Y:</label>
+						<br />
+						<textarea id="vectorY" class="vector"></textarea>
+					</form>
+				</div><!-- /TAB: Entrada -->
+
+				<div class="accordion">
+
+
+					<!-- ****************************************************** -->
+					<!-- Comparaci&oacute;n de 2 medias (&#956;) de una variable normal (Welch) -->
+					<!-- ****************************************************** -->
+					<h3><a href="#">Comparaci&oacute;n de 2 medias (&#956;) en variables Normales independientes (Welch)</a></h3>
+					<div>
+						<div class="ui-state-highlight">
+							<p>X: Variable aleatoria continua. Y: Variable aleatoria continua.</p>
+							<p>Se desea contrastrar la media de 2 poblaciones: &#956;<sub>1</sub> y &#956;<sub>2</sub>, con las varianzas poblacionales &#963;<sub>x</sub><sup>2</sup> &#963;<sub>y</sub><sup>2</sup> desconocidas. Se utiliza un estimador para las varianzas. El constraste se realiza comparando los valores experimentales contra una <a target="_blank" href="http://es.wikipedia.org/wiki/Distribuci%C3%B3n_t_de_Student">distribuci&oacute;n t-Student</a>.</p>
+							<p class="ui-state-error ui-corner-all"><span class="left ui-icon ui-icon-info"></span>Primero se require que las varianzas sean diferentes. Comprobar por una Comparaci&oacute;n de Varianzas.</p>
+							<p class="ui-state-error ui-corner-all"><span class="left ui-icon ui-icon-info"></span>El caso de test unilaterales, se require: <br>
+								Si H<sub>1</sub> &equiv; (&#956;<sub>1</sub> &gt; &#956;<sub>2</sub>) =&gt; X&#772; &gt; Y&#772;
+								<br>
+								Si H<sub>1</sub> &equiv; (&#956;<sub>1</sub> &lt; &#956;<sub>2</sub>) =&gt; X&#772; &lt; Y&#772;
+								<br>
+								Esto implica que podr&iacute;a ser necesario intercambiar los valores de X por los de Y. 
+							</p>
+							<p class="ui-state-error ui-corner-all"><span class="left ui-icon ui-icon-info"></span>El c&aacute;lculo del Valor P se realiza con una interpolaci&oacute;n lineal entre 2 resultados aproximados. Es posible que la regi&oacute;n de aceptaci&oacute;n del contraste difiera levemente de la comparaci&oacute;n: Valor P &lt; &#945;. La interpretaci&oacute;n del resultado se realiza con el Valor P.</p>
+							<div class="left">
+							<table>
+								<tr>
+									<td><input type="radio" id="ht-test-param2-normal-means-welch-radio-1" name="ht-test-param2-normal-means-welch-radio" value="eq" checked></td>
+									<td>
+										<label for="ht-test-param2-normal-means-welch-radio-1">
+											Bilateral<br>
+											H<sub>0</sub> &equiv; (&#956;<sub>1</sub> = &#956;<sub>2</sub>) <br>
+											H<sub>1</sub> &equiv; (&#956;<sub>1</sub> &ne; &#956;<sub>2</sub>) <br>
+										</label>
+									</td>
+									
+									<td><input type="radio" id="ht-test-param2-normal-means-welch-radio-2" name="ht-test-param2-normal-means-welch-radio" value="le"></td>
+									<td>
+										<label for="ht-test-param2-normal-means-welch-radio-1">
+											Cola derecha<br>
+											H<sub>0</sub> &equiv; (&#956;<sub>1</sub> &le; &#956;<sub>2</sub>)<br>
+											H<sub>1</sub> &equiv; (&#956;<sub>1</sub> &gt; &#956;<sub>2</sub>)<br>	
+										</label>
+									</td>
+									<td><input type="radio" id="ht-test-param2-normal-means-welch-radio-3" name="ht-test-param2-normal-means-welch-radio" value="ge"></td>
+									<td>
+										<label for="ht-test-param2-normal-means-welch-radio-3">
+											Cola izquierda<br>
+											H<sub>0</sub> &equiv; (&#956;<sub>1</sub> &ge; &#956;<sub>2</sub>)<br>
+											H<sub>1</sub> &equiv; (&#956;<sub>1</sub> &lt; &#956;<sub>2</sub>)<br>	
+										</label>
+									</td>
+								</tr>
+							</table>
+							</div>
+							<div class="right">
+
+								<button id="ht-test-param2-normal-means-welch-get-button">Obtener Datos Muestrales</button>
+
+								<button id="ht-test-param2-normal-means-welch-start-button">Calcular</button>
+							</div>
+							<div class="clear"></div>						
+						</div>
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Nivel de Significaci&oacute;n (&#945;)</h4>
+
+							<p>
+								<input type="text" id="ht-test-param2-normal-means-welch-alpha" readonly />
+							</p>
+							<p>
+								<button id="ht-test-param2-normal-means-welch-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-param2-normal-means-welch-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-param2-normal-means-welch-slider-alpha"></div>
+						</div><!-- / -->
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Par&aacute;metros de X</h4>
+
+							<form name="ht-test-param2-normal-means-welch">
+
+								<label for="ht-test-param2-normal-means-welch-meanx-input">Media (X&#772;)</label><br />
+								<input type="text" name="ht-test-param2-normal-means-welch-meanx-input" id="ht-test-param2-normal-means-welch-meanx-input" value="0" /><br />
+			
+
+								<label for="ht-test-param2-normal-means-welch-nx-input">Cantidad (n<sub>x</sub>)</label><br />
+								<input type="text" name="ht-test-param2-normal-means-welch-nx-input" id="ht-test-param2-normal-means-welch-nx-input" value="10" /><br />
+
+								<label for="ht-test-param2-normal-means-welch-sx-input">Desviaci&oacute;n Est&aacute;ndar (s<sub>1</sub>)</label><br />
+								<input type="text" name="ht-test-param2-normal-means-welch-sx-input" id="ht-test-param2-normal-means-welch-sx-input" value="1" /><br />
+
+							</form>
+						</div>
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Par&aacute;metros de Y</h4>
+
+							<form name="ht-test-param2-normal-means-welch">
+								<label for="ht-test-param2-normal-means-welch-meany-input">Media (Y&#772;)</label><br />
+								<input type="text" name="ht-test-param2-normal-means-welch-meany-input" id="ht-test-param2-normal-means-welch-meany-input" value="0" /><br />					
+
+
+								<label for="ht-test-param2-normal-means-welch-ny-input">Cantidad (n<sub>2</sub>)</label><br />
+								<input type="text" name="ht-test-param2-normal-means-welch-ny-input" id="ht-test-param2-normal-means-welch-ny-input" value="10" /><br />
+
+								<label for="ht-test-param2-normal-means-welch-sy-input">Desviaci&oacute;n Est&aacute;ndar (s<sub>2</sub>)</label><br />
+								<input type="text" name="ht-test-param2-normal-means-welch-sy-input" id="ht-test-param2-normal-means-welch-sy-input" value="1" /><br />
+							</form>
+						</div>						
+
+						<div id="ht-test-param2-normal-means-welch-result" title="Resultados" class="">
+
+							<h4>Comparaci&oacute;n X / Y:</h4>
+							<table>
+								<tr>
+									<td>t<sub>exp</sub>: </td>
+									<td><div id="ht-test-param2-normal-means-welch-result-t_exp"></div></td>
+								</tr>
+								<tr>
+									<td>Grados de libertad: </td>
+									<td><div id="ht-test-param2-normal-means-welch-result-dof"></div></td>
+								</tr>
+								<tr>
+									<td>Valor P: </td>
+									<td><div id="ht-test-param2-normal-means-welch-result-p_value"></div></td>
+								</tr>
+
+								<tr id="ht-test-param2-normal-means-welch-result-t_a-row">
+									<td>t<sub>&#945;</sub>: </td>
+									<td><div id="ht-test-param2-normal-means-welch-result-t_a"></div></td>
+								</tr>
+								<tr id="ht-test-param2-normal-means-welch-result-t_aa-row">
+									<td>t<sub>&#945;/2</sub>: </td>
+									<td><div id="ht-test-param2-normal-means-welch-result-t_aa"></div></td>
+								</tr>
+								<tr id="ht-test-param2-normal-means-welch-result-t_ab-row">
+									<td>t<sub>1-&#945;/2</sub>: </td>
+									<td><div id="ht-test-param2-normal-means-welch-result-t_ab"></div></td>
+								</tr>
+
+								<tr>
+									<td>Interpretaci&oacute;n: </td>
+									<td><div id="ht-test-param2-normal-means-welch-result-H0"></div></td>
+								</tr>
+							</table>
+
+						</div>
+
+						<div id="ht-test-param2-normal-means-welch-error" title="Error" class="">
+							<div class="ui-state-error ui-corner-all"><span class="left ui-icon ui-icon-alert"></span><p id="ht-test-param2-normal-means-welch-error-message"></p></div>
+						</div>
+
+						<script type="text/javascript">
+							//* <![CDATA[ */
+							$(document).ready(function() {
+
+								$("#ht-test-param2-normal-means-welch-result").hide();
+								$("#ht-test-param2-normal-means-welch-error").hide();
+
+								/** Slider para valor alfa  */
+								$("#ht-test-param2-normal-means-welch-slider-alpha").slider({
+									range : "min",
+									value : 0.05,
+									min : 0,
+									max : 0.5,
+									step : 0.005,
+									create : function(event, ui) {
+										$("#ht-test-param2-normal-means-welch-alpha").val(ui.value);
+									},
+									slide : function(event, ui) {
+										$("#ht-test-param2-normal-means-welch-alpha").val(ui.value);
+									},
+									change : function(event, ui) {
+										$("#ht-test-param2-normal-means-welch-alpha").val(ui.value);
+									}
+								});
+								$("#ht-test-param2-normal-means-welch-alpha").val($("#ht-test-param2-normal-means-welch-slider-alpha").slider('value'));
+
+								$('#ht-test-param2-normal-means-welch-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-normal-means-welch-slider-alpha").slider("value", $("#ht-test-param2-normal-means-welch-slider-alpha").slider('value') + $("#ht-test-param2-normal-means-welch-slider-alpha").slider('option', 'step'));
+
+								});
+								$('#ht-test-param2-normal-means-welch-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-normal-means-welch-slider-alpha").slider("value", $("#ht-test-param2-normal-means-welch-slider-alpha").slider('value') - $("#ht-test-param2-normal-means-welch-slider-alpha").slider('option', 'step'));
+
+								});
+
+								/** Boton GET */
+								$("#ht-test-param2-normal-means-welch-get-button").button().click(function() {
+									x_vector = $.hypothesistesting('parseFloatArray', $('#vectorX').val());
+									x_vector = new jStat(x_vector);
+
+									x_n = x_vector[0].length;
+									x_mean = x_vector.mean();
+									x_stdev = x_vector.stdev();
+
+									$('#ht-test-param2-normal-means-welch-nx-input').val(x_n);
+									$('#ht-test-param2-normal-means-welch-meanx-input').val(x_mean);
+									$('#ht-test-param2-normal-means-welch-sx-input').val(x_stdev);
+
+									y_vector = $.hypothesistesting('parseFloatArray', $('#vectorY').val());
+									y_vector = new jStat(y_vector);
+
+									y_n = y_vector[0].length;
+									y_mean = y_vector.mean();
+									y_stdev = y_vector.stdev();
+
+									$('#ht-test-param2-normal-means-welch-ny-input').val(y_n);
+									$('#ht-test-param2-normal-means-welch-meany-input').val(y_mean);
+									$('#ht-test-param2-normal-means-welch-sy-input').val(y_stdev);
+								});
+
+								/** Boton de calculo */
+								$("#ht-test-param2-normal-means-welch-start-button").button({
+									icons : {
+										secondary : "ui-icon-play"
+									},
+									text : true
+								}).click(function() {
+
+									$('#ht-test-param2-normal-means-welch-result-Zaa-row').hide();
+									$('#ht-test-param2-normal-means-welch-result-Zab-row').hide();
+
+									//x_vector = $.hypothesistesting('parseFloatArray', $('#vectorX').val());
+									//x_vector = new jStat(x_vector);
+
+									n1 = + $('#ht-test-param2-normal-means-welch-nx-input').val();
+									x1 = + $('#ht-test-param2-normal-means-welch-meanx-input').val();
+									s1 = + $('#ht-test-param2-normal-means-welch-sx-input').val();
+
+									//y_vector = $.hypothesistesting('parseFloatArray', $('#vectorY').val());
+									//y_vector = new jStat(y_vector);
+
+									n2 = + $('#ht-test-param2-normal-means-welch-ny-input').val();
+									x2 = + $('#ht-test-param2-normal-means-welch-meany-input').val();
+									s2 = + $('#ht-test-param2-normal-means-welch-sy-input').val();
+
+
+									//x1 = 134.5;	x2 = 86.7;	n1 = 13;	n2 = 15;	s1 = 90.3; 	s2 = 51.8;
+
+									//console.log(n1, s1, x1, n2, s2, x2);
+									
+									sn1 = ((s1*s1)/n1);
+									sn2 = ((s2*s2)/n2);
+
+									f = ( (sn1 + sn2) * (sn1 + sn2) ) / 
+										( ( (sn1*sn1) / (n1-1) ) + ( (sn2*sn2) / (n2-1) ) );
+									f1= Math.floor(f);
+									f2= Math.ceil(f);
+
+									$('#ht-test-param2-normal-means-welch-result-dof').text((f1==f2) ? f1 : ('['+f1 + ' ; '+ f2) + ']');
+
+									ftail = parseFloat((f-f1).toPrecision(1));
+									
+									//console.log('f', f, 'f1', f1, 'f2', f2, 'ftail', ftail);
+
+									t_exp = (x1 - x2) / Math.sqrt( (s1*s1/n1) + (s2*s2/n2) );
+
+									//console.log('t_exp', t_exp);
+
+									$('#ht-test-param2-normal-means-welch-result-t_exp').text(t_exp);
+									alpha = + $("#ht-test-param2-normal-means-welch-alpha").val();
+									
+									
+									t_a= jStat.studentt.inv(alpha, ( n1+n2-2 ));
+									//console.log( t_a );
+									t_a2= jStat.studentt.inv(alpha/2, ( n1+n2-2 ));
+									//console.log( t_a );
+
+									H0 = $('input[name=ht-test-param2-normal-means-welch-radio]:checked').val();
+
+									var rechazarH0;
+
+									switch (H0) {
+										case 'eq':
+
+											$('#ht-test-param2-normal-means-welch-result-t_aa').text(-t_a2);
+											$('#ht-test-param2-normal-means-welch-result-t_ab').text(t_a2);
+											
+											$('#ht-test-param2-normal-means-welch-result-t_a-row').hide();
+											$('#ht-test-param2-normal-means-welch-result-t_aa-row').show();
+											$('#ht-test-param2-normal-means-welch-result-t_ab-row').show();
+
+											// Interpolacion para obtener valor P 
+											// entre valores P calculados con grados de libertad
+											// superior (f2) e inferior (f1)
+											p_value1 =  2*(1-jStat.studentt.cdf(t_exp, f1));
+											if(ftail !== 0)
+											{
+												p_value2 = 2*(1-jStat.studentt.cdf(t_exp, f2));
+												p_value = (((ftail-f1) / (f2-f1)) * (p_value2 - p_value1)) + p_value1;
+											} else {
+												p_value = p_value1;
+											}
+
+											//console.log(p_value1, p_value2, p_value, p_value/2, alpha);
+
+											rechazarH0 = (p_value < alpha) ? true : false;
+
+											//rechazarH0 = ( Math.abs(t_exp) >= t_a/2 ) ? true : false;
+
+										break;
+										
+										case 'le':
+
+											if(!(x1 > x2))
+											{
+												$('#ht-test-param2-normal-means-welch-error-message').html('Se debe cumplir X&#772; &gt; Y&#772;');
+
+												$('#ht-test-param2-normal-means-welch-error').dialog({modal: true});
+												
+												return;
+											}
+
+											// Interpolacion para obtener valor P 
+											// entre valores P calculados con grados de libertad
+											// superior (f2) e inferior (f1)
+											p_value1 =  1-jStat.studentt.cdf(t_exp, f1);
+											if(ftail !== 0)
+											{
+												p_value2 = 1-jStat.studentt.cdf(t_exp, f2);
+												p_value = (((ftail-f1) / (f2-f1)) * (p_value2 - p_value1)) + p_value1;
+											} else {
+												p_value = p_value1;
+											}
+
+											$('#ht-test-param2-normal-means-welch-result-t_a-row').show();
+											$('#ht-test-param2-normal-means-welch-result-t_aa-row').hide();
+											$('#ht-test-param2-normal-means-welch-result-t_ab-row').hide();
+											$('#ht-test-param2-normal-means-welch-result-t_a').text(t_a);
+
+											rechazarH0 = (p_value < alpha) ? true : false;
+											//rechazarH0 = ( t_exp >= t_a ) ? true : false;
+
+										break;
+										case 'ge':
+
+											if(!(x1 < x2))
+											{
+												$('#ht-test-param2-normal-means-welch-error-message').html('Se debe cumplir X&#772; &lt; Y&#772;');
+
+												$('#ht-test-param2-normal-means-welch-error').dialog({modal: true});
+												
+												return;
+											}
+
+											$('#ht-test-param2-normal-means-welch-result-t_a-row').show();
+											$('#ht-test-param2-normal-means-welch-result-t_aa-row').hide();
+											$('#ht-test-param2-normal-means-welch-result-t_ab-row').hide();
+											$('#ht-test-param2-normal-means-welch-result-t_a').text(-t_a);
+
+											p_value1 =  jStat.studentt.cdf(t_exp, f1);
+											if(ftail !== 0)
+											{
+												p_value2 = jStat.studentt.cdf(t_exp, f2);
+												p_value = (((ftail-f1) / (f2-f1)) * (p_value2 - p_value1)) + p_value1;
+											} else {
+												p_value = p_value1;
+											}
+
+											rechazarH0 = (p_value < alpha) ? true : false;
+											//rechazarH0 = ( t_exp <= -t_a ) ? true : false;
+
+										break;
+										
+									}
+
+									$('#ht-test-param2-normal-means-welch-result-p_value').text(p_value);
+
+									(rechazarH0) ? 
+										$('#ht-test-param2-normal-means-welch-result-H0').html('Se rechaza H<sub>0</sub>') :
+										$('#ht-test-param2-normal-means-welch-result-H0').html('NO se rechaza H<sub>0</sub>') ;
+
+									$("#ht-test-param2-normal-means-welch-result").dialog({
+										modal: true,
+										canMaximize: true,
+										buttons: {
+											Ok: function() {
+												$( this ).dialog( "close" );
+											}
+										}
+									}).dialog('maximize');
+
+								});
+							});
+							/* ]]> */
+						</script>
+						
+						<div class="clear"></div>
+					</div>
+					<!-- ****************************************************** -->
+					
+				</div><!-- /accordion -->
+			</div><!-- /Content -->
+
+				<div id="footer" class="ui-widget-content">
+				<p class="center">
+					Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+				</p>
+				<p class="center">
+					&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+				</p>
+			</div><!-- End footer -->
+		</div><!-- End main -->
+	</body>
+</html>

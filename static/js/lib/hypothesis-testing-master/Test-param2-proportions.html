@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery.dialog.extra.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.ks.js"></script>
+
+		<!-- Configuracion -->
+ 		<script type="text/javascript" src="js/_settings.js"></script>
+		<script type="text/javascript" src="js/_ui.js"></script>
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+
+	</head>
+	<body>
+		<div class="main ui-widget">
+			<div class="ui-widget-header ui-corner-top">
+				<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+			</div>
+
+			<div class="ui-widget-content">
+
+				<div id="tabs-0"><!-- TAB: Entrada -->
+					<form name="data">
+						<label for="vectorX">Vector de datos X:</label>
+						<br />
+						<textarea id="vectorX" class="vector"></textarea>
+
+						<div class="clear"></div>
+						
+						<label for="vectorY">Vector de datos Y:</label>
+						<br />
+						<textarea id="vectorY" class="vector"></textarea>
+					</form>
+				</div><!-- /TAB: Entrada -->
+
+				<div class="accordion">
+
+
+					<!-- ****************************************************** -->
+					<!-- Comparaci&oacute;n de 2 proporciones aproximadas a una normal -->
+					<!-- ****************************************************** -->
+					<h3><a href="#">Comparaci&oacute;n de 2 proporciones (Binomial) aproximadas a una Normal</a></h3>
+					<div>
+						<div class="ui-state-highlight">
+							<p>X: Variable aleatoria continua. Y: Variable aleatoria discreta.</p>
+							<p>Se desea contrastrar la diferencia de proporciones (Binomial) de 2 poblaciones: p<sub>1</sub> y p<sub>2</sub> usando sus valores experimentales, contra una <a target="_blank" href="http://es.wikipedia.org/wiki/Distribuci%C3%B3n_normal">distribuci&oacute;n Normal</a> tipificada.</p>
+							<p class="ui-state-error ui-icon-error ui-corner-all"><span class="left ui-icon ui-icon-alert"></span>La aproximaci&oacute;n a la Binomial ser&aacute; v&aacute;lida cuando se satisfacen las condiciones: <br>
+									  n &ge; 20, n*p &ge; 5, n*q &ge; 5. Con q = 1-p<sub>0</sub>.
+							</p>
+							<div class="left">
+							<table>
+								<tr>
+									<td><input type="radio" id="ht-test-param2-proportions-radio-1" name="ht-test-param2-proportions-radio" value="eq" checked></td>
+									<td>
+										Bilateral<br>
+										<label for="ht-test-param2-proportions-radio-1">
+											H<sub>0</sub> &equiv; (p<sub>1</sub> = p<sub>2</sub>) <br>
+											H<sub>1</sub> &equiv; (p<sub>1</sub> &ne; p<sub>2</sub>) <br>
+										</label>
+									</td>
+									<td><input type="radio" id="ht-test-param2-proportions-radio-2" name="ht-test-param2-proportions-radio" value="le"></td>
+									<td>
+										Cola derecha<br>
+										<label for="ht-test-param2-proportions-radio-1">
+											H<sub>0</sub> &equiv; (p<sub>1</sub> &le; p<sub>2</sub>)<br>
+											H<sub>1</sub> &equiv; (p<sub>1</sub> &gt; p<sub>2</sub>)<br>	
+										</label>
+									</td>
+									<td><input type="radio" id="ht-test-param2-proportions-radio-3" name="ht-test-param2-proportions-radio" value="ge"></td>
+									<td>
+										Cola izquierda<br>
+										H<sub>0</sub> &equiv; (p<sub>1</sub> &ge; p<sub>2</sub>)<br>
+											H<sub>1</sub> &equiv; (p<sub>1</sub> &lt; p<sub>2</sub>)<br>
+									</td>
+								</tr>
+							</table>
+							</div>
+							<div class="right">
+
+								<button id="ht-test-param2-proportions-get-button">Obtener Datos Muestrales</button>
+
+								<button id="ht-test-param2-proportions-start-button">Calcular</button>
+							</div>
+							<div class="clear"></div>						
+						</div>
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Nivel de Significaci&oacute;n (&#945;)</h4>
+
+							<p>
+								<input type="text" id="ht-test-param2-proportions-alpha" readonly />
+							</p>
+							<p>
+								<button id="ht-test-param2-proportions-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-param2-proportions-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-param2-proportions-slider-alpha"></div>
+						</div><!-- / -->
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Par&aacute;metros X</h4>
+
+							<p>
+								<label for="ht-test-param2-proportions-p_x-input">Probabilidad (p<sub>x</sub>)</label><br />
+								<input type="text" id="ht-test-param2-proportions-p_x-input" readonly />
+							</p>
+							<p>
+								<button id="ht-test-param2-proportions-p_x-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-param2-proportions-p_x-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-param2-proportions-p_x-slider"></div>
+
+							<p>
+								<label for="ht-test-param2-proportions-x_x-input">Cantidad experimental (x<sub>x</sub>)</label><br />
+								<input type="text" id="ht-test-param2-proportions-x_x-input" readonly />
+							</p>
+							<p>
+								<button id="ht-test-param2-proportions-x_x-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-param2-proportions-x_x-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-param2-proportions-x_x-slider"></div>
+
+							<p>
+								<label for="ht-test-param2-proportions-n_x-input">Tama&ntilde;o muestral (n<sub>x</sub>)</label><br />
+								<input type="text" id="ht-test-param2-proportions-n_x-input" readonly />
+							</p>
+							<p>
+								<button id="ht-test-param2-proportions-n_x-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-param2-proportions-n_x-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-param2-proportions-n_x-slider"></div>
+						</div>
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Par&aacute;metros Y</h4>
+
+							<p>
+								<label for="ht-test-param2-proportions-p_y-input">Probabilidad (p<sub>y</sub>)</label><br />
+								<input type="text" id="ht-test-param2-proportions-p_y-input" readonly />
+							</p>
+							<p>
+								<button id="ht-test-param2-proportions-p_y-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-param2-proportions-p_y-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-param2-proportions-p_y-slider"></div>
+
+							<p>
+								<label for="ht-test-param2-proportions-x_y-input">Cantidad experimental (x<sub>y</sub>)</label><br />
+								<input type="text" id="ht-test-param2-proportions-x_y-input" readonly />
+							</p>
+							<p>
+								<button id="ht-test-param2-proportions-x_y-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-param2-proportions-x_y-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-param2-proportions-x_y-slider"></div>
+
+							<p>
+								<label for="ht-test-param2-proportions-n_y-input">Tama&ntilde;o muestral (n<sub>y</sub>)</label><br />
+								<input type="text" id="ht-test-param2-proportions-n_y-input" readonly />
+							</p>
+							<p>
+								<button id="ht-test-param2-proportions-n_y-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-param2-proportions-n_y-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-param2-proportions-n_y-slider"></div>
+						</div>				
+
+						<div id="ht-test-param2-proportions-result" title="Resultados" class="">
+
+							<h4>Comparaci&oacute;n X / Y:</h4>
+							<table>
+								<tr>
+									<td>Z<sub>exp</sub>: </td>
+									<td><div id="ht-test-param2-proportions-result-z_exp"></div></td>
+								</tr>
+								<tr id="ht-test-param2-proportions-result-p_value-row">
+									<td>Valor P: </td>
+									<td><div id="ht-test-param2-proportions-result-p_value"></div></td>
+								</tr>
+								<tr id="ht-test-param2-proportions-result-Za-row">
+									<td>Z<sub>&#945;</sub>: </td>
+									<td><div id="ht-test-param2-proportions-result-za"></div></td>
+								</tr>
+								<tr id="ht-test-param2-proportions-result-Zaa-row">
+									<td>Z<sub>&#945;/2</sub>: </td>
+									<td><div id="ht-test-param2-proportions-result-Zaa"></div></td>
+								</tr>
+								<tr id="ht-test-param2-proportions-result-Zab-row">
+									<td>Z<sub>1-&#945;/2</sub>: </td>
+									<td><div id="ht-test-param2-proportions-result-Zab"></div></td>
+								</tr>
+								<tr>
+									<td>Interpretaci&oacute;n: </td>
+									<td><div id="ht-test-param2-proportions-result-H0"></div></td>
+								</tr>
+							</table>
+
+						</div>
+
+						<div id="ht-test-param2-proportions-error" title="Error" class="">
+							<div class="ui-state-error ui-corner-all"><span class="left ui-icon ui-icon-alert"></span><p id="ht-test-param2-proportions-error-message"></p></div>
+						</div>
+
+						<div class="clear"></div>
+
+						<script type="text/javascript">
+							//* <![CDATA[ */
+							$(document).ready(function() {
+
+								$('#ht-test-param2-proportions-result').hide();
+								$('#ht-test-param2-proportions-error').hide();
+
+								/** Slider para valor alfa  */
+								$("#ht-test-param2-proportions-slider-alpha").slider({
+									range : "min",
+									value : 0.05,
+									min : 0,
+									max : 0.5,
+									step : 0.005,
+									create : function(event, ui) {
+										$("#ht-test-param2-proportions-alpha").val(ui.value);
+									},
+									slide : function(event, ui) {
+										$("#ht-test-param2-proportions-alpha").val(ui.value);
+									},
+									change : function(event, ui) {
+										$("#ht-test-param2-proportions-alpha").val(ui.value);
+									}
+								});
+								$("#ht-test-param2-proportions-alpha").val($("#ht-test-param2-proportions-slider-alpha").slider('value'));
+
+								$('#ht-test-param2-proportions-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-slider-alpha").slider("value", $("#ht-test-param2-proportions-slider-alpha").slider('value') + $("#ht-test-param2-proportions-slider-alpha").slider('option', 'step'));
+
+								});
+								$('#ht-test-param2-proportions-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-slider-alpha").slider("value", $("#ht-test-param2-proportions-slider-alpha").slider('value') - $("#ht-test-param2-proportions-slider-alpha").slider('option', 'step'));
+
+								});
+
+								/** Slider para valor p  */
+								$("#ht-test-param2-proportions-p_x-slider").slider({
+									range : "min",
+									value : 0.5,
+									min : 0.005,
+									max : 0.995,
+									step : 0.005,
+									slide : function(event, ui) {
+										$("#ht-test-param2-proportions-p_x-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										$("#ht-test-param2-proportions-p_x-input").val(ui.value);
+									}
+								});
+								$("#ht-test-param2-proportions-p_x-input").val($("#ht-test-param2-proportions-p_x-slider").slider('value'));
+
+								$('#ht-test-param2-proportions-p_x-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-p_x-slider").slider("value", $("#ht-test-param2-proportions-p_x-slider").slider('value') + $("#ht-test-param2-proportions-p_x-slider").slider('option', 'step'));
+
+								});
+								$('#ht-test-param2-proportions-p_x-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-p_x-slider").slider("value", $("#ht-test-param2-proportions-p_x-slider").slider('value') - $("#ht-test-param2-proportions-p_x-slider").slider('option', 'step'));
+
+								});
+
+								/** Slider para valor x  */
+								$("#ht-test-param2-proportions-x_x-slider").slider({
+									range : "min",
+									value : 8,
+									min : 2,
+									max : 10000,
+									step : 1,
+									create : function(event, ui) {
+										$("#ht-test-param2-proportions-x_x-input").val(ui.value);
+									},
+									slide : function(event, ui) {
+										n = + $("#ht-test-param2-proportions-n_x-slider").slider('value');
+										if (n < ui.value)
+										{
+											$("#ht-test-param2-proportions-n_x-slider").slider('value', ui.value);
+										}
+										$("#ht-test-param2-proportions-x_x-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										n = + $("#ht-test-param2-proportions-n_x-slider").slider('value');
+										if (n < ui.value)
+										{
+											$("#ht-test-param2-proportions-n_x-slider").slider('value', ui.value);
+										}
+										$("#ht-test-param2-proportions-x_x-input").val(ui.value);
+									}
+								});
+								$("#ht-test-param2-proportions-x_x-input").val($("#ht-test-param2-proportions-x_x-slider").slider('value'));
+
+								$('#ht-test-param2-proportions-x_x-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-x_x-slider").slider("value", $("#ht-test-param2-proportions-x_x-slider").slider('value') + $("#ht-test-param2-proportions-x_x-slider").slider('option', 'step'));
+
+								});
+								$('#ht-test-param2-proportions-x_x-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-x_x-slider").slider("value", $("#ht-test-param2-proportions-x_x-slider").slider('value') - $("#ht-test-param2-proportions-x_x-slider").slider('option', 'step'));
+
+								});
+
+								/** Slider para n */
+								$("#ht-test-param2-proportions-n_x-slider").slider({
+									range : "min",
+									value : 20,
+									min : 2,
+									max : 10000,
+									step : 1,
+									create : function(event, ui) {
+										$("#ht-test-param2-proportions-n_x-input").val(ui.value);
+									},
+									slide : function(event, ui) {
+										x = + $("#ht-test-param2-proportions-x_x-slider").slider('value');
+										if (x > ui.value)
+										{
+											$("#ht-test-param2-proportions-x_x-slider").slider('value', ui.value);
+										}
+										$("#ht-test-param2-proportions-n_x-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										x = + $("#ht-test-param2-proportions-x_x-slider").slider('value');
+										if (x > ui.value)
+										{
+											$("#ht-test-param2-proportions-x_x-slider").slider('value', ui.value);
+										}
+										$("#ht-test-param2-proportions-n_x-input").val(ui.value);
+									}
+								});
+								$("#ht-test-param2-proportions-n_x-input").val($("#ht-test-param2-proportions-n_x-slider").slider('value'));
+
+								$('#ht-test-param2-proportions-n_x-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-n_x-slider").slider("value", $("#ht-test-param2-proportions-n_x-slider").slider('value') + $("#ht-test-param2-proportions-n_x-slider").slider('option', 'step'));
+
+								});
+								$('#ht-test-param2-proportions-n_x-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-n_x-slider").slider("value", $("#ht-test-param2-proportions-n_x-slider").slider('value') - $("#ht-test-param2-proportions-n_x-slider").slider('option', 'step'));
+
+								});
+
+								/** Slider para valor p  */
+								$("#ht-test-param2-proportions-p_y-slider").slider({
+									range : "min",
+									value : 0.5,
+									min : 0.005,
+									max : 0.995,
+									step : 0.005,
+									slide : function(event, ui) {
+										$("#ht-test-param2-proportions-p_y-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										$("#ht-test-param2-proportions-p_y-input").val(ui.value);
+									}
+								});
+								$("#ht-test-param2-proportions-p_y-input").val($("#ht-test-param2-proportions-p_y-slider").slider('value'));
+
+								$('#ht-test-param2-proportions-p_y-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-p_y-slider").slider("value", $("#ht-test-param2-proportions-p_y-slider").slider('value') + $("#ht-test-param2-proportions-p_y-slider").slider('option', 'step'));
+
+								});
+								$('#ht-test-param2-proportions-p_y-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-p_y-slider").slider("value", $("#ht-test-param2-proportions-p_y-slider").slider('value') - $("#ht-test-param2-proportions-p_y-slider").slider('option', 'step'));
+
+								});
+
+								/** Slider para valor x  */
+								$("#ht-test-param2-proportions-x_y-slider").slider({
+									range : "min",
+									value : 8,
+									min : 2,
+									max : 10000,
+									step : 1,
+									create : function(event, ui) {
+										$("#ht-test-param2-proportions-x_y-input").val(ui.value);
+									},
+									slide : function(event, ui) {
+										n = + $("#ht-test-param2-proportions-n_y-slider").slider('value');
+										if (n < ui.value)
+										{
+											$("#ht-test-param2-proportions-n_y-slider").slider('value', ui.value);
+										}
+										$("#ht-test-param2-proportions-x_y-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										n = + $("#ht-test-param2-proportions-n_y-slider").slider('value');
+										if (n < ui.value)
+										{
+											$("#ht-test-param2-proportions-n_y-slider").slider('value', ui.value);
+										}
+										$("#ht-test-param2-proportions-x_y-input").val(ui.value);
+									}
+								});
+								$("#ht-test-param2-proportions-x_y-input").val($("#ht-test-param2-proportions-x_y-slider").slider('value'));
+
+								$('#ht-test-param2-proportions-x_y-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-x_y-slider").slider("value", $("#ht-test-param2-proportions-x_y-slider").slider('value') + $("#ht-test-param2-proportions-x_y-slider").slider('option', 'step'));
+
+								});
+								$('#ht-test-param2-proportions-x_y-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-x_y-slider").slider("value", $("#ht-test-param2-proportions-x_y-slider").slider('value') - $("#ht-test-param2-proportions-x_y-slider").slider('option', 'step'));
+
+								});
+
+								/** Slider para n */
+								$("#ht-test-param2-proportions-n_y-slider").slider({
+									range : "min",
+									value : 20,
+									min : 2,
+									max : 10000,
+									step : 1,
+									create : function(event, ui) {
+										$("#ht-test-param2-proportions-n_y-input").val(ui.value);
+									},
+									slide : function(event, ui) {
+										x = + $("#ht-test-param2-proportions-x_y-slider").slider('value');
+										if (x > ui.value)
+										{
+											$("#ht-test-param2-proportions-x_y-slider").slider('value', ui.value);
+										}
+										$("#ht-test-param2-proportions-n_y-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										x = + $("#ht-test-param2-proportions-x_y-slider").slider('value');
+										if (x > ui.value)
+										{
+											$("#ht-test-param2-proportions-x_y-slider").slider('value', ui.value);
+										}
+										$("#ht-test-param2-proportions-n_y-input").val(ui.value);
+									}
+								});
+								$("#ht-test-param2-proportions-n_y-input").val($("#ht-test-param2-proportions-n_y-slider").slider('value'));
+
+								$('#ht-test-param2-proportions-n_y-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-n_y-slider").slider("value", $("#ht-test-param2-proportions-n_y-slider").slider('value') + $("#ht-test-param2-proportions-n_y-slider").slider('option', 'step'));
+
+								});
+								$('#ht-test-param2-proportions-n_y-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-proportions-n_y-slider").slider("value", $("#ht-test-param2-proportions-n_y-slider").slider('value') - $("#ht-test-param2-proportions-n_y-slider").slider('option', 'step'));
+
+								});
+
+
+
+								/** Boton GET */
+								$("#ht-test-param2-proportions-get-button").button().click(function() {
+									x_vector = $.hypothesistesting('parseFloatArray', $('#vectorX').val());
+									x_vector = new jStat(x_vector);
+
+									x_n = x_vector[0].length;
+									x_mean = x_vector.mean();
+									x_stdev = x_vector.stdev();
+
+									$('#ht-test-param2-proportions-nx-input').val(x_n);
+									$('#ht-test-param2-proportions-meanx-input').val(x_mean);
+									//$('#ht-test-param2-proportions-sx-input').val(x_stdev);
+
+									y_vector = $.hypothesistesting('parseFloatArray', $('#vectorY').val());
+									y_vector = new jStat(y_vector);
+
+									y_n = y_vector[0].length;
+									y_mean = y_vector.mean();
+									y_stdev = y_vector.stdev();
+
+									$('#ht-test-param2-proportions-ny-input').val(y_n);
+									$('#ht-test-param2-proportions-meany-input').val(y_mean);
+									//$('#ht-test-param2-proportions-sy-input').val(y_stdev);
+								});
+
+								/** Boton de calculo */
+								$("#ht-test-param2-proportions-start-button").button({
+									icons : {
+										secondary : "ui-icon-play"
+									},
+									text : true
+								}).click(function() {
+
+									$('#ht-test-param2-proportions-result-Zaa-row').hide();
+									$('#ht-test-param2-proportions-result-Zab-row').hide();
+
+									alpha = + $("#ht-test-param2-proportions-alpha").val();
+
+									nx = + $('#ht-test-param2-proportions-n_x-input').val();
+									px = + $('#ht-test-param2-proportions-p_x-input').val();
+									xx = + $('#ht-test-param2-proportions-x_x-input').val();
+
+									ny = + $('#ht-test-param2-proportions-n_y-input').val();
+									py = + $('#ht-test-param2-proportions-p_y-input').val();
+									xy = + $('#ht-test-param2-proportions-x_y-input').val();
+
+									qx = 1-px;
+									qy = 1-py;
+
+									if(nx < 20)
+									{
+										$('#ht-test-param2-proportions-error').dialog({modal: true}).html('Tama&ntilde;o de muestra (n<sub>x</sub>) demasiado peque&ntilde;a.');
+
+										return;
+									}
+
+									if(ny < 20)
+									{
+										$('#ht-test-param2-proportions-error').dialog({modal: true}).html('Tama&ntilde;o de muestra (n<sub>y</sub>) demasiado peque&ntilde;a.');
+
+										return;
+									}
+
+									if( nx*px <= 5 )
+									{
+										$('#ht-test-param2-proportions-error').dialog({modal: true}).html('Condici&oacute;n n<sub>x</sub>*p<sub>x</sub> es demasiado peque&ntilde;a.');
+
+										return;
+									}
+
+									if( nx*qx <= 5 )
+									{
+										$('#ht-test-param2-proportions-error').dialog({modal: true}).html('Condici&oacute;n n<sub>x</sub>*q<sub>x</sub> es demasiado peque&ntilde;a.');
+
+										return;
+									}
+
+									if( ny*py <= 5 )
+									{
+										$('#ht-test-param2-proportions-error').dialog({modal: true}).html('Condici&oacute;n n<sub>y</sub>*p<sub>y</sub> es demasiado peque&ntilde;a.');
+
+										return;
+									}
+
+									if( ny*qy <= 5 )
+									{
+										$('#ht-test-param2-proportions-error').dialog({modal: true}).html('Condici&oacute;n n<sub>y</sub>*q<sub>y</sub> es demasiado peque&ntilde;a.');
+
+										return;
+									}
+
+									z_exp = (px - py) / Math.sqrt( (px*qx/nx) + (py*qy/ny));
+
+									$('#ht-test-param2-proportions-result-z_exp').text(z_exp);
+									
+									za2= jStat.normal.inv(1-(alpha/2), 0, 1);
+
+									H0 = $('input[name=ht-test-param2-proportions-radio]:checked').val();
+									//console.log(H0);
+
+									var rechazarH0;
+
+									switch (H0) {
+										case 'eq':
+
+											$('#ht-test-param2-proportions-result-Zaa').text(-za2);
+											$('#ht-test-param2-proportions-result-Zab').text(za2);
+											
+											$('#ht-test-param2-proportions-result-Za-row').hide();
+											$('#ht-test-param2-proportions-result-Zaa-row').show();
+											$('#ht-test-param2-proportions-result-Zab-row').show();
+
+											// SOLO POR SIMETRIA DE LA NORMAL
+											p_value =  2*(1-jStat.normal.cdf( Math.abs(z_exp), 0, 1));
+											rechazarH0 = (p_value < alpha) ? true : false;
+
+										break;
+										case 'le':
+										
+											$('#ht-test-param2-proportions-result-p_value-row').show();
+											$('#ht-test-param2-proportions-result-Za-row').show();
+											$('#ht-test-param2-proportions-result-za').text(za);
+
+											p_value =  1-jStat.normal.cdf( z_exp, 0, 1);
+											rechazarH0 = (p_value < alpha) ? true : false;
+
+										break;
+										case 'ge':
+
+											$('#ht-test-param2-proportions-result-p_value-row').show();
+											$('#ht-test-param2-proportions-result-Za-row').show();
+											$('#ht-test-param2-proportions-result-za').text(-za);
+
+											p_value =  jStat.normal.cdf( z_exp, 0, 1);
+											rechazarH0 = (p_value < alpha) ? true : false;
+
+										break;
+									}
+
+									$('#ht-test-param2-proportions-result-p_value').text(p_value);
+
+									(rechazarH0) ? 
+										$('#ht-test-param2-proportions-result-H0').html('Se rechaza H<sub>0</sub>') :
+										$('#ht-test-param2-proportions-result-H0').html('NO se rechaza H<sub>0</sub>') ;
+
+									$("#ht-test-param2-proportions-result").dialog({
+										modal: true,
+										canMaximize: true,
+										buttons: {
+											Ok: function() {
+												$( this ).dialog( "close" );
+											}
+										}
+									}).dialog('maximize');
+
+								});
+							});
+							/* ]]> */
+						</script>						
+						
+						<div class="clear"></div>
+					</div>
+					<!-- ****************************************************** -->
+					
+				</div><!-- /accordion -->
+			</div><!-- /Content -->
+
+				<div id="footer" class="ui-widget-content">
+				<p class="center">
+					Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+				</p>
+				<p class="center">
+					&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+				</p>
+			</div><!-- End footer -->
+		</div><!-- End main -->
+	</body>
+</html>

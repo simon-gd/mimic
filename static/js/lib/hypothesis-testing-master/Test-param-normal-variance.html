@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery.dialog.extra.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.ks.js"></script>
+
+		<!-- Configuracion -->
+ 		<script type="text/javascript" src="js/_settings.js"></script>
+		<script type="text/javascript" src="js/_ui.js"></script>
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+
+	</head>
+	<body>
+		<div class="main ui-widget">
+			<div class="ui-widget-header ui-corner-top">
+				<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+			</div>
+
+			<div class="ui-widget-content">
+
+				<div id="tabs-0"><!-- TAB: Entrada -->
+					<form name="data">
+						<label for="vectorX">Vector de datos X:</label>
+						<br />
+						<textarea id="vectorX" class="vector"></textarea>
+
+						<div class="clear"></div>
+						
+						<label for="vectorY">Vector de datos Y:</label>
+						<br />
+						<textarea id="vectorY" class="vector"></textarea>
+					</form>
+				</div><!-- /TAB: Entrada -->
+
+				<div class="accordion">
+
+
+					<!-- ****************************************************** -->
+					<!-- Varianza (&#963;<sup>2</sup>) de una variable normal -->
+					<!-- ****************************************************** -->
+					<h3><a href="#">Varianza (&#963;<sup>2</sup>) de una variable normal</a></h3>
+					<div>
+						<div class="ui-state-highlight">
+							<p>X: Variable aleatoria continua.</p>
+							<p>Se somete a comprobaci&oacute;n la varianza muestral (s<sup>2</sup>, estimador) contra una varianza poblacional, usando un valor propuesto (&#963;<sub>0</sub><sup>2</sup>).</p>
+							<p>El constraste se realiza comparando un valor experimental contra una <a target="_blank" href="http://es.wikipedia.org/wiki/Distribuci%C3%B3n_%CF%87%C2%B2">distribuci&oacute;n X<sup>2</sup> (de Pearson)</a>.</p>
+							<div class="left">
+								<table>
+									<tr>
+										<td><input type="radio" id="ht-test-normal-variance-radio-1" name="ht-test-normal-variance-radio" value="eq" checked></td>
+										<td>
+											Bilateral<br>
+											<label for="ht-test-normal-variance-radio-1">
+												H<sub>0</sub> &equiv; (&#963;<sup>2</sup> = &#963;<sup>2</sup><sub>0</sub>) <br>
+												H<sub>1</sub> &equiv; (&#963;<sup>2</sup> &ne; &#963;<sup>2</sup><sub>0</sub>) <br>
+											</label>
+										</td>
+										<td><input type="radio" id="ht-test-normal-variance-radio-2" name="ht-test-normal-variance-radio" value="le"></td>
+										<td>
+											Cola Derecha<br>
+											<label for="ht-test-normal-variance-radio-1">
+												H<sub>0</sub> &equiv; (&#963;<sup>2</sup> &le; &#963;<sup>2</sup><sub>0</sub>)<br>
+												H<sub>1</sub> &equiv; (&#963;<sup>2</sup> &gt; &#963;<sup>2</sup><sub>0</sub>)<br>	
+											</label>
+										</td>
+										<td><input type="radio" id="ht-test-normal-variance-radio-3" name="ht-test-normal-variance-radio" value="ge"></td>
+										<td>
+											Cola izquierda<br>
+											<label for="ht-test-normal-variance-radio-3">
+												H<sub>0</sub> &equiv; (&#963;<sup>2</sup> &ge; &#963;<sup>2</sup><sub>0</sub>)<br>
+												H<sub>1</sub> &equiv; (&#963;<sup>2</sup> &lt; &#963;<sup>2</sup><sub>0</sub>)<br>	
+											</label>
+										</td>	
+									</tr>
+								</table>
+
+							</div>
+							<div class="right">
+								<button id="ht-test-normal-variance-get-button">Obtener Datos Muestrales</button>
+
+								<button id="ht-test-normal-variance-start-button">Calcular</button>
+							</div>
+							<div class="clear"></div>								
+						</div>
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Nivel de Significaci&oacute;n (&#945;)</h4>
+
+							<p>
+								<input type="text" id="ht-test-normal-variance-alpha" readonly />
+							</p>
+							<p>
+								<button id="ht-test-normal-variance-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-normal-variance-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-normal-variance-slider-alpha"></div>
+						</div><!-- / -->
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Datos Muestrales</h4>
+
+							<form name="ht-test-normal-variance">
+
+								<label for="ht-test-normal-variance-xn-input">Cantidad (n<sub>x</sub>)</label><br /><br>
+								<input type="text" name="ht-test-normal-variance-xn-input" id="ht-test-normal-variance-xn-input" value="10" /><br />
+
+								<label for="ht-test-normal-variance-xs-input">Desviaci&oacute;n estandar (s<sub>x</sub>)</label><br /><br>
+								<input type="text" name="ht-test-normal-variance-xs-input" id="ht-test-normal-variance-xs-input" value="1" /><br />
+							</form>
+						</div>
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Par&aacute;metros</h4>
+
+							<form name="ht-test-normal-variance">
+
+								<label for="ht-test-normal-variance-stdev-input">Desviaci&oacute;n Estándar (&#963;<sub>0</sub>)</label><br />
+								<input type="text" name="ht-test-normal-variance-stdev-input" id="ht-test-normal-variance-stdev-input" value="1" /><br />
+							</form>
+						</div>
+
+						<div id="ht-test-normal-variance-result" title="Resultados" class="">
+
+							<h4>Variable X:</h4>
+							<table>
+								<tr>
+									<td>Grados de libertad: </td>
+									<td><div id="ht-test-normal-variance-result-dof"></div></td>
+								</tr>
+								<tr>
+									<td>X<sup>2</sup><sub>exp</sub>: </td>
+									<td><div id="ht-test-normal-variance-result-X2exp"></div></td>
+								</tr>
+								<tr id="ht-test-normal-variance-result-p_value-row">
+									<td>Valor P: </td>
+									<td><div id="ht-test-normal-variance-result-p_value"></div></td>
+								</tr>
+								<tr id="ht-test-normal-variance-result-X2a-row">
+									<td>X<sup>2</sup><sub>&#945;</sub>: </td>
+									<td><div id="ht-test-normal-variance-result-X2a"></div></td>
+								</tr>
+								<tr id="ht-test-normal-variance-result-X2aa-row">
+									<td>X<sup>2</sup><sub>&#945;/2</sub>: </td>
+									<td><div id="ht-test-normal-variance-result-X2aa"></div></td>
+								</tr>
+								<tr id="ht-test-normal-variance-result-X2ab-row">
+									<td>X<sup>2</sup><sub>1-&#945;/2</sub>: </td>
+									<td><div id="ht-test-normal-variance-result-X2ab"></div></td>
+								</tr>
+								<tr>
+									<td>Interpretaci&oacute;n: </td>
+									<td><div id="ht-test-normal-variance-result-H0"></div></td>
+								</tr>
+							</table>
+
+						</div>
+
+						<script type="text/javascript">
+							//* <![CDATA[ */
+							$(document).ready(function() {
+
+								$("#ht-test-normal-variance-result").hide();
+								
+
+								/** Slider para valor alfa  */
+								$("#ht-test-normal-variance-slider-alpha").slider({
+									range : "min",
+									value : 0.05,
+									min : 0,
+									max : 0.5,
+									step : 0.005,
+									slide : function(event, ui) {
+										$("#ht-test-normal-variance-alpha").val(ui.value);
+									},
+									change : function(event, ui) {
+										$("#ht-test-normal-variance-alpha").val(ui.value);
+									}
+								});
+								$("#ht-test-normal-variance-alpha").val($("#ht-test-normal-variance-slider-alpha").slider('value'));
+
+								$('#ht-test-normal-variance-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-normal-variance-slider-alpha").slider("value", $("#ht-test-normal-variance-slider-alpha").slider('value') + $("#ht-test-normal-variance-slider-alpha").slider('option', 'step'));
+
+								});
+								$('#ht-test-normal-variance-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-normal-variance-slider-alpha").slider("value", $("#ht-test-normal-variance-slider-alpha").slider('value') - $("#ht-test-normal-variance-slider-alpha").slider('option', 'step'));
+
+								});
+
+								/** Boton GET */
+								$("#ht-test-normal-variance-get-button").button().click(function() {
+									x_vector = $.hypothesistesting('parseFloatArray', $('#vectorX').val());
+									x_vector = new jStat(x_vector);
+
+									x_n = x_vector[0].length;
+									x_mean = x_vector.mean();
+									x_stdev = x_vector.stdev();
+
+									$('#ht-test-normal-variance-xn-input').val(x_n);
+									$('#ht-test-normal-variance-xs-input').val(x_stdev);
+
+								});
+
+								/** Boton de calculo */
+								$("#ht-test-normal-variance-start-button").button({
+									icons : {
+										secondary : "ui-icon-play"
+									},
+									text : true
+								}).click(function() {
+									$('#ht-test-normal-variance-result-X2aa-row').hide();
+									$('#ht-test-normal-variance-result-X2ab-row').hide();
+
+									alpha = + $("#ht-test-normal-variance-alpha").val();
+									
+									S = + $('#ht-test-normal-variance-xs-input').val();
+									S2 = S*S;
+
+									s_0 = + $('#ht-test-normal-variance-stdev-input').val();
+									s2_0 = s_0*s_0;
+
+									n = + $('#ht-test-normal-variance-xn-input').val();
+									$('#ht-test-normal-variance-result-dof').text((n-1));
+									
+									X2exp = (n - 1) * ( S2 / s2_0 );
+									p_value =  jStat.chisquare.cdf(X2exp, (n-1));
+									$('#ht-test-normal-variance-result-p_value').text(p_value);
+
+									//console.log (p_value);
+
+									$('#ht-test-normal-variance-result-X2exp').text(X2exp);
+									H0 = $('input[name=ht-test-normal-variance-radio]:checked').val();
+
+									var rechazarH0;
+
+									switch (H0) {
+										case 'eq':
+
+											X2aa = jStat.chisquare.inv(alpha/2, (n-1));
+											X2ab = jStat.chisquare.inv(1-(alpha/2), (n-1));
+
+											$('#ht-test-normal-variance-result-X2aa').text(X2aa);
+											$('#ht-test-normal-variance-result-X2ab').text(X2ab);
+											
+											$('#ht-test-normal-variance-result-p_value-row').hide();
+											$('#ht-test-normal-variance-result-X2a-row').hide();
+											$('#ht-test-normal-variance-result-X2aa-row').show();
+											$('#ht-test-normal-variance-result-X2ab-row').show();
+
+											//console.log('X2exp', X2exp, 'X2aa', X2aa, 'X2ab', X2ab);
+											//console.log('(X2exp <= X2aa)', (X2exp <= X2aa));
+											//console.log('(X2exp >= X2ab)', (X2exp >= X2ab));
+
+											rechazarH0 = ( X2exp <= X2aa || X2exp >= X2ab) ? true : false;
+
+										break;
+										case 'le':
+											
+											X2a = jStat.chisquare.inv(1-alpha, (n-1));
+
+											$('#ht-test-normal-variance-result-X2a').text(X2a);
+											$('#ht-test-normal-variance-result-X2a-row').show();
+											$('#ht-test-normal-variance-result-p_value-row').show();
+											
+											rechazarH0 = ( X2exp >= X2a ) ? true : false;
+
+										break;
+										case 'ge':
+
+											X2a = jStat.chisquare.inv((alpha), (n-1));
+
+											$('#ht-test-normal-variance-result-X2a').text(X2a);
+											$('#ht-test-normal-variance-result-X2a-row').show();
+											$('#ht-test-normal-variance-result-p_value-row').show();
+											
+											rechazarH0 = ( X2exp <= X2a ) ? true : false;
+
+										break;
+									}
+
+									(rechazarH0) ? 
+										$('#ht-test-normal-variance-result-H0').html('Se rechaza H<sub>0</sub>') :
+										$('#ht-test-normal-variance-result-H0').html('NO se rechaza H<sub>0</sub>') ;
+
+									$("#ht-test-normal-variance-result").dialog({
+										modal: true,
+										canMaximize: true,
+										buttons: {
+											Ok: function() {
+												$( this ).dialog( "close" );
+											}
+										}
+									}).dialog('maximize');
+								});
+							});
+							/* ]]> */
+						</script>
+						
+						<div class="clear"></div>
+					</div>
+					<!-- ****************************************************** -->
+
+
+				</div><!-- /accordion -->
+			</div><!-- /Content -->
+
+				<div id="footer" class="ui-widget-content">
+				<p class="center">
+					Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+				</p>
+				<p class="center">
+					&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+				</p>
+			</div><!-- End footer -->
+		</div><!-- End main -->
+	</body>
+</html>

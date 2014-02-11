@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery.dialog.extra.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.ks.js"></script>
+
+		<!-- Configuracion -->
+ 		<script type="text/javascript" src="js/_settings.js"></script>
+		<script type="text/javascript" src="js/buttons.js"></script>
+		<script type="text/javascript" src="js/progressbar.js"></script>
+		<script type="text/javascript" src="js/sliders.js"></script>
+		<script type="text/javascript" src="js/_ui.js"></script>
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+
+	</head>
+	<body>
+		<div class="main ui-widget">
+			<div class="ui-widget-header ui-corner-top">
+				<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+			</div>
+
+			<div class="ui-widget-content">
+
+				<div id="tabs-0"><!-- TAB: Entrada -->
+					<form name="data">
+						<label for="vectorX">Vector de datos X:</label>
+						<br />
+						<textarea id="vectorX" class="vector"></textarea>
+
+						<div class="clear"></div>
+						
+						<label for="vectorY">Vector de datos Y:</label>
+						<br />
+						<textarea id="vectorY" class="vector"></textarea>
+					</form>
+				</div><!-- /TAB: Entrada -->
+
+
+
+					<!-- ****************************************************** -->
+					<!-- ESTADISTICA DESCRIPTIVA -->
+					<!-- ****************************************************** -->
+					<div>
+						<div class="ht-widget">
+
+							<button id="ht-test-descriptive-statistics-start-button">Calcular <br>Estad&iacute;stica Descriptiva</button>
+
+						</div>
+
+
+						<div id="ht-test-descriptive-statistics-result" title="Resultados" class="">
+
+							<h4>Variable X:</h4>
+							<table>
+								<tr>
+									<td>N: </td>
+									<td><div id="ht-test-descriptive-statistics-result-x_n"></div></td>
+								</tr>
+								<tr>
+									<td>Media (X&#772;):</td>
+									<td><div id="ht-test-descriptive-statistics-result-x_mean"></div></td>
+								</tr>
+								<tr>
+									<td>Desviaci&oacute;n Estándar (&#963;):</td>
+									<td><div id="ht-test-descriptive-statistics-result-x_stdev"></div></td>
+								</tr>
+								<tr>
+									<td>Varianza (&#963;<sup>2</sup>): </td>
+									<td><div id="ht-test-descriptive-statistics-result-x_variance"></div></td>
+								</tr>
+							</table>
+
+							<h4>Variable Y:</h4>
+							<table>
+								<tr>
+									<td>N: </td>
+									<td><div id="ht-test-descriptive-statistics-result-y_n"></div></td>
+								</tr>
+								<tr>
+									<td>Media (Y&#772;): </td>
+									<td><div id="ht-test-descriptive-statistics-result-y_mean"></div></td>
+								</tr>
+								<tr>
+									<td>Desviaci&oacute;n Estándar (&#963;): </td>
+									<td><div id="ht-test-descriptive-statistics-result-y_stdev"></div></td>
+								</tr>
+								<tr>
+									<td>Varianza (&#963;<sup>2</sup>): </td>
+									<td><div id="ht-test-descriptive-statistics-result-y_variance"></div></td>
+								</tr>
+							</table>
+						</div>
+						
+						<div class="clear"></div>
+
+						<script type="text/javascript">
+						//* <![CDATA[ */
+						$(document).ready(function() {
+
+							$("#ht-test-descriptive-statistics-result").hide();
+							
+							$("#ht-test-descriptive-statistics-start-button").button({
+									icons : {
+										secondary : "ui-icon-play"
+									},
+									text : true
+								}).click(function() {
+
+									x_vector = $.hypothesistesting('parseFloatArray', $('#vectorX').val());
+									
+									x_vector = new jStat(x_vector);
+
+									x_n = x_vector[0].length;
+									x_mean = x_vector.mean();
+									x_stdev = x_vector.stdev();
+									x_variance = x_stdev*x_stdev;
+
+									$('#ht-test-descriptive-statistics-result-x_n').text(x_n);
+									$('#ht-test-descriptive-statistics-result-x_mean').text(x_mean);
+									$('#ht-test-descriptive-statistics-result-x_stdev').text(x_stdev);
+									$('#ht-test-descriptive-statistics-result-x_variance').text(x_variance);
+
+									y_vector = $.hypothesistesting('parseFloatArray', $('#vectorY').val());
+									
+									y_vector = new jStat(y_vector);
+
+									y_n = y_vector[0].length;
+									y_mean = y_vector.mean();
+									y_stdev = y_vector.stdev();
+									y_variance = y_stdev*y_stdev;
+
+									$('#ht-test-descriptive-statistics-result-y_n').text(y_n);
+									$('#ht-test-descriptive-statistics-result-y_mean').text(y_mean);
+									$('#ht-test-descriptive-statistics-result-y_stdev').text(y_stdev);
+									$('#ht-test-descriptive-statistics-result-y_variance').text(y_variance);
+
+									$("#ht-test-descriptive-statistics-result").dialog({
+										modal: true,
+										canMaximize: true,
+										buttons: {
+											Ok: function() {
+												$( this ).dialog( "close" );
+											}
+										}
+									}).dialog('maximize');
+
+
+								});
+							});
+						/* ]]> */
+						</script>
+						<div class="clear"></div>
+					</div>
+					<!-- ****************************************************** -->
+				
+			</div><!-- /Content -->
+
+				<div id="footer" class="ui-widget-content">
+				<p class="center">
+					Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+				</p>
+				<p class="center">
+					&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+				</p>
+			</div><!-- End footer -->
+		</div><!-- End main -->
+	</body>
+</html>

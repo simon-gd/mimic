@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.ks.js"></script>
+
+		<!-- Configuracion -->
+ 		<script type="text/javascript" src="js/_settings.js"></script>
+		<script type="text/javascript" src="js/buttons.js"></script>
+		<script type="text/javascript" src="js/progressbar.js"></script>
+		<script type="text/javascript" src="js/sliders.js"></script>
+		<script type="text/javascript" src="js/_ui.js"></script>
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+
+	</head>
+	<body>
+		<div class="main ui-widget">
+			<div class="ui-widget-header ui-corner-top">
+				<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+			</div>
+
+			<div class="ui-widget-content">
+
+				<form name="data">
+					<label for="vectorX">Vector de datos primario:</label>
+					<br />
+					<textarea id="vectorX" class="vector"></textarea>
+
+					<div class="clear"></div>
+
+				</form>
+
+				<div class="accordion">
+
+					<!-- ****************************************************** -->
+					<!-- Prueba Lilliefors Normal -->
+					<!-- ****************************************************** -->
+					<h3><a href="#">Prueba Lilliefors (Normal)</a></h3>
+					<div>
+
+						<div class="ui-state-highlight">
+							<div class="left">
+								<p>X: Variable aleatoria continua.</p>
+								<p>H<sub>0</sub>: "La muestra proviene de una distribuci&oacute;n Normal, cuyos par&aacute;metros provienen de la muestra."</p>
+								<p>H<sub>1</sub>: "La muestra NO proviene de una distribuci&oacute;n Normal, cuyos par&aacute;metros provienen de la muestra."</p>
+							</div>
+							<div class="right">
+								<button id="ht-test-gof-normal-Lilliefors-start-button">Calcular</button>
+							</div>
+							<div class="clear"></div>	
+						</div>
+
+						<div>
+
+							<div class="left ht-widget">
+								<h4 class="ui-widget-header">Nivel de significaci&oacute;n (&#945;)</h4>
+								<p class="radio-buttonset">
+									<input type="radio" id="ht-test-gof-normal-Lilliefors-radio-1" name="ht-test-gof-normal-Lilliefors-radio" value="0.001">
+									<label for="ht-test-gof-normal-Lilliefors-radio-1">0.001</label>
+
+									<input type="radio" id="ht-test-gof-normal-Lilliefors-radio-2" name="ht-test-gof-normal-Lilliefors-radio" value="0.01" >
+									<label for="ht-test-gof-normal-Lilliefors-radio-2">0.01</label>
+									
+									<input type="radio" id="ht-test-gof-normal-Lilliefors-radio-3" name="ht-test-gof-normal-Lilliefors-radio" value="0.05" checked>
+									<label for="ht-test-gof-normal-Lilliefors-radio-3">0.05</label>
+
+									<input type="radio" id="ht-test-gof-normal-Lilliefors-radio-4" name="ht-test-gof-normal-Lilliefors-radio" value="0.1">
+									<label for="ht-test-gof-normal-Lilliefors-radio-4">0.1</label>
+
+									<input type="radio" id="ht-test-gof-normal-Lilliefors-radio-5" name="ht-test-gof-normal-Lilliefors-radio" value="0.2">
+									<label for="ht-test-gof-normal-Lilliefors-radio-5">0.2</label>
+								</p>
+								<p>Valores tabulados, 4 &lt;= N &lt;= 30.</p>
+								<p>Aproximados con N &gt; 30.</p>
+							</div>
+
+							<div class="clear"></div>
+
+							<div id="ht-test-gof-normal-Lilliefors-result" title="Resultados" class="">
+
+								<table>
+									<tr>
+										<td>Media (&#956;):</td>
+										<td><div id="ht-test-gof-normal-Lilliefors-result-mean"></div></td>
+									</tr>
+									<tr>
+										<td>Desviaci&oacute;n Estándar (&#963;):</td>
+										<td><div id="ht-test-gof-normal-Lilliefors-result-stdev"></div></td>
+									</tr>
+									<tr>
+										<td>Valor D: </td>
+										<td><div id="ht-test-gof-normal-Lilliefors-result-d-value"></div></td>
+									</tr>
+									<tr>
+										<td>Valor D<sub>&#945;</sub>: </td>
+										<td><div id="ht-test-gof-normal-Lilliefors-result-dalpha-value"></div></td>
+									</tr>
+									<tr>
+										<td>Sugerencia: </td>
+										<td><div id="ht-test-gof-normal-Lilliefors-result-suggest"></div></td>
+									</tr>
+								</table>
+
+							<div class="clear"></div>
+
+						</div>
+
+						
+						</div>
+						<script type="text/javascript">
+							//* <![CDATA[ */
+							$(document).ready(function() {
+
+								$("#ht-test-gof-normal-Lilliefors-result").hide();
+
+								$("#ht-test-gof-normal-Lilliefors-start-button").button({
+									icons : {
+										secondary : "ui-icon-play"
+									},
+									text : true
+								}).click(function() {
+									vector = $.hypothesistesting('parseFloatArray', $('#vectorX').val())
+									vector = $.hypothesistesting('sort', vector);
+									vector = new jStat(vector);
+
+									alpha = $('input[name=ht-test-gof-normal-Lilliefors-radio]:checked').val();
+									alpha = parseFloat(alpha);
+
+									d = $.hypothesistesting.test.ks('lilliefors', vector);
+									dalpha = $.hypothesistesting.test.ks('getDLillieforsNormal', vector[0].length, alpha);
+
+									$('#ht-test-gof-normal-Lilliefors-result-mean').text(vector.mean());
+									$('#ht-test-gof-normal-Lilliefors-result-stdev').text(vector.stdev());
+									$('#ht-test-gof-normal-Lilliefors-result-d-value').text(d);
+									$('#ht-test-gof-normal-Lilliefors-result-dalpha-value').text(dalpha);
+
+									if(d < dalpha)
+										$('#ht-test-gof-normal-Lilliefors-result-suggest').html('Conservar H<sub>0</sub>');
+									else 
+										$('#ht-test-gof-normal-Lilliefors-result-suggest').html('Rechazar H<sub>0</sub>');
+
+									$("#ht-test-gof-normal-Lilliefors-result").dialog({
+										modal: true,
+										buttons: {
+											Ok: function() {
+												$( this ).dialog( "close" );
+											}
+										}
+									});
+								});
+
+							});
+							/* ]]> */
+						</script>
+					</div>
+					<!-- ****************************************************** -->
+				
+				</div><!-- /accordion -->
+			</div><!-- /Content -->
+
+				<div id="footer" class="ui-widget-content">
+				<p class="center">
+					Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+				</p>
+				<p class="center">
+					&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+				</p>
+			</div><!-- End footer -->
+		</div><!-- End main -->
+</html>

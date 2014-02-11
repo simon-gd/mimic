@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<link rel="shortcut icon" href="favicon.ico">
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<!-- <link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" /> -->
+
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+
+	<!-- <script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script> -->
+	<!-- <script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script> -->
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+		<script type="text/javascript">
+			//* <![CDATA[ */
+			$(document).ready(function() {
+
+			});
+			/* ]]> */
+			</script>
+
+			<style type="text/css">
+			.graph {
+				width:550px;
+				height:300px;
+			}
+			</style>
+		</head>
+		<body>
+			<div class="main ui-widget">
+				<div class="ui-widget-header ui-corner-top">
+					<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+				</div>
+
+				<div class="ui-widget-content">
+
+					<div class="clear">
+					</div>
+
+					<div id="console">
+						<textarea id="output"></textarea>
+					</div>
+
+					<!-- GRAFICO 1 -->
+					<h2>Alfa versus Beta</h2>
+					<div id="placeholder1" style="width:550px;height:300px;"></div>
+
+					<script id="source" language="javascript" type="text/javascript">
+					/* <![CDATA[ */
+					$(document).ready(function() {
+
+						//$.hypothesistesting.debug('redirectLogger', '#output');				
+
+						var d1 = [];
+						var d2 = [];
+						var d3 = [];
+						var d4 = [];
+						var alpha = 0.95;
+						alpha = jStat.normal.inv(alpha,0,1);
+						alpha = alpha.toPrecision(2);
+
+						//console.log(alpha);
+						var c = 0;
+
+						for (var i = -5; i < 5; i += 0.1)
+						{
+							c++;
+							i = parseFloat(i.toPrecision(5));
+
+							//console.log("DATA, " + c + ","+ parseFloat(i.toPrecision(5)));
+							if(i <= alpha)
+							{
+								//console.log("<, " + c + ","+ parseFloat(i.toPrecision(5)));
+								d1.push([i, jStat.normal.pdf(i, 0, 1)]);
+							}
+							if(i >= alpha)
+							{
+								//console.log(">, " + c + ","+ parseFloat(i.toPrecision(5)));
+								d2.push([i, jStat.normal.pdf(i, 0, 1)]);
+							}
+						}
+
+						for (var i = -5; i < 5; i += 0.1)
+						{
+							c++;
+							i = parseFloat(i.toPrecision(5));
+
+							//console.log("DATA, " + c + ","+ parseFloat(i.toPrecision(5)));
+							if(i <= alpha)
+							{
+								//console.log("<, " + c + ","+ parseFloat(i.toPrecision(5)));
+								d3.push([i, jStat.normal.pdf(i, 1, 1)]);
+							}
+							if(i >= alpha)
+							{
+								//console.log(">, " + c + ","+ parseFloat(i.toPrecision(5)));
+								d4.push([i, jStat.normal.pdf(i, 1, 1)]);
+							}
+						}
+
+						$.plot($("#placeholder1"), [
+
+							{ label: "(1-\u03B1) Region de Aceptación (H0)",  data: d1, color: '#ccc'},
+							{ label: "(\u03B1) Region de Rechazo de (H0)",  data: d2, color: '#444',     shadowSize: 10},
+							{ label: "(\u03B2) Error Tipo II (H1)",  data: d3, color: '#000', shadowSize: 10	},
+							{ label: "(1-\u03B2) Potencia (H1)",  data: d4, color: '#ccc'}			
+							], {
+								series: {
+								lines: { show: true, fill: true } /*,
+								points: { show: true } */
+							},
+							xaxis: {
+								ticks: [[alpha, " "]],
+
+							},
+							yaxis: {
+								ticks: 0,
+								min: 0,
+								max: 0.5
+							},
+							grid: {
+								backgroundColor: { colors: ["#fff", "#fff"] }
+							},
+							legend: {
+						    	show: true,
+							    position: "nw"
+							  }
+						});
+					});
+/* ]]> */
+</script>
+<!-- /GRAFICO 1 -->
+
+<!-- GRAFICO 2 -->
+<h2>Test unilateral a la derecha</h2>
+<div id="placeholder2" style="width:550px;height:300px;"></div>
+
+<script id="source" language="javascript" type="text/javascript">
+/* <![CDATA[ */
+$(document).ready(function() {
+
+	//console.log(jStat.normal.inv(0.05,0,1));
+	//console.log(jStat.normal.cdf(-1.6448,0,1));
+	//return;
+	//$.hypothesistesting.debug('redirectLogger', '#output');				
+
+	var d1 = [];
+	var d2 = [];
+	var d3 = [];
+	var d4 = [];
+	var alpha = 0.05;
+	Za = jStat.normal.inv(alpha,0,1);
+	Za = +Za.toPrecision(5);
+	
+	console.log(alpha, Za);
+
+	var c = 0;
+
+	for (var i = -5; i < 5; i += 0.1)
+	{
+		c++;
+		i = parseFloat(i.toPrecision(5));
+
+		//console.log("DATA, " + c + ","+ parseFloat(i.toPrecision(5)));
+		if(i <= (-Za))
+		{
+			//console.log("<, " + c + ","+ parseFloat(i.toPrecision(5)));
+			d1.push([i, jStat.normal.pdf(i, 0, 1)]);
+		}
+		if(i >= (-Za))
+		{
+			//console.log(">, " + c + ","+ parseFloat(i.toPrecision(5)));
+			d2.push([i, jStat.normal.pdf(i, 0, 1)]);
+		}
+	}
+	
+	$.plot($("#placeholder2"), [
+
+		{ label: "(1-\u03B1) = Region de Rechazo",  data: d1, color: '#ccc'},
+		{ label: "(\u03B1) = Region de Aceptaci&oacute;n",  data: d2, color: '#444'}		
+		], {
+			series: {
+			lines: { show: true, fill: true } /*,
+			points: { show: true } */
+		},
+		xaxis: {
+			ticks: [ [(-Za), "Z(1-\u03B1)"]]
+		},
+		yaxis: {
+			ticks: 0,
+			min: 0,
+			max: 0.5
+		},
+		grid: {
+			backgroundColor: { colors: ["#fff", "#fff"] }
+		}
+	});
+});
+/* ]]> */
+</script>
+<!-- /GRAFICO 2 -->
+
+<!-- GRAFICO 3 -->
+<h2>Test bilateral</h2>
+<div id="placeholder3" style="width:550px;height:300px;"></div>
+
+<script id="source" language="javascript" type="text/javascript">
+/* <![CDATA[ */
+$(document).ready(function() {
+//$.hypothesistesting.debug('redirectLogger', '#output');				
+
+	var d1 = [];
+	var d2 = [];
+	var d3 = [];
+	var d4 = [];
+	var alpha = 0.05;
+	Za = jStat.normal.inv(alpha,0,1);
+	Za = Za.toPrecision(3);
+	Za2 = jStat.normal.inv(alpha/2,0,1);
+	Za2 = Za2.toPrecision(3);
+	
+	//console.log(alpha, Za, Za2);
+	var c = 0;
+
+	for (var i = -5; i < 5; i += 0.1)
+	{
+		c++;
+		i = parseFloat(i.toPrecision(5));
+
+		//console.log("DATA, " + c + ","+ parseFloat(i.toPrecision(5)));
+		if(i <= Za2)
+		{
+			//console.log("<, " + c + ","+ parseFloat(i.toPrecision(5)));
+			d1.push([i, jStat.normal.pdf(i, 0, 1)]);
+		}
+		if( Za2 <= i && i <= (Za2 * -1))
+		{
+			//console.log(">, " + c + ","+ parseFloat(i.toPrecision(5)));
+			d2.push([i, jStat.normal.pdf(i, 0, 1)]);
+		}
+		if( i >= (Za2 * -1))
+		{
+			//console.log(">, " + c + ","+ parseFloat(i.toPrecision(5)));
+			d3.push([i, jStat.normal.pdf(i, 0, 1)]);
+		}
+	}
+
+	$.plot($("#placeholder3"), [
+
+		{ label: "(\u03B1/2) = Region de Rechazo",  data: d1, color: '#444'},
+		{ label: "(1-\u03B1) = Region de Aceptaci&oacute;n",  data: d2, color: '#ccc'},
+		{ label: "(\u03B1/2) = Region de Rechazo",  data: d3, color: '#444'}	
+		], {
+			series: {
+			lines: { show: true, fill: true } /*,
+			points: { show: true } */
+		},
+		xaxis: {
+
+			ticks: [ [Za2, "Z\u03B1/2"], [(-1* Za2), "Z(1-\u03B1/2)"]]
+		},
+		yaxis: {
+			ticks: 0,
+			min: 0,
+			max: 0.5
+		},
+		grid: {
+			backgroundColor: { colors: ["#fff", "#fff"] }
+		}
+	});
+});
+/* ]]> */
+</script>
+<!-- /GRAFICO 3 -->
+
+<!-- GRAFICO 4 -->
+<h2>Test unilateral a la izquierda</h2>
+<div id="placeholder4" style="width:550px;height:300px;"></div>
+
+<script id="source" language="javascript" type="text/javascript">
+/* <![CDATA[ */
+$(document).ready(function() {
+//$.hypothesistesting.debug('redirectLogger', '#output');				
+
+	var d1 = [];
+	var d2 = [];
+	var d3 = [];
+	var d4 = [];
+	var alpha = 0.05;
+	Za = jStat.normal.inv(alpha,0,1);
+	alpha = alpha.toPrecision(2);
+	
+	//console.log(alpha);
+	var c = 0;
+
+	for (var i = -5; i < 5; i += 0.1)
+	{
+		c++;
+		i = parseFloat(i.toPrecision(5));
+
+		//console.log("DATA, " + c + ","+ parseFloat(i.toPrecision(5)));
+		if(i <= Za)
+		{
+			//console.log("<, " + c + ","+ parseFloat(i.toPrecision(5)));
+			d1.push([i, jStat.normal.pdf(i, 0, 1)]);
+		}
+		if( Za <= i )
+		{
+			//console.log(">, " + c + ","+ parseFloat(i.toPrecision(5)));
+			d2.push([i, jStat.normal.pdf(i, 0, 1)]);
+		}
+	}
+	
+	$.plot($("#placeholder4"), [
+
+		{ label: "(\u03B1) = Region de Rechazo",  data: d1, color: '#444'},
+		{ label: "(1-\u03B1) = Region de Aceptaci&oacute;n",  data: d2, color: '#ccc'}   
+		], {
+			series: {
+			lines: { show: true, fill: true } /*,
+			points: { show: true } */
+		},
+		xaxis: {
+			ticks: [ [(Za), "Z(\u03B1)"]]
+		},
+		yaxis: {
+			ticks: 0,
+			min: 0,
+			max: 0.5
+		},
+		grid: {
+			backgroundColor: { colors: ["#fff", "#fff"] }
+		}
+	});
+});
+/* ]]> */
+</script>
+<!-- /GRAFICO 4 -->
+
+<!-- GRAFICO 5 -->
+<h2>Test con distribución binomial</h2>
+<div id="placeholder5" style="width:550px;height:300px;"></div>
+
+<script id="source" language="javascript" type="text/javascript">
+/* <![CDATA[ */
+$(document).ready(function() {
+
+	$.hypothesistesting.debug('enableLogger', '#output');				
+
+	var d1 = [];
+	var d2 = [];
+	var d3 = [];
+	var d4 = [];
+	var p=0.5
+	var n=10;
+	var alpha = 0.05;
+	alpha = jStat.normal.inv(alpha,0,1);
+	alpha = alpha.toPrecision(2);
+	
+	//console.log(alpha);
+	//console.log(jStat.binomial.cdf(7.5, n, 0.9));
+	var c = 0;
+
+	for (var i = 0; i <= 10; i += 1)
+	{
+		c++;
+		i = parseFloat(i.toPrecision(5));
+
+		d1.push([i, jStat.binomial.pdf(i, n, p)]);
+		d2.push([i, jStat.binomial.pdf(i, n, 0.9)]);
+
+		/*
+		//console.log("DATA, " + c + ","+ parseFloat(i.toPrecision(5)));
+		if(i <= alpha)
+		{
+			//console.log("<, " + c + ","+ parseFloat(i.toPrecision(5)));
+			d1.push([i, jStat.binomial.pdf(i, p, n)]);
+		}
+		if( alpha <= i )
+		{
+			//console.log(">, " + c + ","+ parseFloat(i.toPrecision(5)));
+			d2.push([i, jStat.normal.pdf(i, 0, 1)]);
+		}
+		*/
+	}
+	
+	$.plot($("#placeholder5"), [
+
+		{ label: "(\u03B1) = Region de Rechazo",  data: d1, color: '#CB4B4B'},
+		{ label: "(1-\u03B1) = Region de Aceptaci&oacute;n",  data: d2}   
+		], {
+			series: {
+			lines: { show: true, fill: true } /*,
+			points: { show: true } */
+		},
+		xaxis: {
+			//ticks: [[alpha, " "]],
+
+			max:10
+		},
+		yaxis: {
+		},
+		grid: {
+			backgroundColor: { colors: ["#fff", "#fff"] }
+		}
+	});
+});
+/* ]]> */
+</script>
+<!-- /GRAFICO 5 -->
+
+<!-- GRAFICO 6 -->
+<h2>Potencia del test</h2>
+<div id="placeholder6" style="width:550px;height:300px;"></div>
+
+<script id="source" language="javascript" type="text/javascript">
+/* <![CDATA[ */
+$(document).ready(function() {
+
+	$.hypothesistesting.debug('enableLogger', '#output');				
+
+	var d1 = [];
+	var d2 = [];
+	var d3 = [];
+	var d4 = [];
+	var alpha=0.055;
+	var p=0.5;
+	var n=10;
+	var h0 = 0.5;
+	var h1 = 0.6;
+	var c = 0;
+
+	var out = jStat.binomial.cdf(4.5, 10, 0.4);
+	out = parseFloat(out.toPrecision(3))
+	//console.log(out);
+	return;
+
+	function beta(p)
+	{
+		var out = 0;
+
+		return out;
+	}
+
+	function potencia(p) {
+		//return jStat.normal.pdf(i, 0, 1)]
+		var out = 1-jStat.binomial.cdf(8, n, p);
+		//console.log(out);
+		return out;
+	}
+
+	for (var i = 0; i <= 1; i += 0.1)
+	{
+		c++;
+		i = parseFloat(i.toPrecision(5));
+
+		var out = jStat.binomial.pdf(5, 10, i)/p;
+		out = parseFloat(out.toPrecision(3))
+		//console.log(out);
+		d2.push([i, 1-out]);
+	}
+
+	for (var i = 0; i <= n; i += 1)
+	{
+		c++;
+		i = parseFloat(i.toPrecision(5));
+
+		d1.push([i, jStat.binomial.pdf(i, n, p)]);
+		//d2.push([i, potencia(i)]);
+	}
+	
+	$.plot($("#placeholder6"), [
+
+		{ label: "(\u0398)\(p)",  data: d1, color: '#CB4B4B'},
+		{ label: " ",  data: d2}
+		], {
+			series: {
+			lines: { show: true, fill: false },
+			points: { show: true }
+		},
+		xaxis: {
+			//ticks: [[alpha, " "]],
+
+			//max:10
+		},
+		yaxis: {
+			/*
+			min: 0,
+			max: 1
+			*/
+		},
+		grid: {
+			backgroundColor: { colors: ["#fff", "#fff"] }
+		},
+		legend: {
+	    	show: true,
+		    position: "se"
+		}
+	});
+});
+/* ]]> */
+</script>
+<!-- /GRAFICO 6 -->
+
+<!-- GRAFICO 7 -->
+<h2>Normal</h2>
+<div id="placeholder7" style="width:550px;height:300px;"></div>
+
+<script id="source" language="javascript" type="text/javascript">
+/* <![CDATA[ */
+$(document).ready(function() {
+
+	$.hypothesistesting.debug('enableLogger', '#output');				
+
+	var d1 = [];
+	var mean = 50;
+	var variance = 10;
+	var n = 100;
+	c = 0;
+
+	for (var i = 0; i <= n; i += 1)
+	{
+		c++;
+		i = parseFloat(i.toPrecision(5));
+
+		d1.push([i, jStat.normal.pdf(i, mean, variance)]);
+
+		//d2.push([i, potencia(i)]);
+	}
+	
+	$.plot($("#placeholder7"), [
+
+		{ label: "Normal",  data: d1, color: '#CB4B4B'}
+		], {
+			series: {
+			lines: { show: true, fill: false },
+			points: { show: true }
+		},
+		xaxis: {
+			//ticks: [[alpha, " "]],
+
+			//max:10
+		},
+		yaxis: {
+			/*
+			min: 0,
+			max: 1
+			*/
+		},
+		grid: {
+			backgroundColor: { colors: ["#fff", "#fff"] }
+		},
+		legend: {
+	    	show: true,
+		    position: "ne"
+		}
+	});
+});
+/* ]]> */
+</script>
+<!-- /GRAFICO 7 -->
+</div><!-- End main -->
+<div id="footer" class="ui-widget-content">
+	<p class="center">
+		Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+	</p>
+	<p class="center">
+		&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+	</p>
+</div><!-- End main -->
+</body>
+</html>

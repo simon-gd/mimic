@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.ks.js"></script>
+
+		<!-- Configuracion -->
+ 		<script type="text/javascript" src="js/_settings.js"></script>
+		<script type="text/javascript" src="js/_ui.js"></script>
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+
+	</head>
+	<body>
+		<div class="main ui-widget">
+			<div class="ui-widget-header ui-corner-top">
+				<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+			</div>
+
+			<div class="ui-widget-content">
+
+				<div id="tabs-0"><!-- TAB: Entrada -->
+					<form name="data">
+						<label for="vectorX">Vector de datos X:</label>
+						<br />
+						<textarea id="vectorX" class="vector"></textarea>
+
+						<div class="clear"></div>
+						
+						<label for="vectorY">Vector de datos Y:</label>
+						<br />
+						<textarea id="vectorY" class="vector"></textarea>
+					</form>
+				</div><!-- /TAB: Entrada -->
+
+				<!-- <div class="accordion"> -->
+
+					<!-- ****************************************************** -->
+					<!-- Remuestreo con reposici&oacute;n -->
+					<!-- ****************************************************** -->
+					<h3><a href="#">Remuestreo con reposici&oacute;n</a></h3>
+					<div>
+
+						<div class="ui-state-highlight">
+							<div class="left">
+								<p>Generar una matriz de B vectores basado en remuestreo con reposici&oacute;n.</p>
+								<p class="ui-state-error ui-corner-all"><span class="left ui-icon ui-icon-info"></span>La matriz generada puede visualizarse en la pesta&ntilde;a de Entradas.</p>
+							</div>
+							<div class="right">
+								<button id="ht-resample-resampleX-button">Remuestrear X</button><br>
+								<button id="ht-resample-resampleY-button">Remuestrear Y</button><br>
+								<button id="ht-resample-resampleXY-button">Remuestrear X + Y <br>(combinados)</button>
+							</div>
+							<div class="clear"></div>
+						</div>
+
+						<div>
+							<div class="left ht-widget">
+								<h4 class="ui-widget-header">Par&aacute;metros</h4>
+								<p>
+									<label for="ht-resample-b-input">Cantidad de remuestras (B)</label><br />
+									<input type="text" id="ht-resample-b-input" />
+								</p>
+								<p>
+									<button id="ht-resample-b-leveldown">
+										Disminuir
+									</button>
+									<button id="ht-resample-b-levelup">
+										Aumentar
+									</button>
+								</p>										
+
+								<div id="ht-resample-b-slider"></div>
+							</div><!-- / -->
+						</div>
+
+						<script type="text/javascript">
+							//* <![CDATA[ */
+							$(document).ready(function() {
+
+								/** Slider para b */
+								$("#ht-resample-b-slider").slider({
+									range : "min",
+									value : 100,
+									min : 1,
+									max : 10000,
+									step : 1,
+									create : function(event, ui) {
+										$("#ht-resample-b-input").val(ui.value);
+									},
+									slide : function(event, ui) {
+										$("#ht-resample-b-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										$("#ht-resample-b-input").val(ui.value);
+									}
+								});
+								$("#ht-resample-b-input").val($("#ht-resample-b-slider").slider('value'));
+
+								$('#ht-resample-b-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-resample-b-slider").slider("value", $("#ht-resample-b-slider").slider('value') + $("#ht-resample-b-slider").slider('option', 'step'));
+
+								});
+								$('#ht-resample-b-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-resample-b-slider").slider("value", $("#ht-resample-b-slider").slider('value') - $("#ht-resample-b-slider").slider('option', 'step'));
+
+								});
+
+								/** Boton Remuestrear X */
+								$("#ht-resample-resampleX-button").button().click(function()
+								{
+									vector = $.hypothesistesting('parseFloatArray', $('#vectorX').val())
+
+									b = + $('#ht-resample-b-input').val();
+
+									matrix = $.hypothesistesting('resampleVector', vector, b);
+
+									smatrix = matrix.join("\n");
+									$('#resample_matrix').val(matrix.join("\n"));	
+
+									//$('#ht-resample-output').val($.hypothesistesting('randomVector', vector, b).join(','));
+								});
+
+								/** Boton Remuestrear X */
+								$("#ht-resample-resampleY-button").button().click(function()
+								{
+									vector = $.hypothesistesting('parseFloatArray', $('#vectorY').val())
+
+									b = + $('#ht-resample-b-input').val();
+
+									matrix = $.hypothesistesting('resampleVector', vector, b);
+
+									smatrix = matrix.join("\n");
+									$('#resample_matrix').val(matrix.join("\n"));	
+
+									//$('#ht-resample-output').val($.hypothesistesting('randomVector', vector, b).join(','));
+								});
+
+								/** Boton Remuestrear X + Y */
+								$("#ht-resample-resampleXY-button").button().click(function()
+								{
+									vectorX = $.hypothesistesting('parseFloatArray', $('#vectorX').val());
+									vectorY = $.hypothesistesting('parseFloatArray', $('#vectorY').val());
+									vectorZ = vectorX.concat(vectorY);
+
+									b = + $('#ht-resample-b-input').val();
+
+									matrix = $.hypothesistesting('resampleVector', vectorZ, b);
+
+									smatrix = matrix.join("\n");
+									$('#resample_matrix').val(matrix.join("\n"));	
+
+									//$('#ht-resample-output').val($.hypothesistesting('randomVector', vector, b).join(','));
+								});
+
+							});
+							/* ]]> */
+						</script>
+						
+						<div class="clear"></div>
+					</div>
+					<!-- ****************************************************** -->
+				<!-- </div> --><!-- /accordion -->
+			</div><!-- /Content -->
+
+			<label for="resample_matrix">Matriz de remuestreo:</label><br />
+			<textarea id="resample_matrix" class="output"></textarea><br />
+			
+			<div id="footer" class="ui-widget-content">
+				<p class="center">
+					Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+				</p>
+				<p class="center">
+					&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+				</p>
+			</div><!-- End footer -->
+		</div><!-- End main -->
+	</body>
+</html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.ks.js"></script>
+
+		<!-- Configuracion -->
+ 		<script type="text/javascript" src="js/_settings.js"></script>
+		<script type="text/javascript" src="js/_ui.js"></script>
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+		<script type="text/javascript">
+
+			// Estadisticos de Contraste
+			jQuery.hypothesistesting.statistic.jBootstrapStatisticStdev = {
+				
+				statistic : function () {
+					return this.vector.stdev();
+				}
+				
+			};
+
+			
+			jQuery.hypothesistesting.statistic.jBootstrapStatisticStdev.prototype = new jBootstrapStatistic();
+
+			function jBootstrapStatisticMean() {
+				
+				this.statistic = function () {
+					return this.vector.mean();
+				};
+				
+			}
+			jBootstrapStatisticMean.prototype = new jBootstrapStatistic();
+
+
+		</script>
+
+	</head>
+	<body>
+		<div class="main ui-widget">
+			<div class="ui-widget-header ui-corner-top">
+				<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+			</div>
+
+			<div class="ui-widget-content">
+
+				<div id="tabs-0"><!-- TAB: Entrada -->
+					<form name="data">
+						<label for="vectorX">Vector de datos X:</label>
+						<br />
+						<textarea id="vectorX" class="vector"></textarea>
+
+						<div class="clear"></div>
+						
+						<label for="vectorY">Vector de datos Y:</label>
+						<br />
+						<textarea id="vectorY" class="vector"></textarea>
+					</form>
+				</div><!-- /TAB: Entrada -->
+
+				<div class="accordion">
+
+
+					<!-- ****************************************************** -->
+					<!-- Bootstrap -->
+					<!-- ****************************************************** -->
+					<h3><a href="#">Bootstrap</a></h3>
+					
+					<div>
+						<div class="left ht-widget" id="ht-bootstrap-cycles-widget">
+							<h4 class="ui-widget-header">Ciclos Bootstrap:</h4>
+
+							<p>
+								<input type="text" id="ht-bootstrap-B" />
+							</p>
+							<p>
+								<button id="ht-bootstrap-B-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-bootstrap-B-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-bootstrap-slider-B"></div>
+						</div><!-- / -->
+
+						<div class="left ht-widget" id="ht-bootstrap-statistic-widget">
+							<h4 class="ui-widget-header">Estad&iacute;stico de Contraste:</h4>
+
+							<p>
+								<select id="ht-bootstrap-statistic">
+									<option value="jBootstrapStatistic">Zero</option>
+									<option value="jBootstrapStatisticMean" selected="selected">Promedio</option>
+									<option value="jBootstrapStatisticStdev">Desviaci&oacute;n Est&aacute;ndar</option>
+									<option value="">z* con Varianza Conocida</option>
+									<option value="">z* con Varianza Desonocida</option>
+								</select>
+							</p>
+						</div>
+
+						<div class="left ht-widget">
+
+							<h4 class="ui-widget-header">Desici&oacute;n</h4>
+
+							<p id="ht-bootstrap-radio-widget">
+								<input type="radio" id="ht-bootstrap-radio-less" name="ht-bootstrap-radio" value="less" checked>
+								<label for="ht-bootstrap-radio-less">Menor o igual</label>
+								<input type="radio" id="ht-bootstrap-radio-greater" name="ht-bootstrap-radio" value="greater">
+								<label for="ht-bootstrap-radio-greater">Mayor o igual</label>
+							</p>
+						</div>
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Ejecuci&oacute;n</h4>
+
+							<button id="ht-bootstrap-fire">
+								Lanzar
+							</button>
+							<br />
+						</div>
+
+						<div id="ht-bootstrap-result" title="Resultados">
+
+							<div id="ht-bootstrap-progress" class="ui-helper-hidden">
+								<h2>Progreso del c&aacute;lculo</h2>
+								<div id="ht-bootstrap-progressbar"></div>
+								<div id="ht-bootstrap-status"></div>
+								<button id="ht-bootstrap-pause">
+									Pausar/Continuar
+								</button>
+								<div class="clear">
+									<hr />
+								</div>
+							</div>
+
+							<label for="ht-bootstrap-P_value">Grado de Significacion Unilateral</label><br>
+							<input type="text" id="ht-bootstrap-P_value" /><br>
+
+							<h4>Variable X:</h4>
+							<table>
+								<tr>
+									<td>Z<sub>exp</sub>: </td>
+									<td><div id="ht-bootstrap-result-z_exp"></div></td>
+								</tr>
+								<tr id="ht-bootstrap-result-p_value-row">
+									<td>Valor P: </td>
+									<td><div id="ht-bootstrap-result-p_value"></div></td>
+								</tr>
+
+								<tr id="ht-bootstrap-result-Za-row">
+									<td>Z<sub>&#945;</sub>: </td>
+									<td><div id="ht-bootstrap-result-za"></div></td>
+								</tr>
+								<tr id="ht-bootstrap-result-Zaa-row">
+									<td>Z<sub>&#945;/2</sub>: </td>
+									<td><div id="ht-bootstrap-result-Zaa"></div></td>
+								</tr>
+								<tr id="ht-bootstrap-result-Zab-row">
+									<td>Z<sub>1-&#945;/2</sub>: </td>
+									<td><div id="ht-bootstrap-result-Zab"></div></td>
+								</tr>
+
+								<tr>
+									<td>Interpretaci&oacute;n: </td>
+									<td><div id="ht-bootstrap-result-H0"></div></td>
+								</tr>
+							</table>
+
+							
+						</div>
+
+						<div class="clear"></div>
+
+						<script type="text/javascript">
+						/* <![CDATA[ */
+						$(document).ready(function() {
+
+							/** Slider para valor alfa  */
+							$("#ht-bootstrap-slider-alpha").slider({
+								range : "min",
+								value : 0.05,
+								min : 0,
+								max : 0.5,
+								step : 0.005,
+								slide : function(event, ui) {
+									$("#ht-bootstrap-amount").val(ui.value);
+								},
+								change : function(event, ui) {
+									$("#ht-bootstrap-amount").val(ui.value);
+								}
+							});
+
+							$("#ht-bootstrap-amount").val($("#ht-bootstrap-slider-alpha").slider('value'));
+
+							/**  */
+							$("#ht-bootstrap-slider-B").slider({
+								range : "min",
+								value : 100,
+								min : 100,
+								max : 10000,
+								step : 100,
+								slide : function(event, ui) {
+									$("#ht-bootstrap-B").val(ui.value);
+								},
+								change : function(event, ui) {
+									$("#ht-bootstrap-B").val(ui.value);
+								}
+							});
+							$("#ht-bootstrap-B").val($("#ht-bootstrap-slider-B").slider('value'));
+
+						});
+						/* ]]> */
+						</script>
+
+						<script type="text/javascript">
+						/* <![CDATA[ */
+						/** Progresbar */
+						$(document).ready(function() {
+							$('#ht-bootstrap-progressbar').progressbar({
+								value : 0,
+								create : function(event, ui) {
+									$('#ht-bootstrap-progress').hide();
+								},
+								change : function(event, ui) {
+									$('#ht-bootstrap-status').text($('#ht-bootstrap-progressbar').progressbar("option", "value") + "%");
+								},
+								complete : function(event, ui) {
+									//console.log('FINISHED');
+									$('#ht-bootstrap-progress').hide();
+								}
+							});
+						});
+						/* ]]> */
+						</script>
+
+						<script type="text/javascript">
+						/* <![CDATA[ */
+						/** Buttons */
+						$(document).ready(function() {
+							$('#ht-bootstrap-levelup').button({
+								icons : {
+									primary : "ui-icon-plus"
+								},
+								text : true
+							}).mousehold(function() {
+								$("#ht-bootstrap-slider-alpha").slider("value", $("#ht-bootstrap-slider-alpha").slider('value') + $("#ht-bootstrap-slider-alpha").slider('option', 'step'));
+
+							});
+							$('#ht-bootstrap-leveldown').button({
+								icons : {
+									primary : "ui-icon-minus"
+								},
+								text : true
+							}).mousehold(function() {
+								$("#ht-bootstrap-slider-alpha").slider("value", $("#ht-bootstrap-slider-alpha").slider('value') - $("#ht-bootstrap-slider-alpha").slider('option', 'step'));
+
+							});
+
+							$('#ht-bootstrap-B-levelup').button({
+								icons : {
+									primary : "ui-icon-plus"
+								},
+								text : true
+							}).mousehold(function() {
+								$("#ht-bootstrap-slider-B").slider("value", $("#ht-bootstrap-slider-B").slider('value') + $("#ht-bootstrap-slider-B").slider('option', 'step'));
+
+							});
+							$('#ht-bootstrap-B-leveldown').button({
+								icons : {
+									primary : "ui-icon-minus"
+								},
+								text : true
+							}).mousehold(function() {
+								$("#ht-bootstrap-slider-B").slider("value", $("#ht-bootstrap-slider-B").slider('value') - $("#ht-bootstrap-slider-B").slider('option', 'step'));
+							});
+
+							$('#ht-bootstrap-fire').button({
+								icons : {
+									secondary : "ui-icon-play"
+								},
+								text : true
+							});
+
+							$('#ht-bootstrap-pause').button({
+								icons : {
+									secondary : "ui-icon-locked"
+								},
+								text : true
+							});
+
+							$("#ht-bootstrap-radio-widget").buttonset();
+
+						});
+						/* ]]> */
+						</script>
+						<script type="text/javascript">
+						/* <![CDATA[ */
+						/** PRUEBA BOOTSTRAP */
+						$(document).ready(function() {
+
+							$("#ht-bootstrap-result").hide();
+
+
+							//////////////////////////////////////////////////////
+
+							// bootstrap contraste diferencia de medias
+							
+							/// bootstrap paralelo
+							//var dataY = [6.98, 90.9, 26.8, 62.2, 43.2];
+							//var dataZ = [16.5, 24.5, 50.1, 39.8, 93.8, 69.3];
+
+							// problema educacion
+							var dataZ = [68,73, 76, 80, 85, 92];
+							var dataY = [68, 88, 94, 100, 108];
+
+							
+
+
+							//////////////////////////////////////////////////////
+
+							// UI
+							$('#ht-bootstrap-fire').click(function() {
+
+								// reconfigurar UI de resultado
+								$('#ht-bootstrap-progress').show();
+
+								$("#ht-bootstrap-result").dialog({
+									modal: true,
+									buttons: {
+										Ok: function() {
+											$( this ).dialog( "close" );
+										}
+									}
+								});
+
+								$(document).ready(function() {
+									$('#ht-bootstrap-progressbar').progressbar({
+										value : 0,
+										create : function(event, ui) {
+											$('#ht-bootstrap-progress').hide();
+										},
+										change : function(event, ui) {
+											$('#ht-bootstrap-status').text($('#ht-bootstrap-progressbar').progressbar("option", "value") + "%");
+										},
+										complete : function(event, ui) {
+											//console.log('FINISHED');
+											$('#ht-bootstrap-progress').hide();
+										}
+									});
+								});
+
+								// boton pausar/continuar
+								/*
+								$('#ht-bootstrap-pause').click(function() {
+								if($.hypothesistesting.test.bootstrap('paused'))
+									$.hypothesistesting.test.bootstrap('bootstrap', true);
+								else
+									$.hypothesistesting.test.bootstrap('paused', true);
+								});
+								*/
+
+
+								
+								//diferencia de medias
+								x_exp = jStat(dataY).mean() - jStat(dataZ).mean();
+								console.log('x_exp', x_exp);
+
+								// remuestreo
+								dataX = dataY.concat(dataZ);
+								n = dataX.length;
+								B = 1000;
+
+								// remuestreo
+								matrix = [];
+								for (var b = 0; b < B; b++) {
+									resample = jQuery.hypothesistesting('resample', dataX);
+									console.log(''+resample);
+
+									matrix.push(resample);
+
+								};
+
+								nsig = 0;
+								p_value = 0;
+
+								// ciclos bootstrap
+								function bootstrap(b) {
+										if(b < B) {
+											progress = Math.round((b * 100 / B));
+											$('#ht-bootstrap-progressbar').progressbar("option", "value", progress);
+											resampleZ = matrix[b].splice(-dataY.length);
+											resampleY = matrix[b];
+
+											// calcular estadistico
+											x_b = jStat(resampleY).mean() - jStat(resampleZ).mean();
+
+											if(x_b >= x_exp)
+											{
+												nsig = nsig+1;
+												p_value = (nsig+1) / (b+1);
+
+												$('#ht-bootstrap-P_value').val(p_value);
+											}
+											console.log(nsig, p_value);
+
+											setTimeout(function() { bootstrap(b+1);}, 0);
+										}
+								}(setTimeout(function() { bootstrap(0); }, 0)); // comenzar boostrap
+
+								/*
+								$('#ht-bootstrap-progress').show();
+								$('#output').val('');
+								//$.hypothesistesting.debug('redirectLogger', '#output');
+
+								statistic = $('#ht-bootstrap-statistic option:selected').val();
+								statistic = new window[statistic]();
+
+
+								//console.log( $.hypothesistesting('resample', data) );
+
+
+								var vector = $('#vectorX').val();
+								vector = vector.replace(/\s/g, "");
+								vector = vector.split(',');
+								vector = new jStat(vector);
+
+								var jQueryBootstrap = jQuery.hypothesistesting.test.bootstrap();
+								//console.log(jQueryBootstrap);
+								
+								jQuery.hypothesistesting.test.bootstrap('setProgress', '#ht-bootstrap-progressbar');
+								jQuery.hypothesistesting.test.bootstrap('setResult', '#ht-bootstrap-P_value');
+
+								jQuery.hypothesistesting.test.bootstrap('setVector', vector);
+								jQuery.hypothesistesting.test.bootstrap('setDesicion', $('input[name=ht-bootstrap-radio]:checked').val());
+								jQuery.hypothesistesting.test.bootstrap('setResamples', $("#ht-bootstrap-slider-B").slider('value'));
+								jQuery.hypothesistesting.test.bootstrap('setStatistic', statistic);
+
+								jQuery.hypothesistesting.test.bootstrap('bootstrap');
+								//$.hypothesistesting.debug('enableLogger');
+
+								$("#ht-bootstrap-result").dialog({
+									modal: true,
+									buttons: {
+										Ok: function() {
+											$( this ).dialog( "close" );
+										}
+									}
+								});
+								*/
+							});
+						});
+						/* ]]> */
+						</script>
+						
+						<div class="clear"></div>
+					</div>
+					<!-- ****************************************************** -->
+				</div><!-- /accordion -->
+
+
+				<form name="data">
+					<label for="output">Salidas:</label>
+					<br />
+					<textarea id="output"></textarea>
+					<br>
+					<a href="#" id="output-enable">(re)habilitar</a> <a href="#" id="output-disable">deshabilitar</a> <a href="#" id="output-redirect">redirigir</a> <a href="#" id="output-shoot">Probar Salida de Consola</a>
+					<script type="text/javascript">
+					//* <![CDATA[ */
+					$(document).ready(function() {
+						(function( $ ){
+							
+							$('#output-enable').button().click(function(){
+								$.hypothesistesting.debug('enableLogger', '#output');
+							});
+
+							$('#output-disable').button().click(function(){
+								$.hypothesistesting.debug('disableLogger', '#output');
+							});
+
+							$('#output-redirect').button().click(function(){
+								$.hypothesistesting.debug('redirectLogger', '#output');
+							});
+
+							$('#output-shoot').button().click(function(){
+								//console.log("Testing Output");
+							});
+						})( jQuery );
+					});
+					/* ]]> */
+					</script>
+				</form>
+			</div><!-- /Content -->
+
+			<div id="footer" class="ui-widget-content">
+				<p class="center">
+					Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+				</p>
+				<p class="center">
+					&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+				</p>
+			</div><!-- End footer -->
+		</div><!-- End main -->
+	</body>
+</html>

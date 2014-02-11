@@ -402,7 +402,7 @@
 	  editor_code.setTheme("ace/theme/textmate");
 	  editor_code.getSession().setMode("ace/mode/javascript");
        var cookiestring = $.cookie('my_code');
-        if(cookiestring.length > 0){
+       if(cookiestring && cookiestring.length > 0){
 	    var cookiedata = $.parseJSON(cookiestring);
 	    editor_code.setValue(cookiedata.code);
 	    //$('#doc_title').html(cookiedata.name);

@@ -132,3 +132,21 @@ class ExperimentAnswerProcessed(models.Model):
     
     def __unicode__(self):
         return str(self.answer)
+
+"""
+class Comments(models.Model):
+    text = models.TextField(blank=True)
+    answers = models.ManyToManyField(ExperimentAnswerProcessed, blank=True, null=True, through='AnswerCommentRelationship')
+    creation_date = models.DateTimeField(auto_now=True, blank=True)
+    def __unicode__(self):
+        return str(self.answer)
+
+class AnswerCommentRelationship(models.Model):
+    answer = models.ForeignKey(ExperimentAnswerProcessed)
+    comment = models.ForeignKey(Question)
+    order = models.IntegerField()
+    
+    
+    def __unicode__(self):
+        return self.answer.pk + " " + self.comment.pk
+"""

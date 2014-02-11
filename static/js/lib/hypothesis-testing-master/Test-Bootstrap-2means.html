@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.ks.js"></script>
+
+		<!-- Configuracion -->
+ 		<script type="text/javascript" src="js/_settings.js"></script>
+		<script type="text/javascript" src="js/_ui.js"></script>
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+<!--
+		<script type="text/javascript">
+		/* <![CDATA[ */
+		$(document).ready(function() {
+			// HARDCODED INPUT
+			$('#vectorX').val([68, 73, 76, 80, 85, 92]);
+			$('#vectorY').val([68, 88, 94, 100, 108]);
+		});
+		/* ]]> */
+		</script>
+-->
+
+	</head>
+	<body>
+		<div class="main ui-widget">
+			<div class="ui-widget-header ui-corner-top">
+				<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+			</div>
+
+			<div class="ui-widget-content">
+
+				<div id="tabs-0"><!-- TAB: Entrada -->
+					<form name="data">
+						<label for="vectorX">Vector de datos X:</label>
+						<br />
+						<textarea id="vectorX" class="vector"></textarea>
+
+						<div class="clear"></div>
+						
+						<label for="vectorY">Vector de datos Y:</label>
+						<br />
+						<textarea id="vectorY" class="vector"></textarea>
+					</form>
+				</div><!-- /TAB: Entrada -->
+
+				<div class="accordion">
+
+
+					<!-- ****************************************************** -->
+					<!-- Prueba Bootstrap para diferencia de 2 medias -->
+					<!-- ****************************************************** -->
+					<h3><a href="#">Prueba Bootstrap para diferencia de 2 medias</a></h3>
+					
+					<div>
+
+						<div class="ui-state-highlight">
+							<div class="left">
+								<div class="right button-widget">
+										<button id="ht-bootstrap-2means-fire-button">Remuestrear <br>y calcular</button>
+										<br>
+										<button id="ht-bootstrap-2means-start-button">Calcular desde <br>matriz de remuestreo</button>
+									</div>
+								<p>X: Variable aleatoria discreta/continua. Y: Variable aleatoria discreta/continua.</p>
+								<p>Se desea contrastrar la media de 2 poblaciones: &#956;<sub>1</sub> y &#956;<sub>2</sub>, sin tener plena certeza de que se distribuyan normalmente.</p>
+								<p>El estad&iacute;stico de contraste será la diferencia de medias muestrales: X&#772;</sub> - Y&#772; usando sus valores experimentales.</p>
+								<p class="ui-state-error ui-corner-all"><span class="left ui-icon ui-icon-info"></span>Si realiza remuestreo y c&aacute;lculo, la matriz de remuestreo se sobreescribira en la "Matriz de remuestreo" de la pestaña "Entradas". Esto le permitir&aacute; reproducir un resultado.</p>
+								<p class="ui-state-error ui-corner-all"><span class="left ui-icon ui-icon-info"></span>Si est&aacute; reproduciendo un resultado, recuerde ingresar los vectores X e Y correspondientes a la matriz de remuestreo en "Entradas".</p>
+								<p class="ui-state-error ui-corner-all"><span class="left ui-icon ui-icon-info"></span>En la pestaña de Salidas se encuentra el resultado producido por el c&aacute;lculo del estad&iacute;stico para cada remuestra.</p>
+
+							</div>
+							
+							<div class="clear"></div>
+							<div class="left">
+								<table>
+									<tr>
+										<!--
+										<td><input type="radio" id="ht-bootstrap-2means-radio-1" name="ht-bootstrap-2means-radio" value="eq" checked></td>
+
+										
+										<td>
+											Bilateral<br>
+											<label for="ht-bootstrap-2means-radio-1">
+												H<sub>0</sub> &equiv; (&#956;<sub>1</sub> = &#956;<sub>2</sub>) <br>
+												H<sub>1</sub> &equiv; (&#956;<sub>1</sub> &ne; &#956;<sub>2</sub>) <br>
+											</label>
+										</td>
+										-->
+										<td><input type="radio" id="ht-bootstrap-2means-radio-2" name="ht-bootstrap-2means-radio" value="le" checked></td>
+										<td>
+											Cola derecha<br>
+											<label for="ht-bootstrap-2means-radio-1">
+												H<sub>0</sub> &equiv; (&#956;<sub>1</sub> &le; &#956;<sub>2</sub>)<br>
+												H<sub>1</sub> &equiv; (&#956;<sub>1</sub> &gt; &#956;<sub>2</sub>)<br>	
+											</label>
+										</td>
+										<td><input type="radio" id="ht-bootstrap-2means-radio-3" name="ht-bootstrap-2means-radio" value="ge"></td>
+										<td>
+											Cola izquierda<br>
+											H<sub>0</sub> &equiv; (&#956;<sub>1</sub> &ge; &#956;<sub>2</sub>)<br>
+												H<sub>1</sub> &equiv; (&#956;<sub>1</sub> &lt; &#956;<sub>2</sub>)<br>
+										</td>
+									</tr>
+								</table>
+							</div>
+
+							<div class="clear"></div>
+						</div>
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Nivel de Significaci&oacute;n (&#945;)</h4>
+							<!
+							<p>
+								<input type="text" id="ht-bootstrap-2means-alpha" readonly />
+							</p>
+							<p>
+								<button id="ht-bootstrap-2means-alpha-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-bootstrap-2means-alpha-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-bootstrap-2means-slider-alpha"></div>
+						</div><!-- / -->
+
+						<div class="left ht-widget" id="ht-bootstrap-2means-cycles-widget">
+							<h4 class="ui-widget-header">Ciclos Bootstrap (B):</h4>
+
+							<p>
+								<input type="text" id="ht-bootstrap-2means-B" />
+							</p>
+							<p>
+								<button id="ht-bootstrap-2means-B-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-bootstrap-2means-B-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-bootstrap-2means-slider-B"></div>
+						</div><!-- / -->
+
+						<div id="ht-bootstrap-2means-result" title="Resultados">
+
+							<div id="ht-bootstrap-2means-progress" class="ui-helper-hidden">
+								<h2>Progreso del c&aacute;lculo</h2>
+								<div id="ht-bootstrap-2means-progressbar"></div>
+								<div id="ht-bootstrap-2means-status"></div>
+								<button id="ht-bootstrap-2means-pause">
+									Pausar/Continuar
+								</button>
+								<div class="clear">
+									<hr />
+								</div>
+							</div>
+
+							<table>
+								<tr>
+									<td>&Theta;<sub>0</sub>: </td>
+									<td><div id="ht-bootstrap-2means-result-z_exp"></div></td>
+								</tr>
+								<tr id="ht-bootstrap-2means-result-p_value-row">
+									<td>Valor P: </td>
+									<td><div id="ht-bootstrap-2means-result-p_value"></div></td>
+								</tr>
+
+								<tr>
+									<td>Interpretaci&oacute;n: </td>
+									<td><div id="ht-bootstrap-2means-result-H0"></div></td>
+								</tr>
+							</table>		
+						</div>
+
+						<div id="ht-bootstrap-2means-error" title="Error" class="">
+							<div class="ui-state-error ui-corner-all"><span class="left ui-icon ui-icon-alert"></span><p id="ht-bootstrap-2means-error-message"></p></div>
+						</div>
+
+						<div class="clear"></div>
+
+
+						<script type="text/javascript">
+						/* <![CDATA[ */
+						$(document).ready(function() {
+
+
+							$('#ht-bootstrap-2means-error').hide();
+							$("#ht-bootstrap-2means-result").hide();
+
+							/** Slider para valor alfa  */
+							$("#ht-bootstrap-2means-slider-alpha").slider({
+								range : "min",
+								value : 0.05,
+								min : 0,
+								max : 0.5,
+								step : 0.005,
+								create : function(event, ui) {
+									$("#ht-bootstrap-2means-alpha").val(ui.value);
+								},
+								slide : function(event, ui) {
+									$("#ht-bootstrap-2means-alpha").val(ui.value);
+								},
+								change : function(event, ui) {
+									$("#ht-bootstrap-2means-alpha").val(ui.value);
+								}
+							});
+							$("#ht-bootstrap-2means-alpha").val($("#ht-bootstrap-2means-slider-alpha").slider('value'));
+
+							$('#ht-bootstrap-2means-alpha-levelup').button({
+								icons : {
+									primary : "ui-icon-plus"
+								},
+								text : true
+							}).mousehold(function() {
+								$("#ht-bootstrap-2means-slider-alpha").slider("value", $("#ht-bootstrap-2means-slider-alpha").slider('value') + $("#ht-bootstrap-2means-slider-alpha").slider('option', 'step'));
+
+							});
+							$('#ht-bootstrap-2means-alpha-leveldown').button({
+								icons : {
+									primary : "ui-icon-minus"
+								},
+								text : true
+							}).mousehold(function() {
+								$("#ht-bootstrap-2means-slider-alpha").slider("value", $("#ht-bootstrap-2means-slider-alpha").slider('value') - $("#ht-bootstrap-2means-slider-alpha").slider('option', 'step'));
+
+							});
+
+							/** Slider para valor alfa  */
+							$('#ht-bootstrap-2means-B-levelup').button({
+								icons : {
+									primary : "ui-icon-plus"
+								},
+								text : true
+							}).mousehold(function() {
+								$("#ht-bootstrap-2means-slider-B").slider("value", $("#ht-bootstrap-2means-slider-B").slider('value') + $("#ht-bootstrap-2means-slider-B").slider('option', 'step'));
+
+							});
+							$('#ht-bootstrap-2means-B-leveldown').button({
+								icons : {
+									primary : "ui-icon-minus"
+								},
+								text : true
+							}).mousehold(function() {
+								$("#ht-bootstrap-2means-slider-B").slider("value", $("#ht-bootstrap-2means-slider-B").slider('value') - $("#ht-bootstrap-2means-slider-B").slider('option', 'step'));
+							});
+
+							$("#ht-bootstrap-2means-amount").val($("#ht-bootstrap-2means-slider-alpha").slider('value'));
+
+							// Slider para B //
+							$("#ht-bootstrap-2means-slider-B").slider({
+								range : "min",
+								value : 100,
+								min : 100,
+								max : 10000,
+								step : 100,
+								slide : function(event, ui) {
+									$("#ht-bootstrap-2means-B").val(ui.value);
+								},
+								change : function(event, ui) {
+									$("#ht-bootstrap-2means-B").val(ui.value);
+								}
+							});
+							$("#ht-bootstrap-2means-B").val($("#ht-bootstrap-2means-slider-B").slider('value'));
+
+
+							// algoritmo Bootstrap con ciclos recursivos
+							function doBootstrap(matrix) {
+
+								// limpiar salida
+								$('#output').val('');
+
+								// obtener datos
+								dataX = $.hypothesistesting('parseFloatArray', $('#vectorX').val());
+								dataY = $.hypothesistesting('parseFloatArray', $('#vectorY').val());
+
+								if(dataX.length == 0 || dataY.length == 0)
+								{
+									$('#ht-bootstrap-2means-error-message').html('Ambos vectores de entrada deben tener elementos. No pueden ser vac&iacute;os.');
+
+									$('#ht-bootstrap-2means-error').dialog({modal: true});
+												
+									return;
+								}
+
+								// boton pausar/continuar
+								
+								$('#ht-bootstrap-2means-pause').button({
+									icons : {
+										secondary : "ui-icon-locked"
+									},
+									text : true
+								}).click(function() {
+									if(_paused)
+									{
+										_paused = false;
+										setTimeout(function() { bootstrap();}, 0);
+									}
+									else
+										_paused = true;
+								});
+								
+
+								$('#ht-bootstrap-2means-result-H0').text('');
+
+								// reconfigurar UI de resultado
+								$('#ht-bootstrap-2means-progress').show();
+
+								$("#ht-bootstrap-2means-result").dialog({
+									modal: true,
+									close: function(event, ui) {
+										_paused = true;
+									},
+									canMaximize: true,
+									buttons: {
+										Ok: function() {
+											$( this ).dialog( "close" );
+										}
+									}
+								}).dialog('maximize');
+							
+								$('#ht-bootstrap-2means-progressbar').progressbar({
+									value : 0,
+									create : function(event, ui) {
+										$('#ht-bootstrap-2means-progress').hide();
+									},
+									change : function(event, ui) {
+										$('#ht-bootstrap-2means-status').text($('#ht-bootstrap-2means-progressbar').progressbar("option", "value") + "%");
+									},
+									complete : function(event, ui) {
+										//console.log('FINISHED');
+										$('#ht-bootstrap-2means-progress').hide();
+									}
+								});			
+
+								alpha = + $('#ht-bootstrap-2means-alpha').val();
+
+								//diferencia de medias
+								z_exp = jStat(dataY).mean() - jStat(dataX).mean();
+								//console.log('z_exp', z_exp);
+								$('#ht-bootstrap-2means-result-z_exp').text(z_exp);
+
+								B = matrix.length;
+
+								nsig = 0;
+								p_value = 0;
+
+								// estas 2 variables son manipuladas desde otras funciones (callbacks de la UI por ejemplo)
+								_b = 0;
+								_paused =  false;
+
+								// ciclos bootstrap
+								function bootstrap() {
+
+										if(_paused) return;
+
+										if(_b < B) {
+											progress = Math.ceil( (_b+1) * 100 / B );
+											$('#ht-bootstrap-2means-progressbar').progressbar("option", "value", progress);
+											
+											//console.log(matrix[b], matrix[b].length, dataX.length, dataY.length);
+											// Comprobar consistencia entre vector remuestreado y originales.
+											if(matrix[_b].length != dataX.length + dataY.length)
+											{
+												$('#ht-bootstrap-2means-error-message').html('Se encontró un vector inconsistente en la matriz de remuestreo. Prueba cancelada. Revise vectores X, Y y matriz de remuestreo.');
+
+												$('#ht-bootstrap-2means-error').dialog({modal: true});
+															
+												return;
+											}
+
+											resample = matrix[_b].slice();
+											resampleY = resample.splice(-dataX.length);
+											resampleX = resample;										
+
+											// calcular estadistico
+											z_b = jStat(resampleY).mean() - jStat(resampleX).mean();
+											// registrarla en la salida
+											$('#output').val($('#output').val()+z_b+"\n");
+
+											H0 = $('input[name=ht-bootstrap-2means-radio]:checked').val();
+											
+											// calcular Valor P segun Hipotesis seleccionada.
+											switch (H0) {
+												/*
+												case 'eq':
+													
+													rechazarH0 = (p_value < alpha) ? true : false;
+													//rechazarH0 = ( p_value <= alpha/2 || p_value >= 1-(alpha/2)) ? true : false;
+												
+												break;
+												*/
+												case 'le':
+													if(z_b >= z_exp)
+													{
+														nsig = nsig+1;
+														p_value = (nsig+1) / (_b+1);
+													}
+													
+												break;
+												case 'ge':
+													if(z_b <= z_exp)
+													{
+														nsig = nsig+1;
+														p_value = (nsig+1) / (_b+1);
+													}
+													
+												break;
+											}
+
+											$('#ht-bootstrap-2means-result-p_value').text(p_value);											
+											//console.log(_b, H0, z_exp, z_b, nsig, p_value);
+
+											_b = _b+1;
+											setTimeout(function() { bootstrap();}, 0);
+											
+										} else {
+											// caso final
+											rechazarH0 = (p_value < alpha) ? true : false;
+											(rechazarH0) ? 
+												$('#ht-bootstrap-2means-result-H0').html('Se rechaza H<sub>0</sub>') :
+												$('#ht-bootstrap-2means-result-H0').html('NO se rechaza H<sub>0</sub>') ;
+
+										}
+								}(setTimeout(function() { bootstrap(0); }, 0)); // comenzar boostrap
+							}
+
+							/** Boton Remuestrear y Calcular */
+							$('#ht-bootstrap-2means-fire-button').button({
+								icons : {
+									secondary : "ui-icon-play"
+								},
+								text : true
+							}).click(function() {
+
+								// remuestreo
+								dataX = $.hypothesistesting('parseFloatArray', $('#vectorX').val());
+								dataY = $.hypothesistesting('parseFloatArray', $('#vectorY').val());
+								//console.log(dataX, dataY);
+
+								vectorZ = dataX.concat(dataY);
+								n = dataX.length;
+								B = + $('#ht-bootstrap-2means-B').val();
+								//console.log(B);
+
+								// remuestreo
+								matrix = $.hypothesistesting('resampleVector', vectorZ, B);
+								smatrix = matrix.join("\n");
+								$('#resample_matrix').val(matrix.join("\n"));	
+
+								doBootstrap(matrix);								
+
+							});
+
+							/** Boton Calcular desde remuestreo ingresado */
+							$('#ht-bootstrap-2means-start-button').button({
+								icons : {
+									secondary : "ui-icon-play"
+								},
+								text : true
+							}).click(function() {
+
+								matrix = $.hypothesistesting('parseMatrix', $('#resample_matrix').val());
+								//console.log(matrix);
+								//return;
+
+								if(matrix.length == 0)
+								{
+									$('#ht-bootstrap-2means-error-message').html('Se debe cumplir X&#772; &gt; Y&#772;');
+
+									$('#ht-bootstrap-2means-error').dialog({modal: true});
+												
+									return;
+								}
+
+								doBootstrap(matrix);								
+
+							});
+
+						});
+						/* ]]> */
+						</script>
+						
+						<div class="clear"></div>
+					</div>
+					<!-- ****************************************************** -->
+				</div><!-- /accordion -->
+
+			</div><!-- /Content -->
+
+			<label for="resample_matrix">Matriz de remuestreo:</label><br />
+			<textarea id="resample_matrix" class="output"></textarea><br />
+
+			<label for="output">Salidas:</label><br />
+			<textarea id="output" class="output"></textarea>
+
+			<div id="footer" class="ui-widget-content">
+				<p class="center">
+					Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+				</p>
+				<p class="center">
+					&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+				</p>
+			</div><!-- End footer -->
+		</div><!-- End main -->
+	</body>
+</html>

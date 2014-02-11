@@ -1,0 +1,88 @@
+@CHARSET "ISO-8859-1";
+
+html, body {
+	text-align: center;
+}
+
+div.main {
+	min-width: 200px;
+	margin: 10px;
+	padding: 10px !important;
+}
+.ui-button.redButton {
+	background-color: red;
+}
+
+/*
+ #fire {
+ float: right;
+ }
+ */
+
+textarea.vector, textarea.output {
+	width: 90%;
+	min-width: 200px;
+}
+
+textarea.output {
+	height: 400px;
+}
+
+textarea#ht-randomgen-output {
+	min-width: 300px;
+	min-height: 200px;
+}
+
+.levels {
+	margin: 10px;
+	width: 45%;
+	padding: 1%;
+	/* border: 1px red solid; */
+	min-width: 100px;
+}
+
+.left {
+	float: left;
+}
+
+.ht-widget {
+	margin: 5px;
+	padding: 5px;
+	min-height: 250px;
+	min-width: 280px;
+}
+
+.right {
+	float: right;
+}
+
+.center {
+	text-align: center;
+}
+
+.clear {
+	clear: both;
+	width: 100%;
+	/* border: 1px green solid; */
+}
+
+.hidden {
+	visibility: hidden;
+}
+
+.button-widget {
+	margin-left: 30px;
+	margin-bottom: 20px;
+}
+
+p {
+	text-align: justify;
+}
+
+td {
+	text-align: left;
+}
+
+h3 {
+	text-align: left;
+}

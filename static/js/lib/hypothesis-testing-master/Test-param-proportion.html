@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery.dialog.extra.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.ks.js"></script>
+
+		<!-- Configuracion -->
+ 		<script type="text/javascript" src="js/_settings.js"></script>
+		<script type="text/javascript" src="js/_ui.js"></script>
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+
+	</head>
+	<body>
+		<div class="main ui-widget">
+			<div class="ui-widget-header ui-corner-top">
+				<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+			</div>
+
+			<div class="ui-widget-content">
+
+				<div id="tabs-0"><!-- TAB: Entrada -->
+					<form name="data">
+						<label for="vectorX">Vector de datos X:</label>
+						<br />
+						<textarea id="vectorX" class="vector"></textarea>
+
+						<div class="clear"></div>
+						
+						<label for="vectorY">Vector de datos Y:</label>
+						<br />
+						<textarea id="vectorY" class="vector"></textarea>
+					</form>
+				</div><!-- /TAB: Entrada -->
+
+				<div class="accordion">
+
+
+					<!-- ****************************************************** -->
+					<!-- Parametro p de una variable Binomial aproximada a una normal -->
+					<!-- ****************************************************** -->
+					<h3><a href="#">Proporción (p) de una variable binomial aproximada a una normal</a></h3>
+					<div>
+						<div class="ui-state-highlight">
+							<div class="left">
+								<p>X: Variable aleatoria binomial.</p>
+								<p>Se somete a comprobaci&oacute;n si el par&aacute;metro p de la distribuci&oacute;n muestral es similar al polacional, usando una aproximaci&oacute;n a la distribuci&oacute;n normal.</p>
+								<p class="ui-state-error ui-icon-error ui-corner-all"><span class="left ui-icon ui-icon-alert"></span>La aproximaci&oacute;n a la Binomial ser&aacute; v&aacute;lida cuando se satisfacen las condiciones: <br>
+									  n &ge; 20, n*p<sub>0</sub> &ge; 5, n*q<sub>0</sub> &ge; 5. Con q<sub>0</sub> = 1-p<sub>0</sub>.</p>
+								<table>
+									<tr>
+										<td><input type="radio" id="ht-test-binomial-aprox-radio-1" name="ht-test-binomial-aprox-radio" value="eq" checked></td>
+										<td>
+											Bilateral<br>
+											<label for="ht-test-binomial-aprox-radio-1">
+												H<sub>0</sub> &equiv; (p = p<sub>0</sub>) <br>
+												H<sub>1</sub> &equiv; (p &ne; p<sub>0</sub>) <br>
+											</label>
+										</td>
+										<td><input type="radio" id="ht-test-binomial-aprox-radio-2" name="ht-test-binomial-aprox-radio" value="le"></td>
+										<td>
+											Cola derecha<br>
+											<label for="ht-test-binomial-aprox-radio-1">
+												H<sub>0</sub> &equiv; (p &le; p<sub>0</sub>)<br>
+												H<sub>1</sub> &equiv; (p &gt; p<sub>0</sub>)<br>	
+											</label>
+										</td>
+										<td><input type="radio" id="ht-test-binomial-aprox-radio-3" name="ht-test-binomial-aprox-radio" value="ge"></td>
+										<td>
+											Cola izquierda<br>
+											<label for="ht-test-binomial-aprox-radio-3">
+												H<sub>0</sub> &equiv; (p &ge; p<sub>0</sub>)<br>
+												H<sub>1</sub> &equiv; (p &lt; p<sub>0</sub>)<br>	
+											</label>
+										</td>	
+									</tr>
+								</table>
+							</div>
+							<div class="right">
+								<button id="ht-test-binomial-aprox-start-button">Calcular</button>
+							</div>
+							<div class="clear"></div>								
+						</div>
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Nivel de Significaci&oacute;n (&#945;)</h4>
+
+							<p>
+								<input type="text" id="ht-test-binomial-aprox-alpha" readonly />
+							</p>
+							<p>
+								<button id="ht-test-binomial-aprox-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-binomial-aprox-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-binomial-aprox-slider-alpha"></div>
+						</div><!-- / -->
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Par&aacute;metros</h4>
+
+							<p>
+								<label for="ht-test-binomial-aprox-p-input">Probabilidad (p<sub>0</sub>)</label><br />
+								<input type="text" id="ht-test-binomial-aprox-p-input" readonly />
+							</p>
+							<p>
+								<button id="ht-test-binomial-aprox-p-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-binomial-aprox-p-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-binomial-aprox-p-slider"></div>
+
+							<p>
+								<label for="ht-test-binomial-aprox-x-input">Cantidad experimental (x)</label><br />
+								<input type="text" id="ht-test-binomial-aprox-x-input" readonly />
+							</p>
+							<p>
+								<button id="ht-test-binomial-aprox-x-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-binomial-aprox-x-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-binomial-aprox-x-slider"></div>
+
+							<p>
+								<label for="ht-test-binomial-aprox-n-input">Tama&ntilde;o muestral (n)</label><br />
+								<input type="text" id="ht-test-binomial-aprox-n-input" readonly />
+							</p>
+							<p>
+								<button id="ht-test-binomial-aprox-n-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-binomial-aprox-n-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-binomial-aprox-n-slider"></div>
+						</div>
+
+						<div id="ht-test-binomial-aprox-result" title="Resultados" class="">
+
+							<h4>Variable X:</h4>
+							<table>
+								<tr id="ht-test-binomial-aprox-warning">
+									<td>Advertencia: </td>
+									<td><div id="ht-test-binomial-aprox-warning-message"></div></td>
+								</tr>
+								<tr>
+									<td>Z<sub>exp</sub>: </td>
+									<td><div id="ht-test-binomial-aprox-result-z_exp"></div></td>
+								</tr>
+								<tr id="ht-test-binomial-aprox-result-p_value-row">
+									<td>Valor P: </td>
+									<td><div id="ht-test-binomial-aprox-result-p_value"></div></td>
+								</tr>
+								<tr id="ht-test-binomial-aprox-result-Za-row">
+									<td>Z<sub>&#945;</sub>: </td>
+									<td><div id="ht-test-binomial-aprox-result-za"></div></td>
+								</tr>
+								<tr id="ht-test-binomial-aprox-result-Zaa-row">
+									<td>Z<sub>&#945;/2</sub>: </td>
+									<td><div id="ht-test-binomial-aprox-result-Zaa"></div></td>
+								</tr>
+								<tr id="ht-test-binomial-aprox-result-Zab-row">
+									<td>Z<sub>1-&#945;/2</sub>: </td>
+									<td><div id="ht-test-binomial-aprox-result-Zab"></div></td>
+								</tr>
+
+								<tr>
+									<td>Interpretaci&oacute;n: </td>
+									<td><div id="ht-test-binomial-aprox-result-H0"></div></td>
+								</tr>
+							</table>
+
+						</div>
+
+						<div id="ht-test-binomial-aprox-error" title="Error" class="">
+
+							<p>Las condiciones n*p<sub>0</sub> > 5 y n*q<sub>0</sub> > 5 no se satisface. No se puede aproximar por una Normal.</p>
+
+						</div>
+
+						<script type="text/javascript">
+							//* <![CDATA[ */
+							$(document).ready(function() {
+
+								$("#ht-test-binomial-aprox-result").hide();
+								$("#ht-test-binomial-aprox-error").hide();
+								$('#ht-test-binomial-aprox-warning').hide();
+
+								/** Slider para valor alfa  */
+								$("#ht-test-binomial-aprox-slider-alpha").slider({
+									range : "min",
+									value : 0.02,
+									min : 0,
+									max : 0.5,
+									step : 0.005,
+									slide : function(event, ui) {
+										$("#ht-test-binomial-aprox-alpha").val(ui.value);
+									},
+									change : function(event, ui) {
+										$("#ht-test-binomial-aprox-alpha").val(ui.value);
+									}
+								});
+								$("#ht-test-binomial-aprox-alpha").val($("#ht-test-binomial-aprox-slider-alpha").slider('value'));
+
+								$('#ht-test-binomial-aprox-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-binomial-aprox-slider-alpha").slider("value", $("#ht-test-binomial-aprox-slider-alpha").slider('value') + $("#ht-test-binomial-aprox-slider-alpha").slider('option', 'step'));
+
+								});
+								$('#ht-test-binomial-aprox-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-binomial-aprox-slider-alpha").slider("value", $("#ht-test-binomial-aprox-slider-alpha").slider('value') - $("#ht-test-binomial-aprox-slider-alpha").slider('option', 'step'));
+
+								});
+
+								/** Slider para valor p  */
+								$("#ht-test-binomial-aprox-p-slider").slider({
+									range : "min",
+									value : 0.5,
+									min : 0.005,
+									max : 0.995,
+									step : 0.005,
+									slide : function(event, ui) {
+										$("#ht-test-binomial-aprox-p-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										$("#ht-test-binomial-aprox-p-input").val(ui.value);
+									}
+								});
+								$("#ht-test-binomial-aprox-p-input").val($("#ht-test-binomial-aprox-p-slider").slider('value'));
+
+								$('#ht-test-binomial-aprox-p-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-binomial-aprox-p-slider").slider("value", $("#ht-test-binomial-aprox-p-slider").slider('value') + $("#ht-test-binomial-aprox-p-slider").slider('option', 'step'));
+
+								});
+								$('#ht-test-binomial-aprox-p-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-binomial-aprox-p-slider").slider("value", $("#ht-test-binomial-aprox-p-slider").slider('value') - $("#ht-test-binomial-aprox-p-slider").slider('option', 'step'));
+
+								});
+
+								/** Slider para valor x  */
+								$("#ht-test-binomial-aprox-x-slider").slider({
+									range : "min",
+									value : 8,
+									min : 2,
+									max : 10000,
+									step : 1,
+									create : function(event, ui) {
+										$("#ht-test-binomial-aprox-x-input").val(ui.value);
+									},
+									slide : function(event, ui) {
+										n = + $("#ht-test-binomial-aprox-n-slider").slider('value');
+										if (n < ui.value)
+										{
+											$("#ht-test-binomial-aprox-n-slider").slider('value', ui.value);
+										}
+										$("#ht-test-binomial-aprox-x-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										n = + $("#ht-test-binomial-aprox-n-slider").slider('value');
+										if (n < ui.value)
+										{
+											$("#ht-test-binomial-aprox-n-slider").slider('value', ui.value);
+										}
+										$("#ht-test-binomial-aprox-x-input").val(ui.value);
+									}
+								});
+								$("#ht-test-binomial-aprox-x-input").val($("#ht-test-binomial-aprox-x-slider").slider('value'));
+
+								$('#ht-test-binomial-aprox-x-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-binomial-aprox-x-slider").slider("value", $("#ht-test-binomial-aprox-x-slider").slider('value') + $("#ht-test-binomial-aprox-x-slider").slider('option', 'step'));
+
+								});
+								$('#ht-test-binomial-aprox-x-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-binomial-aprox-x-slider").slider("value", $("#ht-test-binomial-aprox-x-slider").slider('value') - $("#ht-test-binomial-aprox-x-slider").slider('option', 'step'));
+
+								});
+
+								/** Slider para n */
+								$("#ht-test-binomial-aprox-n-slider").slider({
+									range : "min",
+									value : 20,
+									min : 2,
+									max : 10000,
+									step : 1,
+									create : function(event, ui) {
+										$("#ht-test-binomial-aprox-n-input").val(ui.value);
+									},
+									slide : function(event, ui) {
+										x = + $("#ht-test-binomial-aprox-x-slider").slider('value');
+										if (x > ui.value)
+										{
+											$("#ht-test-binomial-aprox-x-slider").slider('value', ui.value);
+										}
+										$("#ht-test-binomial-aprox-n-input").val(ui.value);
+									},
+									change : function(event, ui) {
+										x = + $("#ht-test-binomial-aprox-x-slider").slider('value');
+										if (x > ui.value)
+										{
+											$("#ht-test-binomial-aprox-x-slider").slider('value', ui.value);
+										}
+										$("#ht-test-binomial-aprox-n-input").val(ui.value);
+									}
+								});
+								$("#ht-test-binomial-aprox-n-input").val($("#ht-test-binomial-aprox-n-slider").slider('value'));
+
+								$('#ht-test-binomial-aprox-n-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-binomial-aprox-n-slider").slider("value", $("#ht-test-binomial-aprox-n-slider").slider('value') + $("#ht-test-binomial-aprox-n-slider").slider('option', 'step'));
+
+								});
+								$('#ht-test-binomial-aprox-n-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-binomial-aprox-n-slider").slider("value", $("#ht-test-binomial-aprox-n-slider").slider('value') - $("#ht-test-binomial-aprox-n-slider").slider('option', 'step'));
+
+								});
+
+								/** Boton de calculo */
+								$("#ht-test-binomial-aprox-start-button").button({
+									icons : {
+										secondary : "ui-icon-play"
+									},
+									text : true
+								}).click(function() {
+
+									$('#ht-test-binomial-aprox-result-Zaa-row').hide();
+									$('#ht-test-binomial-aprox-result-Zab-row').hide();
+									$('#ht-test-binomial-aprox-warning').hide();
+
+									p_0 = + $("#ht-test-binomial-aprox-p-input").val();
+									q_0 = 1- p_0;
+
+									if(! ( 0 <= p_0 && p_0 <= 1) )
+									{
+										$('#ht-test-binomial-aprox-error').dialog({modal: true}).html('Probabilidad incorrecta');
+
+										return;
+									}
+
+									x = + $("#ht-test-binomial-aprox-x-input").val();
+
+									if(x < 2)
+									{
+										$('#ht-test-binomial-aprox-error').dialog({modal: true}).html('Valor experimental (x) demasiado peque&ntilde;a.');
+
+										return;
+									}
+
+									n = + $("#ht-test-binomial-aprox-n-input").val();
+
+									if(n < 20)
+									{
+										$('#ht-test-binomial-aprox-warning').show();
+										$('#ht-test-binomial-aprox-warning-message').html('ADVERTENCIA: el tama&ntilde;o de la muestra (n) es demasiado peque&ntilde;o. Un resultado ser&aacute; v&aacute;lido con n>20.');
+									}
+
+									alpha = + $("#ht-test-binomial-aprox-alpha").val();
+									console.log(n, p_0, x);
+									//z_exp = (x - (n*p_0)) / Math.sqrt(n*p_0*(1-p_0));
+									z_exp = ((x/n) - p_0) / Math.sqrt(p_0*(1-p_0)/n);
+									
+									$('#ht-test-binomial-aprox-result-z_exp').text(z_exp);
+									p_value =  jStat.normal.cdf(z_exp, 0, 1);
+									
+									
+									za= jStat.normal.inv(alpha, 0, 1);
+									za2= jStat.normal.inv(alpha/2, 0, 1);
+
+									H0 = $('input[name=ht-test-binomial-aprox-radio]:checked').val();
+
+									var rechazarH0;
+
+									switch (H0) {
+										case 'eq':
+											// bilateral										
+
+											$('#ht-test-binomial-aprox-result-Zaa').text(-za2);
+											$('#ht-test-binomial-aprox-result-Zab').text(za2);
+											
+											//$('#ht-test-binomial-aprox-result-p_value-row').hide();
+											$('#ht-test-binomial-aprox-result-Za-row').hide();
+											$('#ht-test-binomial-aprox-result-Za-row').hide();
+											$('#ht-test-binomial-aprox-result-Zaa-row').show();
+											$('#ht-test-binomial-aprox-result-Zab-row').show();
+
+											p_value =  2*(1-jStat.normal.cdf( Math.abs(z_exp), 0, 1));
+											rechazarH0 = (p_value < alpha) ? true : false;
+											//rechazarH0 = ( p_value <= alpha/2 || p_value >= 1-(alpha/2)) ? true : false;
+
+										break;
+										case 'le':
+											// unilateral por la derecha
+											//console.log(x, n*p_0, x > n*p_0);
+											$('#ht-test-binomial-aprox-result-p_value-row').show();
+											$('#ht-test-binomial-aprox-result-Za-row').show();
+											$('#ht-test-binomial-aprox-result-za').text(-za);
+											//rechazarH0 = ( z_exp >= -za ) ? true : false;
+											p_value =  1-jStat.normal.cdf( z_exp, 0, 1);
+											rechazarH0 = (p_value < alpha) ? true : false;
+
+										break;
+										case 'ge':
+											// unilateral por la izquierda
+											$('#ht-test-binomial-aprox-result-p_value-row').show();
+											$('#ht-test-binomial-aprox-result-Za-row').show();
+											$('#ht-test-binomial-aprox-result-za').text(za);
+											//rechazarH0 = ( z_exp <= za ) ? true : false;
+											p_value =  jStat.normal.cdf( z_exp, 0, 1);
+											rechazarH0 = (p_value < alpha) ? true : false;
+
+										break;
+									}
+
+									$('#ht-test-binomial-aprox-result-p_value').text(p_value);
+
+									(rechazarH0) ? 
+										$('#ht-test-binomial-aprox-result-H0').html('Se rechaza H<sub>0</sub>') :
+										$('#ht-test-binomial-aprox-result-H0').html('NO se rechaza H<sub>0</sub>') ;
+
+									$("#ht-test-binomial-aprox-result").dialog({
+										modal: true,
+										canMaximize: true,
+										buttons: {
+											Ok: function() {
+												$( this ).dialog( "close" );
+											}
+										}
+									}).dialog('maximize');
+
+								});
+							});
+							/* ]]> */
+						</script>
+						
+						<div class="clear"></div>
+					</div>
+					<!-- ****************************************************** -->
+
+
+				</div><!-- /accordion -->
+			</div><!-- /Content -->
+
+				<div id="footer" class="ui-widget-content">
+				<p class="center">
+					Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+				</p>
+				<p class="center">
+					&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+				</p>
+			</div><!-- End footer -->
+		</div><!-- End main -->
+	</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8 />
+		<title>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</title>
+		<!-- <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> -->
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/main.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.19.custom.min.js"></script>
+		<script type="text/javascript" src="js/jquery/jquery.dialog.extra.js"></script>
+		<script type="text/javascript" src="js/flot/jquery.flot.min.js"></script>
+		<!-- <script type="text/javascript" src="js/jStat.min.js"></script> -->
+		<!-- <script type="text/javascript" src="js/jStat-1.0.0/jStat.js"></script> -->
+		<script type="text/javascript" src="js/jStat-git/jStat.js"></script>
+		<script type="text/javascript" src="js/jquery/mousehold.js"></script>
+
+		<script type="text/javascript" src="js/bootstrap/bootstrap.core.js"></script>
+		<script type="text/javascript" src="js/bootstrap/bootstrap.statistic.js"></script>
+
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.core.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.debug.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.bootstrap.js"></script>
+		<script type="text/javascript" src="js/hypothesistesting/jquery.hypothesistesting.test.ks.js"></script>
+
+		<!-- Configuracion -->
+		<script type="text/javascript" src="js/_settings.js"></script>
+		<script type="text/javascript" src="js/_ui.js"></script>
+
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+
+	</head>
+	<body>
+		<div class="main ui-widget">
+			<div class="ui-widget-header ui-corner-top">
+				<h1>Sistema Estad&iacute;stico de Contraste de Hip&oacute;tesis</h1>
+			</div>
+
+			<div class="ui-widget-content">
+
+				<div id="tabs-0"><!-- TAB: Entrada -->
+					<form name="data">
+						<label for="vectorX">Vector de datos X:</label>
+						<br />
+						<textarea id="vectorX" class="vector"></textarea>
+
+						<div class="clear"></div>
+						
+						<label for="vectorY">Vector de datos Y:</label>
+						<br />
+						<textarea id="vectorY" class="vector"></textarea>
+					</form>
+				</div><!-- /TAB: Entrada -->
+
+				<div class="accordion">
+
+
+					<!-- ****************************************************** -->
+					<!-- Comparaci&oacute;n de 2 varianzas (&#963;<sup>2</sup>) en variables Normales independientes -->
+					<!-- ****************************************************** -->
+					<h3><a href="#">Comparaci&oacute;n de 2 varianzas (&#963;<sup>2</sup>) en variables Normales independientes</a></h3>
+					<div>
+						<div class="ui-state-highlight">
+							<p>X: Variable aleatoria continua. Y: Variable aleatoria continua.</p>
+							<p>Se desea contrastrar las varianzas de 2 poblaciones: &#963;<sub>1</sub><sup>2</sup> y &#963;<sub>2</sub><sup>2</sup> usando la proporci&oacute;n entre sus varianzas experimentales (s<sub>1</sub><sup>2</sup>y s<sub>2</sub><sup>2</sup>), contra una <a target="_blank" href="http://es.wikipedia.org/wiki/Distribuci%C3%B3n_F">distribuci&oacute;n F de Snedecor</a>.</p>
+							<div class="left">
+							<table>
+								<tr>
+									<td><input type="radio" id="ht-test-param2-normal-variances-radio-1" name="ht-test-param2-normal-variances-radio" value="eq" checked></td>
+									<td>
+										Bilateral<br>
+										<label for="ht-test-param2-normal-variances-radio-1">
+											H<sub>0</sub> &equiv; (&#963;<sub>1</sub> = &#963;<sub>2</sub>) <br>
+											H<sub>1</sub> &equiv; (&#963;<sub>1</sub> &ne; &#963;<sub>2</sub>) <br>
+										</label>
+									</td>
+									<td><input type="radio" id="ht-test-param2-normal-variances-radio-2" name="ht-test-param2-normal-variances-radio" value="le"></td>
+									<td>
+										Cola derecha<br>
+										<label for="ht-test-param2-normal-variances-radio-1">
+											H<sub>0</sub> &equiv; (&#963;<sub>1</sub> &le; &#963;<sub>2</sub>)<br>
+											H<sub>1</sub> &equiv; (&#963;<sub>1</sub> &gt; &#963;<sub>2</sub>)<br>	
+										</label>
+									</td>
+									<td><input type="radio" id="ht-test-param2-normal-variances-radio-3" name="ht-test-param2-normal-variances-radio" value="ge"></td>
+									<td>
+										Cola izquierda<br>
+										H<sub>0</sub> &equiv; (&#963;<sub>1</sub> &ge; &#963;<sub>2</sub>)<br>
+											H<sub>1</sub> &equiv; (&#963;<sub>1</sub> &lt; &#963;<sub>2</sub>)<br>
+									</td>
+								</tr>
+							</table>
+							</div>
+							<div class="right">
+
+								<button id="ht-test-param2-normal-variances-get-button">Obtener Datos Muestrales</button>
+
+								<button id="ht-test-param2-normal-variances-start-button">Calcular</button>
+							</div>
+							<div class="clear"></div>						
+						</div>
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Nivel de Significaci&oacute;n (&#945;)</h4>
+
+							<p>
+								<input type="text" id="ht-test-param2-normal-variances-alpha" readonly />
+							</p>
+							<p>
+								<button id="ht-test-param2-normal-variances-leveldown">
+									Disminuir
+								</button>
+								<button id="ht-test-param2-normal-variances-levelup">
+									Aumentar
+								</button>
+							</p>
+
+							<div id="ht-test-param2-normal-variances-slider-alpha"></div>
+						</div><!-- / -->
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Par&aacute;metros de X</h4>
+
+							<form name="ht-test-param2-normal-variances">
+
+								<label for="ht-test-param2-normal-variances-sx-input">Desviaci&oacute;n Est&aacute;ndar (s<sub>x</sub>)</label><br />
+								<input type="text" name="ht-test-param2-normal-variances-sx-input" id="ht-test-param2-normal-variances-sx-input" value="0" /><br />
+			
+
+								<label for="ht-test-param2-normal-variances-nx-input">Cantidad (n<sub>x</sub>)</label><br />
+								<input type="text" name="ht-test-param2-normal-variances-nx-input" id="ht-test-param2-normal-variances-nx-input" value="10" /><br />
+
+							</form>
+						</div>
+
+						<div class="left ht-widget">
+							<h4 class="ui-widget-header">Par&aacute;metros de Y</h4>
+
+							<form name="ht-test-param2-normal-variances">
+								<label for="ht-test-param2-normal-variances-sy-input">Desviaci&oacute;n Est&aacute;ndar (s<sub>x</sub>)</label><br />
+								<input type="text" name="ht-test-param2-normal-variances-sy-input" id="ht-test-param2-normal-variances-sy-input" value="0" /><br />					
+
+
+								<label for="ht-test-param2-normal-variances-ny-input">Cantidad (n<sub>y</sub>)</label><br />
+								<input type="text" name="ht-test-param2-normal-variances-ny-input" id="ht-test-param2-normal-variances-ny-input" value="10" /><br />
+							</form>
+						</div>						
+
+						<div id="ht-test-param2-normal-variances-result" title="Resultados" class="">
+
+							<h4>Comparaci&oacute;n X / Y:</h4>
+							<table>
+								<tr>
+									<td>F<sub>exp</sub>: </td>
+									<td><div id="ht-test-param2-normal-variances-result-F_exp"></div></td>
+								</tr>
+								<tr id="ht-test-param2-normal-variances-result-p_value-row">
+									<td>Valor P: </td>
+									<td><div id="ht-test-param2-normal-variances-result-p_value"></div></td>
+								</tr>
+								<tr id="ht-test-param2-normal-variances-result-F_a-row">
+									<td>F<sub>&#945;</sub>: </td>
+									<td><div id="ht-test-param2-normal-variances-result-F_a"></div></td>
+								</tr>
+								<tr id="ht-test-param2-normal-variances-result-F_a1-row">
+									<td>F<sub>&#945;/2</sub>: </td>
+									<td><div id="ht-test-param2-normal-variances-result-F_a1"></div></td>
+								</tr>
+								<tr id="ht-test-param2-normal-variances-result-F_a2-row">
+									<td>F<sub>1-&#945;/2</sub>: </td>
+									<td><div id="ht-test-param2-normal-variances-result-F_a2"></div></td>
+								</tr>
+								<tr>
+									<td>Interpretaci&oacute;n: </td>
+									<td><div id="ht-test-param2-normal-variances-result-H0"></div></td>
+								</tr>
+							</table>
+
+						</div>
+
+						<div id="ht-test-param2-normal-variances-error" title="Error" class="">
+							<div class="ui-state-error ui-corner-all"><span class="left ui-icon ui-icon-alert"></span><p id="ht-test-param2-normal-variances-error-message"></p></div>
+						</div>
+
+						<div class="clear"></div>
+
+						<script type="text/javascript">
+							//* <![CDATA[ */
+							$(document).ready(function() {
+
+								$('#ht-test-param2-normal-variances-result').hide();
+								$('#ht-test-param2-normal-variances-error').hide();
+
+								/** Slider para valor alfa  */
+								$("#ht-test-param2-normal-variances-slider-alpha").slider({
+									range : "min",
+									value : 0.05,
+									min : 0,
+									max : 0.5,
+									step : 0.005,
+									create : function(event, ui) {
+										$("#ht-test-param2-normal-variances-alpha").val(ui.value);
+									},
+									slide : function(event, ui) {
+										$("#ht-test-param2-normal-variances-alpha").val(ui.value);
+									},
+									change : function(event, ui) {
+										$("#ht-test-param2-normal-variances-alpha").val(ui.value);
+									}
+								});
+								$("#ht-test-param2-normal-variances-alpha").val($("#ht-test-param2-normal-variances-slider-alpha").slider('value'));
+
+								$('#ht-test-param2-normal-variances-levelup').button({
+									icons : {
+										primary : "ui-icon-plus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-normal-variances-slider-alpha").slider("value", $("#ht-test-param2-normal-variances-slider-alpha").slider('value') + $("#ht-test-param2-normal-variances-slider-alpha").slider('option', 'step'));
+
+								});
+								$('#ht-test-param2-normal-variances-leveldown').button({
+									icons : {
+										primary : "ui-icon-minus"
+									},
+									text : true
+								}).mousehold(function() {
+									$("#ht-test-param2-normal-variances-slider-alpha").slider("value", $("#ht-test-param2-normal-variances-slider-alpha").slider('value') - $("#ht-test-param2-normal-variances-slider-alpha").slider('option', 'step'));
+
+								});
+
+								/** Boton GET */
+								$("#ht-test-param2-normal-variances-get-button").button().click(function() {
+									x_vector = $.hypothesistesting('parseFloatArray', $('#vectorX').val());
+									x_vector = new jStat(x_vector);
+
+									x_n = x_vector[0].length;
+									x_mean = x_vector.mean();
+									x_stdev = x_vector.stdev();
+
+									$('#ht-test-param2-normal-variances-nx-input').val(x_n);
+									$('#ht-test-param2-normal-variances-sx-input').val(x_mean);
+									//$('#ht-test-param2-normal-variances-sx-input').val(x_stdev);
+
+									y_vector = $.hypothesistesting('parseFloatArray', $('#vectorY').val());
+									y_vector = new jStat(y_vector);
+
+									y_n = y_vector[0].length;
+									y_mean = y_vector.mean();
+									y_stdev = y_vector.stdev();
+
+									$('#ht-test-param2-normal-variances-ny-input').val(y_n);
+									$('#ht-test-param2-normal-variances-sy-input').val(y_mean);
+									//$('#ht-test-param2-normal-variances-sy-input').val(y_stdev);
+								});
+
+								/** Boton de calculo */
+								$("#ht-test-param2-normal-variances-start-button").button({
+									icons : {
+										secondary : "ui-icon-play"
+									},
+									text : true
+								}).click(function() {
+
+									$('#ht-test-param2-normal-variances-result-F_a1-row').hide();
+									$('#ht-test-param2-normal-variances-result-F_a2-row').hide();
+
+									alpha = + $("#ht-test-param2-normal-variances-alpha").val();
+
+									nx = + $('#ht-test-param2-normal-variances-nx-input').val();
+									sx = + $('#ht-test-param2-normal-variances-sx-input').val();
+
+									ny = + $('#ht-test-param2-normal-variances-ny-input').val();
+									sy = + $('#ht-test-param2-normal-variances-sy-input').val();
+
+									sx2 = sx*sx;
+									sy2 = sy*sy;
+
+									F_exp = sx2 / sy2;
+
+									$('#ht-test-param2-normal-variances-result-F_exp').text(F_exp);
+									H0 = $('input[name=ht-test-param2-normal-variances-radio]:checked').val();
+									//console.log(H0);
+
+									var rechazarH0;
+
+									switch (H0) {
+										case 'eq':
+
+											F_a1 = jStat.centralF.inv(alpha/2, nx-1, ny-1);
+											F_a2 = jStat.centralF.inv(1-(alpha/2), nx-1, ny-1);
+
+											$('#ht-test-param2-normal-variances-result-F_a1').text(F_a1);
+											$('#ht-test-param2-normal-variances-result-F_a2').text(F_a2);
+											
+											$('#ht-test-param2-normal-variances-result-F_a-row').hide();
+											$('#ht-test-param2-normal-variances-result-F_a1-row').show();
+											$('#ht-test-param2-normal-variances-result-F_a2-row').show();
+
+											p_value =  Math.min(
+												2*(jStat.centralF.cdf( F_exp, nx-1, ny-1)), 
+												2*(1-jStat.centralF.cdf( F_exp, nx-1, ny-1))
+											);
+
+											rechazarH0 = (p_value < alpha) ? true : false;
+
+										break;
+										case 'le':
+										
+											F_a = jStat.centralF.inv(1-alpha, nx-1, ny-1);
+
+											$('#ht-test-param2-normal-variances-result-p_value-row').show();
+											$('#ht-test-param2-normal-variances-result-F_a-row').show();
+											$('#ht-test-param2-normal-variances-result-F_a').text(F_a);
+
+											p_value =  1-jStat.centralF.cdf( F_exp, nx-1, ny-1);
+											rechazarH0 = (p_value < alpha) ? true : false;
+
+										break;
+										case 'ge':
+
+											F_a = jStat.centralF.inv(alpha, nx-1, ny-1);
+
+											$('#ht-test-param2-normal-variances-result-p_value-row').show();
+											$('#ht-test-param2-normal-variances-result-F_a-row').show();
+											$('#ht-test-param2-normal-variances-result-F_a').text(F_a);
+
+											p_value =  jStat.centralF.cdf( F_exp, nx-1, ny-1);
+											rechazarH0 = (p_value < alpha) ? true : false;
+
+										break;
+									}
+
+									$('#ht-test-param2-normal-variances-result-p_value').text(p_value);
+
+									(rechazarH0) ? 
+										$('#ht-test-param2-normal-variances-result-H0').html('Se rechaza H<sub>0</sub>') :
+										$('#ht-test-param2-normal-variances-result-H0').html('NO se rechaza H<sub>0</sub>') ;
+
+									$("#ht-test-param2-normal-variances-result").dialog({
+										modal: true,
+										canMaximize: true,
+										buttons: {
+											Ok: function() {
+												$( this ).dialog( "close" );
+											}
+										}
+									}).dialog('maximize');
+
+								});
+							});
+							/* ]]> */
+						</script>						
+						
+						<div class="clear"></div>
+					</div>
+					<!-- ****************************************************** -->
+					
+				</div><!-- /accordion -->
+			</div><!-- /Content -->
+
+				<div id="footer" class="ui-widget-content">
+				<p class="center">
+					Desarrollado por <a href="http://gon.cl/">Gonzalo D&iacute;az Cruz</a>
+				</p>
+				<p class="center">
+					&copy; 2012 | <a href="http://www.usach.cl/">Universidad de Santiago de Chile</a>
+				</p>
+			</div><!-- End footer -->
+		</div><!-- End main -->
+	</body>
+</html>
