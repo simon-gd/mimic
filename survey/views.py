@@ -35,7 +35,7 @@ def get_active_survey():
         return 0
     return surveys[0]
 
-def create_experiment_session(request, worker_id, survey):
+def create_experiment_session(request, worker_id, condition, survey):
     try:
         # user exists
         user = ExperimentUser.objects.get(worker_id=worker_id)
@@ -50,15 +50,15 @@ def create_experiment_session(request, worker_id, survey):
         #return HttpResponseRedirect(reverse('no_active_survey'))
     else:
         # figure condition counts
-        all_experiments = Experiment.objects.filter(survey=survey)
-        conditions_counts = []
-        for i in range(0,survey.condition_count):
-            conditions_counts.append(0)
+        #all_experiments = Experiment.objects.filter(survey=survey)
+        #conditions_counts = []
+        #for i in range(0,survey.condition_count):
+        #    conditions_counts.append(0)
 
-        for experiment in all_experiments:
-            conditions_counts[experiment.survey_condition] += 1
+        #for experiment in all_experiments:
+        #    conditions_counts[experiment.survey_condition] += 1
         
-        min_index, min_value = min(enumerate(conditions_counts), key=operator.itemgetter(1))
+        #min_index, min_value = min(enumerate(conditions_counts), key=operator.itemgetter(1))
         #print("create_experiment_session", min_index, conditions_counts)
         # didn't take the survey yet
         # update their data
@@ -87,7 +87,7 @@ def create_experiment_session(request, worker_id, survey):
 
         experiment = Experiment.objects.create(user=user,
                                              survey=survey,
-                                             survey_condition=min_index,
+                                             survey_condition=condition,
                                              session_key=request.session.session_key,
                                              remote_address=REMOTE_ADDR,
                                              remote_host=REMOTE_HOST,
@@ -176,39 +176,55 @@ def reset(request):
     request.session.flush()
     return HttpResponseRedirect(reverse('survey'))
 
+"""
 def appendData(oldData, newData):
-    prevMouseData = json.loads(oldData.encode('utf-8'))
+    oldDataDec = zlib.decompress(oldData.encode('latin1'))
+    prevMouseData = json.loads(oldDataDec.encode('utf-8'))
     if not prevMouseData:
        return newData
+
     newMouseData = json.loads(newData.encode('utf-8'))
     concatMouseData = prevMouseData+newMouseData
-    return json.dumps(concatMouseData)
 
+    compressedMouseData = zlib.compress(mouseData).decode('latin1')
+
+    return json.dumps(concatMouseData)
+"""
+# Used to save questions via json
 def save_question(request):
     survey = get_active_survey()
     if not survey:
         return redirect(reverse('no_active_survey'))
     
-    if request.session.has_key('worker_id'):
+    if "worker_id" in request.GET:
+        worker_id = request.GET["worker_id"]
+    elif "worker_id" in request.POST:
+            worker_id = request.POST["worker_id"]
+    elif request.session.has_key('worker_id'):
         worker_id = request.session['worker_id']
     else:
-        if request.method == 'POST' and "WorkerId" in request.POST:
-            worker_id = request.POST["WorkerId"]
-        else:
-            if "WorkerId" not in request.GET:
-                return redirect(reverse('need_worker_id'))
-            worker_id = request.GET["WorkerId"]
-        request.session['worker_id'] = worker_id
+        return redirect(reverse('need_worker_id'))
+    request.session['worker_id'] = worker_id
+    
+    if "condition" in request.GET:
+        condition = request.GET["condition"]
+    elif "condition" in request.POST:
+        condition = request.POST["condition"]
+    elif request.session.has_key('condition'):
+        condition = request.session['condition']
+    else:
+        return redirect(reverse('need_worker_id'))
+    request.session['condition'] = condition
 
     user = None
     if request.session.has_key('experiment_id'):
         experiment = get_object_or_404(Experiment, id=request.session['experiment_id'])
         if experiment.survey != survey:
-            experiment, user = create_experiment_session(request, worker_id, survey)
+            experiment, user = create_experiment_session(request, worker_id, condition, survey)
         else:
             user = ExperimentUser.objects.get(worker_id=worker_id)
     else:
-        experiment, user = create_experiment_session(request, worker_id, survey)
+        experiment, user = create_experiment_session(request, worker_id, condition, survey)
     
     if experiment == None or user == None:
         return redirect(reverse('no_active_survey'))
@@ -220,29 +236,29 @@ def save_question(request):
     if total_questions < 1:
         return HttpResponseRedirect(reverse('no_active_survey'))
 
-    if request.session.has_key('current_question'):
-        current_question_num =  request.session['current_question']
-    else:
-        current_question_num = 0
-        request.session['current_question'] = current_question_num
-    current_question = questions[current_question_num]
-    
     if request.method == 'POST':
-        mouseData = request.POST['mouseData']
-        #print("save_question, mouseData len: ",len(mouseData))
-        if request.session.has_key('current_question'):
-            current_question_num =  request.session['current_question']
+        if 'currentQ' in request.POST:
+            current_question_num = int(request.POST['currentQ'])
         else:
             current_question_num = 0
-            request.session['current_question'] = current_question_num
-        try:
-            expAns = ExperimentAnswer.objects.get(question=current_question,experiment=experiment, user=user)
-            expAns.mouseData = appendData(expAns.mouseData, mouseData)
-            expAns.save()
-        except ObjectDoesNotExist:
-            ExperimentAnswer.objects.create(question=current_question, experiment=experiment, user=user, mouseData=mouseData)
+        current_question = questions[current_question_num]
 
-    
+        compressedMouseData = ""
+        if 'mouseData' in request.POST:
+            mouseData = request.POST['mouseData']
+            compressedMouseData = zlib.compress(mouseData).decode('latin1')
+        
+        answer = ""
+        if 'answer' in request.POST:
+            answer = request.POST['answer']
+
+        confidence = 0
+        if 'confidence' in request.POST:
+            confidence = request.POST['confidence']
+        
+
+        ExperimentAnswer.objects.create(question=current_question, experiment=experiment, user=user, mouseData=compressedMouseData, answer=answer, confidence=confidence)
+
     return HttpResponse('{"status": "Done"}\n', mimetype="application/json")
 
 @desktop_only
@@ -252,29 +268,41 @@ def home(request):
     if not survey:
         return redirect(reverse('no_active_survey'))
     
-    if request.session.has_key('worker_id'):
+    if "worker_id" in request.GET:
+        worker_id = request.GET["worker_id"]
+    elif "worker_id" in request.POST:
+            worker_id = request.POST["worker_id"]
+    elif request.session.has_key('worker_id'):
         worker_id = request.session['worker_id']
     else:
-        if "WorkerId" not in request.GET:
-            return redirect(reverse('need_worker_id'))
-        worker_id = request.GET["WorkerId"]
-        request.session['worker_id'] = worker_id
+        return redirect(reverse('need_worker_id'))
+    request.session['worker_id'] = worker_id
+    
+    if "condition" in request.GET:
+        condition = request.GET["condition"]
+    elif "condition" in request.POST:
+        condition = request.POST["condition"]
+    elif request.session.has_key('condition'):
+        condition = request.session['condition']
+    else:
+        return redirect(reverse('need_worker_id'))
+    request.session['condition'] = condition
 
     user = None
     if request.session.has_key('experiment_id'):
         try:
             experiment = get_object_or_404(Experiment, id=request.session['experiment_id'])
-            if experiment.survey != survey:
-                experiment, user = create_experiment_session(request, worker_id, survey)
+            if experiment.survey != survey or experiment.condition != condition:
+                experiment, user = create_experiment_session(request, worker_id, condition, survey)
             else:
                 try:
                     user = ExperimentUser.objects.get(worker_id=worker_id)
                 except:
-                    experiment, user = create_experiment_session(request, worker_id, survey)
+                    experiment, user = create_experiment_session(request, worker_id, condition, survey)
         except:
-            experiment, user = create_experiment_session(request, worker_id, survey)
+            experiment, user = create_experiment_session(request, worker_id, condition, survey)
     else:
-        experiment, user = create_experiment_session(request, worker_id, survey)
+        experiment, user = create_experiment_session(request, worker_id, condition, survey)
     
     if experiment == None or user == None:
         return redirect(reverse('no_active_survey'))
@@ -286,81 +314,107 @@ def home(request):
     if total_questions < 1:
         return HttpResponseRedirect(reverse('no_active_survey'))
 
-    if request.session.has_key('current_question'):
-        current_question_num =  request.session['current_question']
-    else:
-        current_question_num = 0
-        request.session['current_question'] = current_question_num
-    
+    current_question_num = 0
     if request.method == 'POST': # If the form has been submitted...
         #validate the Current question
         if request.POST.has_key('currentQ'):
             currentQ = int(request.POST['currentQ'])-1
             if currentQ != current_question_num:
                 current_question_num = int(request.POST['currentQ'])
-                request.session['current_question'] = current_question_num
         answer_text = ""
         if request.POST.has_key('answer'):
-            answer_text = request.POST['answer']
+            if request.POST.has_key('answer'):
+                answer_text = request.POST['answer']
             confidence = 0
             if request.POST.has_key('confidence'):
                 confidence = request.POST['confidence']
             current_question = questions[current_question_num]
-            mouseData = request.POST['mouseData']
-            try:
-                expAns = ExperimentAnswer.objects.get(question=current_question,experiment=experiment, user=user)
-                expAns.answer=answer_text
-                expAns.confidence = confidence
-                expAns.mouseData = appendData(expAns.mouseData, mouseData)
-                expAns.finished = True
-                expAns.save()
-            except ObjectDoesNotExist:
-                ExperimentAnswer.objects.create(question=current_question, answer=answer_text, experiment=experiment, user=user, mouseData=mouseData, finished=True, confidence=confidence)
+
+            compressedMouseData = ""
+            if request.POST.has_key('mouseData'):
+                mouseData = request.POST['mouseData']
+                compressedMouseData = zlib.compress(mouseData).decode('latin1')
+            ExperimentAnswer.objects.update_or_create(question=current_question, answer=answer_text, experiment=experiment, user=user, mouseData=compressedMouseData, finished=True, confidence=confidence)
             # lets move on to the next question
             current_question_num += 1
+            
             if current_question_num >= total_questions: # All validation rules pass
-                request.session['current_question'] = current_question_num
-                experiment.finished = True
-                experiment.save()
-                return HttpResponseRedirect(reverse('done')) # Redirect after POST
-            request.session['current_question'] = current_question_num
+                # Check that we are actually done
+                expected_answers = SurveyMembership.objects.filter(survey=survey).count()
+                actual_answers = ExperimentAnswer.objects.filter(experiment=experiment).count()
+               
+                if expected_answers==actual_answers:
+                    if not experiment.finished:
+                        experiment.finished = True
+                        experiment.save()
+                    return HttpResponseRedirect(reverse('done')) # Redirect after POST
+                else:
+                    experiment.finished = False
+                    experiment.save()
             current_question = questions[current_question_num]
         else:
-            # didn't answer the question,
-            # but lets still create the answer to put the mouseData there
-            mouseData = request.POST['mouseData']
-            current_question = questions[current_question_num]
-            try:
-                expAns = ExperimentAnswer.objects.get(question=current_question,experiment=experiment, user=user)
-                expAns.mouseData = appendData(expAns.mouseData, mouseData)
-                expAns.finished = False
-                expAns.save()
-            except ObjectDoesNotExist:
-                ExperimentAnswer.objects.create(question=current_question, answer=None, experiment=experiment, user=user, mouseData=mouseData, finished=False)
+            if current_question_num >= total_questions: # All validation rules pass
+                # Check that we are actually done
+                expected_answers = SurveyMembership.objects.filter(survey=survey).count()
+                actual_answers = ExperimentAnswer.objects.filter(experiment=experiment).count()
+               
+                if expected_answers==actual_answers:
+                    if not experiment.finished:
+                        experiment.finished = True
+                        experiment.save()
+                    return HttpResponseRedirect(reverse('done')) # Redirect after POST
+                else:
+                    experiment.finished = False
+                    experiment.save()
+            compressedMouseData = ""
+            if request.POST.has_key('mouseData'):
+                mouseData = request.POST['mouseData']
+                compressedMouseData = zlib.compress(mouseData).decode('latin1')
+                current_question = questions[current_question_num]
+                ExperimentAnswer.objects.update_or_create(question=current_question, answer=None, experiment=experiment, user=user, mouseData=compressedMouseData, finished=False)
     else:
-        if current_question_num >= total_questions: # All validation rules pass
-            if not experiment.finished:
-                experiment.finished = True
-                experiment.save()
-            return HttpResponseRedirect(reverse('done')) # Redirect after POST
-        current_question = questions[current_question_num]
+       if current_question_num >= total_questions: # All validation rules pass
+                # Check that we are actually done
+                expected_answers = SurveyMembership.objects.filter(survey=survey).count()
+                actual_answers = ExperimentAnswer.objects.filter(experiment=experiment).count()
+               
+                if expected_answers==actual_answers:
+                    if not experiment.finished:
+                        experiment.finished = True
+                        experiment.save()
+                    return HttpResponseRedirect(reverse('done')) # Redirect after POST
+                else:
+                    experiment.finished = False
+                    experiment.save()
+
     if current_question_num >= total_questions: # All validation rules pass
-        if not experiment.finished:
-            experiment.finished = True
-            experiment.save()
-        return HttpResponseRedirect(reverse('done')) # Redirect after POST
+                # Check that we are actually done
+                expected_answers = SurveyMembership.objects.filter(survey=survey).count()
+                actual_answers = ExperimentAnswer.objects.filter(experiment=experiment).count()
+               
+                if expected_answers==actual_answers:
+                    if not experiment.finished:
+                        experiment.finished = True
+                        experiment.save()
+                    return HttpResponseRedirect(reverse('done')) # Redirect after POST
+                else:
+                    experiment.finished = False
+                    experiment.save()
     #jsonString = '{"question": "how are you?"}'
     #questionData = json.loads(jsonString)
-    
-    
-    return render(request, 'question_v2.html',
+    if len(questions) > current_question_num:
+        current_question = questions[current_question_num]
+    else:
+        current_question = questions[current_question_num-1]
+   # current_question
+    return render(request, 'question_v3.html',
                               {'error': error,
                                'user':user,
                                'worker_id':worker_id,
                                'survey':survey,
                                'question_template': current_question.template,
                                'question':current_question.data,
-                               'condition': experiment.survey_condition,
+                               'condition': condition,
                                'qnum':current_question_num,
                                'qtotal':total_questions-1 })
     

@@ -91,11 +91,11 @@
     });
 </script>
 
-<form id="mainForm" action="/?WorkerId={{worker_id}}" method="post">{% csrf_token %}
+<form id="mainForm" action="/?worker_id={{worker_id}}" method="post">{% csrf_token %}
     <input type="hidden" id="mouseData" name="mouseData" value="">
     <input type="hidden" id="currentQ" name="currentQ" value="{{qnum}}">
     <input type="hidden" id="answer" name="answer" value="">
-    <input type="hidden" name="WorkerID" value="{{worker_id}}">
+    <input type="hidden" name="worker_id" value="{{worker_id}}">
     
 
 

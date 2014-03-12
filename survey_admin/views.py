@@ -23,6 +23,10 @@ from survey_admin.models import CodeFile
 
 from django.conf import settings
 from scipy import stats
+from azure.storage import *
+from mimic.settings import local as settings
+
+from pymongo import MongoClient
 
 # Survey Admin Views
 
@@ -123,7 +127,69 @@ def processLine(line):
 
 @staff_member_required
 def json_preprocess_answers(request, survey_id):
-    return json_preprocess_answers_v1(request, survey_id)
+    #return save_answers_to_azure(request, survey_id)
+    #return json_preprocess_answers_v1(request, survey_id)
+    #return json_preprocess_answers_to_mongodb(request, survey_id)
+    return HttpResponse('{"status":"done"}', mimetype="application/json")
+
+def json_preprocess_answers_to_mongodb(request, survey_id):
+    client = MongoClient('localhost', 27017)
+    user_name = "admin"
+    survey = get_object_or_404(Survey, id=survey_id)
+    collection_name = "survey-"+str(survey.id)
+    db = client["mimic_"+user_name]
+    collection = db[collection_name]
+    expAns = ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True)
+    for a in expAns:
+        rawEventData = a.mouseData
+        if survey_id=='4' and rawEventData[0] != "[":
+            eventData = zlib.decompress(rawEventData.encode('latin1'))
+        else:
+            eventData = rawEventData
+        try:
+            #blob_service.get_blob_metadata(container_name, "ExperimentAnswer-"+str(a.id)+'.json')
+            ans = {"experiment_id": a.experiment.id,
+                    "survey_condition": a.experiment.survey_condition,
+                    "remote_address": a.experiment.remote_address,
+                    "http_user_agent":a.experiment.http_user_agent,
+                    "question_id": a.question.id,
+                    "correct_answer": json.loads(a.question.correct_answer.encode('utf-8')),
+                    "answer": json.loads(a.answer.encode('utf-8')),
+                    "confidence":a.confidence,
+                    "participant_id":a.user.id,
+                    "participant_worker_id":a.user.worker_id,
+                    "submitted_at":a.submitted_at,
+                    "event_data": json.loads(eventData.encode('utf-8')),
+            }
+            ans_id = collection.insert(ans)
+            print("inserted: ", ans_id)
+        except e: 
+            print("error: ", e)
+
+    return HttpResponse('{"status":"done"}', mimetype="application/json")
+@staff_member_required
+def save_answers_to_azure(request, survey_id):
+    user_name = "admin"
+    survey = get_object_or_404(Survey, id=survey_id)
+    container_name = "survey-"+str(survey.id)
+    
+    blob_service = BlobService(account_name=settings.AZURE_STORAGE_ACCOUNT, account_key=settings.AZURE_STORAGE_KEY)
+    blob_service.create_container(container_name)
+    
+    expAns = ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True)
+    for a in expAns:
+        rawEventData = a.mouseData
+        if survey_id=='4' and rawEventData[0] != "[":
+            eventData = zlib.decompress(rawEventData.encode('latin1'))
+        else:
+            eventData = rawEventData
+        try:
+            blob_service.get_blob_metadata(container_name, "ExperimentAnswer-"+str(a.id)+'.json')
+        except: 
+            with open('media/ExperimentAnswer-'+str(a.id)+'.json', 'w') as outfile:
+                json.dump(eventData, outfile)
+            blob_service.put_blob(container_name, "ExperimentAnswer-"+str(a.id)+'.json', eventData, x_ms_blob_type='BlockBlob')
+    return HttpResponse('{"status":"done"}', mimetype="application/json")
 
 def json_preprocess_answers_v1(request, survey_id):
     #old style interaction data processing version 2
@@ -504,15 +570,19 @@ def debug_question(request, question_id):
     question = get_object_or_404(Question, id=question_id)
     if "tracking" in request.GET:
         # XXX hack
-        if question.id > 13:
-            t = 'question_v2.html'
-        else:
-            t = 'question_v1.html'
+        t = question.base_template
+        #if question.id > 13:
+        #    t = 'question_v2.html'
+        #if question.id > 13:
+        #    t = 'question_v2.html'
+        #else:
+        #    t = 'question_v1.html'
     else:
-        if question.id > 13:
-            t = 'question_v2_no_tracking.html'
-        else:
-            t = 'question_v1_no_tracking.html'
+        t = "no_tracking_"+question.base_template
+        #if question.id > 13:
+        #    t = 'question_v2_no_tracking.html'
+        #else:
+        #    t = 'question_v1_no_tracking.html'
     print(t)
     
     return render(request, t, {'question_template': question.template, 'question': question.data, 'condition':condition, 'qnum':1,'qtotal':1})

@@ -29,6 +29,7 @@ EXP_STATE_TYPES = (
 
 class Question(models.Model):
     slug = models.SlugField(_('Slug'), max_length=255, unique=True)
+    base_template = models.CharField(max_length=255, default="question_v2.html")
     template = models.CharField(max_length=255)
     correct_answer = models.TextField(blank=True, null=True)
     data = models.TextField()
@@ -37,7 +38,7 @@ class Question(models.Model):
 
 class Survey(models.Model):
     slug = models.SlugField(_('Slug'), max_length=255, unique=True)
-    pub_date = models.DateTimeField(_('Date published'), default=datetime.datetime.now)
+    pub_date = models.DateTimeField(_('Date published'))
     questions = models.ManyToManyField(Question, blank=True, null=True, through='SurveyMembership')
     active = models.BooleanField(_('Survey is active'), default=False)
     survey_code = models.CharField(max_length=255,default="2lMGut4I4h")
@@ -132,20 +133,24 @@ class ExperimentAnswerProcessed(models.Model):
     
     def __unicode__(self):
         return str(self.answer)
-
 """
-class Comments(models.Model):
+class Category(models.Model):
+    name = models.CharField(max_length=255, blank=False, null=False)
+    def __unicode__(self):
+        return str(self.text)
+
+class Comment(models.Model):
     text = models.TextField(blank=True)
     answers = models.ManyToManyField(ExperimentAnswerProcessed, blank=True, null=True, through='AnswerCommentRelationship')
+    categories = models.ManyToManyField(Category, blank=True, null=True)
     creation_date = models.DateTimeField(auto_now=True, blank=True)
     def __unicode__(self):
-        return str(self.answer)
+        return str(self.text)
 
 class AnswerCommentRelationship(models.Model):
     answer = models.ForeignKey(ExperimentAnswerProcessed)
-    comment = models.ForeignKey(Question)
-    order = models.IntegerField()
-    
+    comment = models.ForeignKey(Comment)
+    events = models.TextField()
     
     def __unicode__(self):
         return self.answer.pk + " " + self.comment.pk

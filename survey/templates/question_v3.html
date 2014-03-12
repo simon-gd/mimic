@@ -1,5 +1,37 @@
-{% extends "base_micallef.html" %}
+{% extends "base_v2.html" %}
 {% load staticfiles %}
+
+{% block extra_css %}
+<style>
+#wrapper_div2 {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    display: block;
+}
+.width100{
+    width: 100%;
+}
+.height100{
+    height: 100%;
+}
+
+.height_em{
+    width: 1em;
+    height: 1em;
+}
+
+.scaled_text{
+    font-size: 16px;
+    font-size: 1.2vh;
+}
+
+h3{
+    font-size: 18px;
+    font-size: 3vw; 
+}
+</style>
+{% endblock extra_css %}
 
 {% block extra_head %}
 <script type="text/javascript">
@@ -134,7 +166,7 @@
            
             
         }else{
-            console.warning("didn't find the element", e, eventRaw, idName);
+            console.error("didn't find the element", e, eventRaw, idName);
         }
     }
     function logFormatted(e, typeOverwrite) {
@@ -415,17 +447,15 @@
         }
         logFormatted(e);
       });
-      $(document).on(screenfull.raw.fullscreenchange, function () {
-          console.log('Fullscreen change');
-          alert('Fullscreen change');
-      });
+     
     }); //$(document).ready(function() {
     
-  
 </script>
 {% endblock extra_head %}
 
 {% block content %}
+ <div id="wrapper_div2">
         {% include question_template %}
+</div>
 {% endblock content %}
 

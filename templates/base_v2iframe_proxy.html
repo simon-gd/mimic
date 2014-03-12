@@ -1,0 +1,23 @@
+﻿{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>experiscope</title>
+
+  
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.0.min.js"></script>     
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script language="javascript">
+        $(function () {
+            var search = window.location.search;
+            $("#myiframe").attr("src", $("#myiframe").attr("src") + search);
+        });
+    </script>
+  </head>
+<body id="body" style="margin:0px;padding:0px;overflow:hidden; height:100%">
+    <iframe id="myiframe" name="myiframe" src="/survey/run" frameborder="0" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%"></iframe>
+</body>
+</html>
