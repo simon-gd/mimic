@@ -241,7 +241,8 @@ def save_question(request):
             current_question_num = int(request.POST['currentQ'])
         else:
             current_question_num = 0
-        current_question = questions[current_question_num]
+
+        current_question = questions[current_question_num-1]
 
         compressedMouseData = ""
         if 'mouseData' in request.POST:
@@ -328,7 +329,7 @@ def home(request):
             confidence = 0
             if request.POST.has_key('confidence'):
                 confidence = request.POST['confidence']
-            current_question = questions[current_question_num]
+            current_question = questions[current_question_num-1]
 
             compressedMouseData = ""
             if request.POST.has_key('mouseData'):
@@ -342,8 +343,8 @@ def home(request):
                 # Check that we are actually done
                 expected_answers = SurveyMembership.objects.filter(survey=survey).count()
                 actual_answers = ExperimentAnswer.objects.filter(experiment=experiment).count()
-               
-                if expected_answers==actual_answers:
+                print(current_question_num, total_questions, expected_answers, actual_answers)
+                if expected_answers>=actual_answers:
                     if not experiment.finished:
                         experiment.finished = True
                         experiment.save()
@@ -351,14 +352,14 @@ def home(request):
                 else:
                     experiment.finished = False
                     experiment.save()
-            current_question = questions[current_question_num]
+            current_question = questions[current_question_num-1]
         else:
             if current_question_num >= total_questions: # All validation rules pass
                 # Check that we are actually done
                 expected_answers = SurveyMembership.objects.filter(survey=survey).count()
                 actual_answers = ExperimentAnswer.objects.filter(experiment=experiment).count()
-               
-                if expected_answers==actual_answers:
+                print(current_question_num, total_questions, expected_answers, actual_answers)
+                if expected_answers>=actual_answers:
                     if not experiment.finished:
                         experiment.finished = True
                         experiment.save()
@@ -370,15 +371,15 @@ def home(request):
             if request.POST.has_key('mouseData'):
                 mouseData = request.POST['mouseData']
                 compressedMouseData = zlib.compress(mouseData).decode('latin1')
-                current_question = questions[current_question_num]
+                current_question = questions[current_question_num-1]
                 ExperimentAnswer.objects.update_or_create(question=current_question, answer=None, experiment=experiment, user=user, mouseData=compressedMouseData, finished=False)
     else:
        if current_question_num >= total_questions: # All validation rules pass
                 # Check that we are actually done
                 expected_answers = SurveyMembership.objects.filter(survey=survey).count()
                 actual_answers = ExperimentAnswer.objects.filter(experiment=experiment).count()
-               
-                if expected_answers==actual_answers:
+                print(current_question_num, total_questions, expected_answers, actual_answers)
+                if actual_answers >= expected_answers:
                     if not experiment.finished:
                         experiment.finished = True
                         experiment.save()
@@ -391,8 +392,8 @@ def home(request):
                 # Check that we are actually done
                 expected_answers = SurveyMembership.objects.filter(survey=survey).count()
                 actual_answers = ExperimentAnswer.objects.filter(experiment=experiment).count()
-               
-                if expected_answers==actual_answers:
+                print(current_question_num, total_questions, expected_answers, actual_answers)
+                if actual_answers >= expected_answers:
                     if not experiment.finished:
                         experiment.finished = True
                         experiment.save()
@@ -402,10 +403,10 @@ def home(request):
                     experiment.save()
     #jsonString = '{"question": "how are you?"}'
     #questionData = json.loads(jsonString)
-    if len(questions) > current_question_num:
-        current_question = questions[current_question_num]
-    else:
+    if len(questions) > current_question_num and current_question_num > 0:
         current_question = questions[current_question_num-1]
+    else:
+        current_question = questions[0]
    # current_question
     return render(request, 'question_v3.html',
                               {'error': error,

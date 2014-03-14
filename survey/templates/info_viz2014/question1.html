@@ -61,6 +61,13 @@
         return s;
     }
 
+    function checkResolution(width,height){
+        if(screen.width < width || screen.height < height){
+            window.location.replace("./survey/not_supported/");
+        }
+
+    }
+
     $(document).ready(function() {
         var questionData = {{ question|safe}};
         var questionCondition = {{ condition|safe}};
@@ -79,9 +86,19 @@
         $('#scenario_question').html(getHTMLforQuestion(question));
         $('#scenario_diagram').html(getHTMLforDiagram(c1_image_path, condition));
 
+        checkResolution(1024,768);
+        
+        // First submit to start
+        $('#submitButton1').click(function() {
+            current_question++;
+            showPage("#page"+current_question.toString());
+            $('#submitButton1').prop('disabled', true);
+        });
+        
+        // Question submits
         $('.submit').click(function() {
             $(".error").html("");
-            if(current_question == 1){
+            if(current_question == 0){
                 var a1 = $('input:text[name=answer1]').val();
                 var a2 = $('input:text[name=answer2]').val();
                 confidence = $('input:radio[name=confidence]:checked').val();
@@ -223,7 +240,7 @@
 <div id="submit_button_div1" class="submit_button_div">
 <hr id="hr2">
 <p class="scaled_text" id="question1"><b id="bold7">Full Screen Mode</b> entered successfully, please proceed to take the survey.</p>
-<input class="btn btn-default submit" id="submitButton1" type="submit" name="submit" value="Next page">
+<input class="btn btn-default" id="submitButton1" type="submit" name="submit" value="Next page">
 <font id="font1" color="#999999"><div id="firstbuttonmessage">(you cannot return to this page afterwards)</div></font>
 <div id="error" class="error text-danger"></div>
 </div>
