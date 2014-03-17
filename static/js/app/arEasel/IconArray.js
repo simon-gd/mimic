@@ -66,7 +66,7 @@ IconArrayDiagram.prototype.createLegend = function(nodes)
 {
 	var legend = {};
 	for(var i=0; i < nodes.length; i++){
-		console.log(nodes[i].name);
+		//console.log(nodes[i].name);
 		if(!legend[nodes[i].name])
 		{
 			legend[nodes[i].name] = {name: nodes[i].name, detail: nodes[i].detail, size: nodes[i].size, color: this.getColor(nodes[i].name), border: this.isStrokeEnabled(nodes[i].name)};
@@ -100,7 +100,7 @@ IconArrayDiagram.prototype.initialize = function(data, width, height, interactio
 	
 	var icon_size = this.width / columns;
 	icon_size = Math.max(3, icon_size);
-	icon_size = Math.min(12, icon_size);
+	icon_size = Math.min(22, icon_size);
 	
 	for(var i=0; i < this.nodes.length; i++){
 		var node = this.nodes[i];
@@ -115,11 +115,11 @@ IconArrayDiagram.prototype.initialize = function(data, width, height, interactio
 				shape.height = icon_size; //node.dy;
 				shape.isStrokeEnabled = this.isStrokeEnabled(node.name);
 				//console.log(node.name);
-				var stroke_color = colorbrewer.Set3[12];
+				var stroke_color = "#000";// colorbrewer.Set3[12][5];
 				if(shape.isStrokeEnabled){
-					shape.graphics.beginStroke(stroke_color[5]).setStrokeStyle (2);
+					shape.graphics.beginStroke(stroke_color).setStrokeStyle (2);
 				}else{
-					shape.graphics.beginStroke(stroke_color[4]).setStrokeStyle (2);
+					//shape.graphics.beginStroke(stroke_color[4]).setStrokeStyle (0);
 				}
 				shape.graphics.beginFill(createjs.Graphics.getRGB(shape.color.r,shape.color.g, shape.color.b, 1.0)).drawCircle(0, 0, shape.width/2);
 				iconDiagram.addChild(shape);
@@ -144,12 +144,12 @@ IconArrayDiagram.prototype.initialize = function(data, width, height, interactio
 			shape.height = 14; //node.dy;
 			shape.isStrokeEnabled = this.isStrokeEnabled(key);
 			//console.log(node.name);
-			var stroke_color = colorbrewer.Set3[12];
+			var stroke_color = "#000";//colorbrewer.Set3[12][5];
 			
 			if(shape.isStrokeEnabled){
-				shape.graphics.beginStroke(stroke_color[5]).setStrokeStyle (2);
+				shape.graphics.beginStroke(stroke_color).setStrokeStyle (2);
 			}else{
-				shape.graphics.beginStroke(stroke_color[4]).setStrokeStyle (2);
+				//shape.graphics.beginStroke(stroke_color[4]).setStrokeStyle (2);
 			}
 			shape.graphics.beginFill(createjs.Graphics.getRGB(shape.color.r,shape.color.g, shape.color.b, 1.0)).drawCircle(shape.width/2+1, shape.width/2+1, shape.width/2);
 			legendContainer.addChild(shape);

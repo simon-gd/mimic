@@ -1,0 +1,69 @@
+
+--- Counts
+--- Mammography problem
+{name: "Tree Diagram", interactionLevel: 1, graph: {name:"", size:1000, units:"Women", detail: "All Woman", 
+				children: 
+				[ 
+				 {name:"A'", detail: "Does Not Have Breast Cancer", size: 990, units:"Woman", 
+					children:[{name:"B", size: 95, units:"%", detail: "Got Positive Mammography"}, 
+					          {name:"B'", size: 895, units:"Women", detail: "Got Negative Mammography"}]},
+				{name:"A", detail: "Have Breast Cancer", size: 10, units:"Women", 
+					children:[{name:"B", size: 8, units:"Women", detail: "Got Positive Mammography"}, 
+							  {name:"B'", size: 2,units:"Women", detail: "Got Negative Mammography"}]},
+				]},
+}
+
+
+{name: "Tree Diagram", interactionLevel: 1, graph: {name:"", size:1000, units:"Women", detail: "Tested", 
+				children: 
+				[ 
+				 {name:"A'", detail: "Do Not Have Cancer", size: 990, units:"Woman", 
+					children:[{name:"B", size: 95, units:"Women", detail: "Test said 'Have Cancer'"}, 
+					          {name:"B'", size: 895, units:"Women", detail: "Test said 'Does Not Have Cancer'"}]},
+				{name:"A", detail: "Have Cancer", size: 10, units:"Women", 
+					children:[{name:"B", size: 8, units:"Women", detail: "Test said 'Have Cancer'"}, 
+							  {name:"B'", size: 2,units:"Women", detail: "Test said 'Does Not Have Cancer'"}]},
+				]},
+}
+
+
+--- Percentage
+--- Mammography problem
+{name: "Tree Diagram", interactionLevel: 1, graph: {name:"", size:100, units:"%", detail: "All Woman", 
+				children: 
+				[ 
+				 {name:"A'", detail: "Does Not Have Breast Cancer", size: 99, units:"%", 
+					children:[{name:"B", size: 9.6, units:"%", detail: "Got Positive Mammography"}, 
+					          {name:"B'", size: 90.4, units:"%", detail: "Got Negative Mammography"}]},
+				{name:"A", detail: "Have Breast Cancer", size: 1, units:"%", 
+					children:[{name:"B", size: 80, units:"%", detail: "Got Positive Mammography"}, 
+							  {name:"B'", size: 20,units:"%", detail: "Got Negative Mammography"}]},
+				]},
+}
+
+
+--- Blue cap problem
+{name: "Tree Diagram", interactionLevel: 1, graph: {name:"", size:100, units:"%", detail: "All Cabs", 
+				children: 
+				[ 
+				 {name:"A'", detail: "Blue Cab", size: 15, units:"%", 
+					children:[{name:"B", size: 80, units:"%", detail: "Correctly Identified"}, 
+					          {name:"B'", size: 20, units:"%", detail: "Incorrectly Identified"}]},
+				{name:"A", detail: "Green Cab", size: 85, units:"%", 
+					children:[{name:"B", size: 80, units:"%", detail: "Correctly Identified"}, 
+							  {name:"B'", size: 20,units:"%", detail: "Incorrectly Identified"}]},
+				]},
+}
+
+---- German measles problem
+{name: "Tree Diagram", interactionLevel: 1, graph: {name:"", size:100, units:"%", detail: "All Woman", 
+				children: 
+				[ 
+				 {name:"A'", detail: "Damage", size: 0.5, units:"%", 
+					children:[{name:"B", size: 40, units:"%", detail: "Mother has measeles"}, 
+					          {name:"B'", size: 60, units:"%", detail: "Mother does not have measeles"}]},
+				{name:"A", detail: "No Damage", size: 99.5, units:"%", 
+					children:[{name:"B", size: 0.01, units:"%", detail: "Mother has measeles"}, 
+							  {name:"B'", size: 99.99,units:"%", detail: "Mother does not have measeles"}]},
+				]},
+}

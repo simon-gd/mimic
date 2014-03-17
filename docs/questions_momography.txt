@@ -1,0 +1,99 @@
+{name: "Venn Diagram", interactionLevel: 1, graph: {name:"Woman over 40", size:1000, units:"Women", detail: "Woman over 40", 
+				children: 
+				[
+				{name:"A", detail: "Have Breast Cancer", size: 10, units:"Women", 
+					children:[{name:"B", size: 8, units:"Women", detail: "Got Positive Mammography"}, 
+							  {name:"B'", size: 2,units:"Women", detail: "Got Negative Mammography"}]},
+				 {name:"A'", detail: "Does Not Have Breast Cancer", size: 990, units:"Women", 
+					children:[{name:"B", size: 95, units:"Women", detail: "Got Positive Mammography"}, 
+					          {name:"B'", size: 895, units:"Women", detail: "Got Negative Mammography"}]},
+				
+				]},
+}
+
+{name: "IconArray Diagram", interactionLevel: 1, graph: {name:"", size:1000, units:"Women", detail: "", 
+				children: 
+				[
+				{name:"A", detail: "Have Breast Cancer", size: 10, units:"Women", 
+					children:[{name:"B", size: 8, units:"Women", detail: "Got Positive Mammography"}, 
+							  {name:"B'", size: 2,units:"Women", detail: "Got Negative Mammography"}]},
+				 {name:"A'", detail: "Does Not Have Breast Cancer", size: 990, units:"Women", 
+					children:[{name:"B", size: 95, units:"Women", detail: "Got Positive Mammography"}, 
+					          {name:"B'", size: 895, units:"Women", detail: "Got Negative Mammography"}]},
+				
+				]},
+}
+		
+
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+				showLabels: false,
+                                nodes: [{name: "",detail:"Women over 40", units: "Women"},
+                                {name: "B", detail: "Got Positive Mammography", units: "Women"},
+                                {name: "B'", detail: "Got Negative Mammography", units: "Women"}, 
+				{name: "A", detail:"Have Breast Cancer", units: "Women"},
+                                {name: "A'", detail: "Does Not Have Breast Cancer", units: "Women"}],
+                               
+                                links: [{source: 0,target: 1, value: 103, units:"Women"},
+                                {source: 0,target: 2, value: 897, units:"Women"},
+                                {source: 1,target: 3, value: 8, units:"Women"},
+                                {source: 1,target: 4, value: 95, units:"Women"},
+                                {source: 2,target: 3, value: 2, units:"Women"},
+                                {source: 2,target: 4, value: 895, units:"Women"}]}}	
+
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                showLabels: false,
+				nodes: [{name: "",detail:"Women over 40", units: "Women"},
+                                {name: "A", detail:"Have Breast Cancer", units: "Women"},
+                                {name: "A'", detail: "Does Not Have Breast Cancer", units: "Women"},
+                                {name: "B", detail: "Got Positive Mammography", units: "Women"},
+                                {name: "B'", detail: "Got Negative Mammography", units: "Women"}], 
+                                links: [{source: 0,target: 1, value: 10, units:"Women"},
+                                {source: 0,target: 2, value: 990, units:"Women"},
+                                {source: 1,target: 3, value: 8, units:"Women"},
+                                {source: 1,target: 4, value: 2, units:"Women"},
+                                {source: 2,target: 3, value: 95, units:"Women"},
+                                {source: 2,target: 4, value: 895, units:"Women"}]}}	
+
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+				showLabels: false,
+                                nodes: [{name: "",detail:"Women over 40", units: "Women"},
+                                {name: "A", detail:"Have Breast Cancer", units: "Women"},
+                                {name: "A'", detail: "Does Not Have Breast Cancer", units: "Women"},
+                                {name: "B", detail: "Got Positive Mammography", units: "Women"},
+                                {name: "B'", detail: "Got Negative Mammography", units: "Women"}], 
+                                links: [{source: 0,target: 1, value: 10, units:"Women"},
+                                {source: 0,target: 2, value: 990, units:"Women"},
+                                {source: 1,target: 3, value: 8, units:"Women"},
+                                {source: 1,target: 4, value: 2, units:"Women"},
+                                {source: 2,target: 3, value: 95, units:"Women"},
+                                {source: 2,target: 4, value: 895, units:"Women"}]}}
+
+
+{name: "Tree Diagram", interactionLevel: 1, graph: {name:"", size:1000, units:"Women", detail: "", 
+				children: 
+				[
+				{name:"A", detail: "Have Breast Cancer", size: 10, units:"Women", 
+					children:[{name:"B", size: 8, units:"Women", detail: "Got Positive Mammography"}, 
+							  {name:"B'", size: 2,units:"Women", detail: "Got Negative Mammography"}]},
+				 {name:"A'", detail: "Does Not Have Breast Cancer", size: 990, units:"Women", 
+					children:[{name:"B", size: 95, units:"Women", detail: "Got Positive Mammography"}, 
+					          {name:"B'", size: 895, units:"Women", detail: "Got Negative Mammography"}]},
+				
+				]},
+}
+
+{name: "Tree Diagram", interactionLevel: 1, graph: {name:"", size:1000, units:"Women", detail: "                             ", 
+				children: 
+				[
+				
+				 {name:"B", detail: "Got Positive Mammography", size: 103, units:"Women", 
+					children:[{name:"A", size: 8, units:"Women", detail: "Have Breast Cancer"}, 
+							  {name:"A'", size: 95,units:"Women", detail: "Does Not Have Breast Cancer"}]},
+				 {name:"B'", detail: "Got Negative Mammography", size: 897, units:"Women", 
+					children:[{name:"A", size: 2, units:"Women", detail: "Have Breast Cancer"}, 
+					          {name:"A'", size: 895, units:"Women", detail: "Does Not Have Breast Cancer"}]},
+				
+				]},
+}
+
+

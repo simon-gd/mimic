@@ -1,0 +1,286 @@
+
+--- Percentage
+--- Mammography problem
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"Women over 40", units: "Women"},
+                                {name: "A", detail:"Have Breast Cancer", units: "Women"},
+                                {name: "A'", detail: "Does Not Have Breast Cancer", units: "Women"},
+                                {name: "B", detail: "Got Positive Mammography", units: "Women"},
+                                {name: "B'", detail: "Got Negative Mammography", units: "Women"}], 
+                                links: [{source: 0,target: 1, value: 10, units:"Women"},
+                                {source: 0,target: 2, value: 990, units:"Women"},
+                                {source: 1,target: 3, value: 8, units:"Women"},
+                                {source: 1,target: 4, value: 2, units:"Women"},
+                                {source: 2,target: 3, value: 95, units:"Women"},
+                                {source: 2,target: 4, value: 895, units:"Women"}]}}
+
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"Women over 40", units: "Women"},
+                                {name: "B", detail: "Got Positive Mammography", units: "Women"},
+                                {name: "B'", detail: "Got Negative Mammography", units: "Women"}, 
+				{name: "A", detail:"Have Breast Cancer", units: "Women"},
+                                {name: "A'", detail: "Does Not Have Breast Cancer", units: "Women"}],
+                               
+                                links: [{source: 0,target: 1, value: 103, units:"Women"},
+                                {source: 0,target: 2, value: 897, units:"Women"},
+                                {source: 1,target: 3, value: 8, units:"Women"},
+                                {source: 1,target: 4, value: 95, units:"Women"},
+                                {source: 2,target: 3, value: 2, units:"Women"},
+                                {source: 2,target: 4, value: 895, units:"Women"}]}}
+
+
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"Women over 40", units: "Women"},
+                                {name: "A", detail:"Have Breast Cancer", units: "Women"},
+                                {name: "A'", detail: "Does Not Have Breast Cancer", units: "Women"},
+                                {name: "B", detail: "Got Positive Mammography", units: "Women"},
+                                {name: "B'", detail: "Got Negative Mammography", units: "Women"}], 
+                                links: [{source: 0,target: 1, value: 10, units:"Women"},
+                                {source: 0,target: 2, value: 990, units:"Women"},
+                                {source: 1,target: 3, value: 8, units:"Women"},
+                                {source: 1,target: 4, value: 2, units:"Women"},
+                                {source: 2,target: 3, value: 95, units:"Women"},
+                                {source: 2,target: 4, value: 895, units:"Women"}]}}
+
+
+---- German Measles Problem
+{name: "Sankey Diagram", interactionLevel: 1, graph: {nodes: [{name: "",detail:"All Mother", units: "Women"},
+				{name: "A", detail: "Prenatal damage in child", units: "Women"},
+				{name: "A'", detail:"No Prenatal damage in child", units: "Women"},
+				{name: "B", detail: "German measles in mother", units: "Women"},
+				{name: "B'", detail: "No German measles in mother", units: "Women"}], 
+                                          links: [{source: 0,target: 1, value: 21, units:"Women"},
+				                  {source: 0,target: 2, value: 9979, units:"Women"},
+				                  {source: 1,target: 3, value: 10, units:"Women"},
+                                                  {source: 1,target: 4, value: 11, units:"Women"},
+                                                  {source: 2,target: 3, value: 50, units:"Women"},
+                                                  {source: 2,target: 4, value: 9929, units:"Women"},
+                                                 ]}}
+
+
+--- Blue Cab Problem
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"", units: "Cabs"},
+                                {name: "A'", detail:"Blue cab", units: "Cabs"},
+                                {name: "A", detail: "Red Cab", units: "Cabs"},
+                                {name: "B", detail: "Eyewitness says 'Red'", units: "Cabs"},
+                                {name: "B'", detail: "Eyewitness says 'Blue'", units: "Cabs"}], 
+                                links: [{source: 0,target: 1, value: 15, units:"Cabs"},
+                                {source: 0,target: 2, value: 85, units:"Cabs"},
+                                {source: 1,target: 4, value: 12, units:"Cabs"},
+                                {source: 1,target: 3, value: 3, units:"Cabs"},
+                                {source: 2,target: 3, value: 68, units:"Cabs"},
+                                {source: 2,target: 4, value: 17, units:"Cabs"}]}}
+
+--- Economics Problem
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"Students", units: "Students"},
+                                {name: "A", detail:"Took History", units: "Students"},
+                                {name: "A'", detail: "Took Economics", units: "Students"},
+                                {name: "B", detail: "Career oriented", units: "Students"},
+                                {name: "B'", detail: "Not career oriented", units: "Students"}], 
+                                links: [{source: 0,target: 1, value: 700, units:"Students"},
+                                {source: 0,target: 2, value: 300, units:"Students"},
+                                {source: 1,target: 3, value: 350, units:"Students"},
+                                {source: 1,target: 4, value: 350, units:"Students"},
+                                {source: 2,target: 3, value: 210, units:"Students"},
+                                {source: 2,target: 4, value: 90, units:"Students"}]}}
+
+--- HIV Problem
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"People", units: "People"},
+                                {name: "A", detail:"Have AIDS", units: "People"},
+                                {name: "A'", detail: "Does Not Have AIDS", units: "People"},
+                                {name: "B", detail: "Got Positive HIV test", units: "People"},
+                                {name: "B'", detail: "Got Negative HIV test", units: "People"}], 
+                                links: [{source: 0,target: 1, value: 100, units:"People"},
+                                {source: 0,target: 2, value: 999900, units:"People"},
+                                {source: 1,target: 3, value: 100, units:"People"},
+                                {source: 1,target: 4, value: 0, units:"People"},
+                                {source: 2,target: 3, value: 1000, units:"People"},
+                                {source: 2,target: 4, value: 998900, units:"People"}]}}
+				
+--- Heroin addict
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"People", units: "People"},
+                                {name: "A", detail:"Heroin addict", units: "People"},
+                                {name: "A'", detail: "Not a Heroin addict", units: "People"},
+                                {name: "B", detail: "Fresh needle prick", units: "People"},
+                                {name: "B'", detail: "Old needle prick", units: "People"}], 
+                                links: [{source: 0,target: 1, value: 10, units:"People"},
+                                {source: 0,target: 2, value: 99990, units:"People"},
+                                {source: 1,target: 3, value: 10, units:"People"},
+                                {source: 1,target: 4, value: 0, units:"People"},
+                                {source: 2,target: 3, value: 190, units:"People"},
+                                {source: 2,target: 4, value: 99800, units:"People"}]}}
+
+--- Pregnancy test
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"Woman", units: "Woman"},
+                                {name: "A", detail:"Pregnant", units: "Woman"},
+                                {name: "A'", detail: "Not Pregnant", units: "Woman"},
+                                {name: "B", detail: "Positive Pregnancy Test", units: "Woman"},
+                                {name: "B'", detail: "Negative Pregnancy Test", units: "Woman"}], 
+                                links: [{source: 0,target: 1, value: 20, units:"Woman"},
+                                {source: 0,target: 2, value: 980, units:"Woman"},
+                                {source: 1,target: 3, value: 19, units:"Woman"},
+                                {source: 1,target: 4, value: 1, units:"Woman"},
+                                {source: 2,target: 3, value: 5, units:"Woman"},
+                                {source: 2,target: 4, value: 975, units:"Woman"}]}}
+
+--- Car Accident Test
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"People", units: "People"},
+                                {name: "A", detail:"Car accident", units: "People"},
+                                {name: "A'", detail: "No car accident", units: "People"},
+                                {name: "B", detail: "Driver drunk", units: "People"},
+                                {name: "B'", detail: "Driver sober", units: "People"}], 
+                                links: [{source: 0,target: 1, value: 100, units:"People"},
+                                {source: 0,target: 2, value: 9900, units:"People"},
+                                {source: 1,target: 3, value: 55, units:"People"},
+                                {source: 1,target: 4, value: 45, units:"People"},
+                                {source: 2,target: 3, value: 500, units:"People"},
+                                {source: 2,target: 4, value: 9400, units:"People"}]}}
+
+--- Bad posture
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"Children", units: "Children"},
+                                {name: "A", detail:"Bad posture in child", units: "Children"},
+                                {name: "A'", detail: "Good posture in child", units: "Children"},
+                                {name: "B", detail: "Heavy books carried daily", units: "Children"},
+                                {name: "B'", detail: "No Heavy books carried", units: "Children"}], 
+                                links: [{source: 0,target: 1, value: 50, units:"Children"},
+                                {source: 0,target: 2, value: 950, units:"Children"},
+                                {source: 1,target: 3, value: 20, units:"Children"},
+                                {source: 1,target: 4, value: 30, units:"Children"},
+                                {source: 2,target: 3, value: 190, units:"Children"},
+                                {source: 2,target: 4, value: 760, units:"Children"}]}}
+--- Accident on the way to school
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"Children", units: "Children"},
+                                {name: "A", detail:"Accident on way to school", units: "Children"},
+                                {name: "A'", detail: "No Accident on way to school", units: "Children"},
+                                {name: "B", detail: "Child lives in urban area", units: "Children"},
+                                {name: "B'", detail: "Child lives in suburban area", units: "Children"}], 
+                                links: [{source: 0,target: 1, value: 30, units:"Children"},
+                                {source: 0,target: 2, value: 970, units:"Children"},
+                                {source: 1,target: 3, value: 27, units:"Children"},
+                                {source: 1,target: 4, value: 3, units:"Children"},
+                                {source: 2,target: 3, value: 388, units:"Children"},
+                                {source: 2,target: 4, value: 582, units:"Children"}]}}
+--- Professor suiside
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"People", units: "People"},
+                                {name: "A", detail:"Commiting suicide", units: "People"},
+                                {name: "A'", detail: "Not Commiting suicide", units: "People"},
+                                {name: "B", detail: "Is a Professor", units: "People"},
+                                {name: "B'", detail: "Is not a Professor", units: "People"}], 
+                                links: [{source: 0,target: 1, value: 240, units:"People"},
+                                {source: 0,target: 2, value: 999760, units:"People"},
+                                {source: 1,target: 3, value: 36, units:"People"},
+                                {source: 1,target: 4, value: 204, units:"People"},
+                                {source: 2,target: 3, value: 120000, units:"People"},
+                                {source: 2,target: 4, value: 879760, units:"People"}]}}
+
+--- Blue Ball suiside
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"Balls", units: "Balls"},
+                                {name: "A", detail:"Blue Ball", units: "Balls"},
+                                {name: "A'", detail: "Red Ball", units: "Balls"},
+                                {name: "B", detail: "Marked with star", units: "Balls"},
+                                {name: "B'", detail: "No Star", units: "Balls"}], 
+                                links: [{source: 0,target: 1, value: 400, units:"Balls"},
+                                {source: 0,target: 2, value: 100, units:"Balls"},
+                                {source: 1,target: 3, value: 300, units:"Balls"},
+                                {source: 1,target: 4, value: 100, units:"Balls"},
+                                {source: 2,target: 3, value: 25, units:"Balls"},
+                                {source: 2,target: 4, value: 75, units:"Balls"}]}}
+
+-- Active feminist
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"Woman", units: "Woman"},
+                                {name: "A", detail:"Active feminist", units: "Woman"},
+                                {name: "A'", detail: "Not a feminist", units: "Woman"},
+                                {name: "B", detail: "Bank teller", units: "Woman"},
+                                {name: "B'", detail: "Not a bank teller", units: "Woman"}], 
+                                links: [{source: 0,target: 1, value: 5000, units:"Woman"},
+                                {source: 0,target: 2, value: 95000, units:"Woman"},
+                                {source: 1,target: 3, value: 20, units:"Woman"},
+                                {source: 1,target: 4, value: 4980, units:"Woman"},
+                                {source: 2,target: 3, value: 2000, units:"Woman"},
+                                {source: 2,target: 4, value: 93000, units:"Woman"}]}}
+				
+				
+--- Pimp
+
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"People", units: "People"},
+                                {name: "A", detail:"Pimp", units: "People"},
+                                {name: "A'", detail: "Not a pimp", units: "People"},
+                                {name: "B", detail: "Wearing a Rolex", units: "People"},
+                                {name: "B'", detail: "Not wearing a Rolex", units: "People"}], 
+                                links: [{source: 0,target: 1, value: 50, units:"People"},
+                                {source: 0,target: 2, value: 999950, units:"People"},
+                                {source: 1,target: 3, value: 50, units:"People"},
+                                {source: 1,target: 4, value: 10, units:"People"},
+                                {source: 2,target: 3, value: 500, units:"People"},
+                                {source: 2,target: 4, value: 999450, units:"People"}]}}
+				
+				
+--- Addmision
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"Students", units: "Students"},
+                                {name: "A", detail:"Admitted to school", units: "Students"},
+                                {name: "A'", detail: "Reject admission to school", units: "Students"},
+                                {name: "B", detail: "Good placement test results", units: "Students"},
+                                {name: "B'", detail: "Bad placement test results", units: "Students"}], 
+                                links: [{source: 0,target: 1, value: 360, units:"Students"},
+                                {source: 0,target: 2, value: 640, units:"Students"},
+                                {source: 1,target: 3, value: 270, units:"Students"},
+                                {source: 1,target: 4, value: 90, units:"Students"},
+                                {source: 2,target: 3, value: 128, units:"Students"},
+                                {source: 2,target: 4, value: 512, units:"Students"}]}}
+				
+--------------old
+
+
+
+
+{name: "Sankey Diagram", interactionLevel: 1, graph: {
+                                nodes: [{name: "",detail:"Women over 40", units: "Women"},
+                                {name: "A", detail:"Have Breast Cancer", units: "Women"},
+                                {name: "A'", detail: "Does Not Have Breast Cancer", units: "Women"},
+                                {name: "B", detail: "Got Positive Mammography", units: "Women"},
+                                {name: "B'", detail: "Got Negative Mammography", units: "Women"}], 
+                                links: [{source: 0,target: 1, value: 10, p: .01, units:"Women"},
+                                {source: 0,target: 2, value: 990, p: .99, units:"Women"},
+                                {source: 1,target: 3, value: 8, p:.8, units:"Women"},
+                                {source: 1,target: 4, value: 2, p:.2, units:"Women"},
+                                {source: 2,target: 3, value: 95, p: .096, units:"Women"},
+                                {source: 2,target: 4, value: 895, p: .904, units:"Women"}]}}
+
+{name: "Tree Diagram", interactionLevel: 1, graph: {name:"", size:100, units:"%", detail: "All Cabs", 
+                                children: 
+                                [ 
+                                 {name:"A'", detail: "Blue Cab", size: 15, units:"%", 
+                                        children:[{name:"B", size: 80, units:"%", detail: "Correctly Identified"}, 
+                                                  {name:"B'", size: 20, units:"%", detail: "Incorrectly Identified"}]},
+                                {name:"A", detail: "Green Cab", size: 85, units:"%", 
+                                        children:[{name:"B", size: 80, units:"%", detail: "Correctly Identified"}, 
+                                                          {name:"B'", size: 20,units:"%", detail: "Incorrectly Identified"}]},
+                                ]},
+}
+
+---- German Measles Problem
+
+{name: "Sankey Diagram", interactionLevel: 1, graph: {nodes: [{name: "",detail:"All Mother", units: "Women"},
+				{name: "A", detail: "Damage", units: "Women"},
+				{name: "A'", detail:"No Damage", units: "Women"},
+				{name: "B", detail: "Mother has measeles", units: "Women"},
+				{name: "B'", detail: "Mother does not has measeles", units: "Women"}], 
+                                          links: [{source: 0,target: 2, value: 995, p: 0.995, units:"Women"},
+                                                  {source: 0,target: 1, value: 5, p: 0.005, units:"Women"},
+                                                  {source: 2,target: 3, value: .0995, p:.0001, units:"Women"},
+                                                  {source: 2,target: 4, value: 994.9, p:.9999, units:"Women"},
+                                                  {source: 1,target: 3, value: 2, p: .4, units:"Women"},
+                                                  {source: 1,target: 4, value: 3, p: .6, units:"Women"}]}}

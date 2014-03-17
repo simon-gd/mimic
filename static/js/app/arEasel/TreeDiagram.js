@@ -71,28 +71,46 @@ TreeDiagram.prototype.initialize = function(data, width, height, interactionLeve
 	
 	
 	console.log(this.nodes);
+	for (var i = 0; i < this.links.length; i++) {
+	    var link = this.links[i];
+	    var graphics = new createjs.Graphics().beginStroke("#000").moveTo(link.source.x, link.source.y).lineTo(link.target.x, link.target.y);
+	    var shape = new createjs.Shape(graphics);
+	    this.addChild(shape);
+	}
 	for(var i=0; i < this.nodes.length; i++){
 		var textFull = this.nodes[i].detail;
-		if (this.nodes[i].parent && (this.nodes[i].parent.name == "B" || this.nodes[i].parent.name == "B'")){
-			textFull += " &\n"+ this.nodes[i].parent.detail;
-		}
 		var text = new createjs.Text(this.nodes[i].size + " " + this.nodes[i].units, "bold 14px Arial", "#000");
 		text.x = this.nodes[i].x - (text.getMeasuredWidth()/2.0);
 		text.y = this.nodes[i].y;
 		
 		var text2 = new createjs.Text(textFull, "bold 14px Arial", "#000");
-		text2.x = this.nodes[i].x - (text.getMeasuredWidth()/2.0);
+		text2.x = this.nodes[i].x - (text2.getMeasuredWidth()/2.0);
 		text2.y = this.nodes[i].y + text.getMeasuredHeight();
+
 		
+		var text3 = null;
+		if (this.nodes[i].parent && (this.nodes[i].parent.name == "B" || this.nodes[i].parent.name == "B'")) {
+		    var textFull2 = "& " + this.nodes[i].parent.detail;
+		    text3 = new createjs.Text(textFull2, "bold 14px Arial", "#000");
+		    text3.x = this.nodes[i].x - (text3.getMeasuredWidth() / 2.0);
+		    text3.y = this.nodes[i].y + text2.getMeasuredHeight() + text.getMeasuredHeight();
+		}
+
 		var padding = 5;
 		
 		var shape = new createjs.Shape();
-		shape.x = text.x-padding;
+		shape.x = text.x-(text2.getMeasuredWidth()/4.0)-(padding*2);
 		shape.y = text.y-padding;
 		shape.color = this.getColor(this.nodes[i].name);
-		shape.width = Math.max(text.getMeasuredWidth(),text2.getMeasuredWidth())+(padding*2);
-		shape.height = text.getMeasuredHeight() + text2.getMeasuredHeight() +(padding*2);
-		
+		shape.width = Math.max(text.getMeasuredWidth(), text2.getMeasuredWidth()) + (padding * 2);
+		shape.height = text.getMeasuredHeight() + text2.getMeasuredHeight() + (padding * 2);
+		if (text3) {
+		    shape.width = Math.max(shape.width, text3.getMeasuredWidth() + (padding * 2));
+		    shape.height = shape.height + text3.getMeasuredHeight();
+
+		}
+		shape.x = this.nodes[i].x - (shape.width / 2.0);
+
 		strokeColor = this.getStrokeColor(this.nodes[i]);
 		shape.graphics.beginStroke(strokeColor).setStrokeStyle(3).beginFill(createjs.Graphics.getRGB(shape.color.r,shape.color.g, shape.color.b, 1.0)).drawRoundRect(0, 0, shape.width, shape.height, 3);
 		
@@ -106,14 +124,10 @@ TreeDiagram.prototype.initialize = function(data, width, height, interactionLeve
 		this.addChild(shape);
 		this.addChild(text);
 		this.addChild(text2);
+		if (text3) { this.addChild(text3); }
 	}
-	//for(var i=0; i < this.links.length; i++){
-	//	 var link = this.links[i];
-	//	 var graphics = new createjs.Graphics().beginStroke("#000").moveTo(link.source.x, link.source.y).lineTo(link.target.x, link.target.y);
-	//	 var shape = new createjs.Shape(graphics);
-	//	 this.addChild(shape);
-	//}
-	//arEasel.gridLayout(this, {vSpace: 50, hSpace: 20});
+	
+	
 }
 
 TreeDiagram.prototype.addHoverEventListener = function(linkName, listener)

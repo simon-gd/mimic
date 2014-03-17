@@ -30,7 +30,7 @@ SankeyDiagram.prototype.Container_initialize = SankeyDiagram.prototype.initializ
 SankeyDiagram.prototype.initialize = function(data, width, height, interactionLevel, valueDisplay) {
 	this.Container_initialize(); 
 	this.valueDisplay = function(d){
-		return ""; //d.value + " " + d.units; //(d.source) ? d.value + " " + d.units : "";
+		return d.value + " " + d.units; //(d.source) ? d.value + " " + d.units : "";
 	};
 	this.labelColor = function(d, relative){ 
 		return "#000";
@@ -46,6 +46,7 @@ SankeyDiagram.prototype.initialize = function(data, width, height, interactionLe
 	};
 	this.interactionLevel = interactionLevel || 3; // static interactive animated
 	this.evenDelta = 0;
+	this.showLabels = data.showLabels;
 	this.data = data;
 	this.width = (width) ? Number(width)-10 : 600;
 	this.height = (height) ? Number(height)-60 : 600;
@@ -327,7 +328,7 @@ SankeyDiagram.prototype.recreateSankey = function()
 		shape.data = this.nodes[i];
 		//shape.shadow = new createjs.Shadow("#000", 0, 0, 10);
 		this.sankeyContainer.addChild(shape);
-		this.addChild(text);
+		//this.addChild(text);
 	}
 	for(var i=0; i < this.links.length; i++){
 		 var link = this.links[i];
@@ -379,7 +380,7 @@ SankeyDiagram.prototype.recreateSankey = function()
 		var size = 14; //Math.max(16, Math.sqrt(this.nodes[i].ActualValue/1.5));
 		text.data = this.nodes[i];
 		//text.shadow = new createjs.Shadow(createjs.Graphics.getRGB(col.r,col.g, col.b, 1.0), 0, 0, 3);
-		//this.sankeyContainer.addChild(text);
+		if (this.showLabels) { this.sankeyContainer.addChild(text) };
 		
 		var text2 = new createjs.Text(this.valueDisplay(this.nodes[i]), "bold 14px Arial", createjs.Graphics.getRGB(col.r,col.g, col.b, 1.0)); //createjs.Graphics.getRGB(col.r,col.g, col.b, 1.0));
 		text2.x = this.nodes[i].x - 5;
@@ -390,7 +391,8 @@ SankeyDiagram.prototype.recreateSankey = function()
 		text2.type = "text";
 		text2.textBaseline = "bottom";
 		text2.data = this.nodes[i];
-		//this.sankeyContainer.addChild(text2);
+		if (this.showLabels) { this.sankeyContainer.addChild(text2);  }
+		    
 	}
 	
 	for(var i=0; i < this.links.length; i++){
@@ -426,7 +428,7 @@ SankeyDiagram.prototype.recreateSankey = function()
 		//text.shadow = new createjs.Shadow("#000000", 0, 0, 3);
 		text.letterSpacing = 9;
 		text.data = this.links[i];	
-		//this.sankeyContainer.addChild(text);
+		if (this.showLabels) { this.sankeyContainer.addChild(text); }
 		
 		if(this.valueDisplay(link, true) != this.valueDisplay(link, false)){
 			
@@ -440,7 +442,7 @@ SankeyDiagram.prototype.recreateSankey = function()
 			//text.shadow = new createjs.Shadow("#000000", 0, 0, 3);
 			text2.letterSpacing = 9;
 			text2.data = this.links[i];
-			//this.sankeyContainer.addChild(text2);
+			if (this.showLabels) { this.sankeyContainer.addChild(text2); }
 		}
 		
 
