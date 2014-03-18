@@ -7,25 +7,6 @@
               
     }
 
-    function createLikertScale(name, width, labels, onchange) {
-            var nbValues = labels.length;
-            var s = "";
-            s += '<table id="LikertScale_'+name+'" width="' + width + '" border="0" cellspacing="3" style="table-layout:fixed; border-width: 1px; border-color:#CCCCCC; border-style: solid;">';
-            for (var i=1; i<=nbValues; i++)
-                    s += '<col id="col_'+i+'" width="' + width/nbValues + '" align="center">';
-            
-            s += '<tr id="LikertScale_tr_1" style="font-size: 95%">';
-            for (var i=1; i<=nbValues; i++)
-                    s += '<td id="td_' + (name + i + "label") + '" align="center"><span id="' + (name + i + "label") + '">' + labels[i-1] + '</span></td>';
-            
-            s += '</tr><tr id="LikertScale_tr_1">';
-
-            for (var i=1; i<=nbValues; i++)
-                    s += '<td id="td_'+ (name + i) +'" align="center"><label id="label_'+ (name + i) +'" class="radio-inline"><input type="radio" id="' + (name + i) + '" name="' + name + '" value="' + i + '" onclick="' + onchange + '">' + i + '</label></td>';
-            s += '</tr></table>';
-            document.write(s);
-    }
-
     function getHTMLforScenarioText(text)
     {
        var s = "";
@@ -68,15 +49,43 @@
 
     }
 
+    function assignIDs(){
+        var items = document.getElementsByTagName("*");
+        for (var i = items.length; i--;) {
+            var item = items[i];
+            if(item.id){}
+            else{
+                var newID = item.nodeName.replace("#","") + "_" + i;
+                //console.log(newID);
+                item.id = newID;
+            }
+        }
+    }
+
+    function assignImages(condition){
+        var image_size = (screen.width < 992) ? "1024" : "1280";
+        var image_path = "img/infoViz2014_exp1/__diagram" + condition + "_"+ image_size + ".png";
+        var filename = ("{% static '111' %}").replace('111', image_path);
+        $('#page1_diagram').attr("src", filename);
+    }
+
     $(document).ready(function() {
+
+
+        assignIDs();
+
         var questionData = {{ question|safe}};
         var questionCondition = {{ condition|safe}};
-        var total_pages =  2;
+        var total_pages =  3;
         var current_question =  parseInt({{qnum|safe}});
         var answer = "";
         var confidence = 0;
         var worker_id = {{worker_id|safe}};
         var condition = {{condition|safe}};
+
+        console.log("current_question", current_question);
+
+        assignImages(condition);
         
         var scenario_text = "10 out of every 1,000 women at age forty who participate in routine screening have breast cancer. <br id='br2'>8 of every 10 women with breast cancer will get a positive mammography. <br id='br3'>95 out of every 990 women without breast cancer will also get a positive mammography. <br id='br5'>";
         var question = "There is a new representative sample of women at age forty who got a positive mammography in routine screening. <br id='br4'>How many of these women do you expect to actually have breast cancer?";
@@ -87,21 +96,18 @@
         $('#scenario_diagram').html(getHTMLforDiagram(c1_image_path, condition));
 
         checkResolution(1024,768);
-        
-        // First submit to start
-        $('#submitButton1').click(function() {
-            current_question++;
-            showPage("#page"+current_question.toString());
-            $('#submitButton1').prop('disabled', true);
-        });
+
+       
         
         // Question submits
         $('.submit').click(function() {
             $(".error").html("");
             if(current_question == 0){
+          
+            }else if(current_question == 1){
                 var a1 = $('input:text[name=answer1]').val();
                 var a2 = $('input:text[name=answer2]').val();
-                confidence = $('input:radio[name=confidence]:checked').val();
+                confidence = $('input:radio[name=likert]:checked').val();
                 //console.log(b);
                 if(!a1 || !a2){
                 
@@ -118,7 +124,23 @@
                 }
                 answer = {'a1':a1, 'a2':a2};
                 
+            }else if(current_question == 2){
+                var gender = $('input:radio[name=gender]:checked').val();
+                var occupation = $('#occupation option:selected').val();
+                var education = $('#education option:selected').val();
+                var color_blind = $('input:radio[name=color_blind]:checked').val();
+                var training = $('input:radio[name=training]:checked').val();
+                var comments = $('#comments').val();
+
+                if(!gender || !occupation || !education || !color_blind || !training || !comments){
+                
+                    $(".error").html("<div id='myerror4' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                    return;     
+                }
+
+                answer = {'gender':gender, 'occupation':occupation, 'education':education, 'color_blind':color_blind, 'training':training, 'comments':comments};
             }
+            
             $('.submit').prop('disabled', true);
             var concatLogBuffer = JSON.stringify(logBuffer);
             $.post("./survey/save_question/", { 'mouseData': concatLogBuffer, 
@@ -143,7 +165,7 @@
                 $('.submit').prop('disabled', false);
             }).fail(function() {
                 $('.submit').prop('disabled', false);
-                $(".error").html("<div id='myerror1' class='alert alert-error'>Error: didn't work, please try again.</div>");
+                $(".error").html("<div id='myerror1' class='alert alert-error'>Error: Submission didn't work, please try again.</div>");
             });
 
            
@@ -170,9 +192,9 @@
         });
 
         $(window).on('beforeunload', function(){
-          // Save the questions
+          // Save the question because we are leaving
           var concatLogBuffer = JSON.stringify(logBuffer);
-          $.post("./survey/save_question/", { 'mouseData': concatLogBuffer, 'csrfmiddlewaretoken': '{{ csrf_token }}'} );
+          $.post("./survey/save_question/", { 'mouseData': concatLogBuffer, 'worker_id':worker_id, 'condition':condition, 'currentQ': current_question, 'csrfmiddlewaretoken': '{{ csrf_token }}'} );
           return ''; //Are you sure you want to leave?';
         });
         $('.enter_full_screen').click(function () {
@@ -181,7 +203,7 @@
             }
         });
     
-        var fullscreen = true; //screenfull.isFullscreen || (window.innerWidth == screen.width && window.innerHeight == screen.height);
+        var fullscreen = screenfull.isFullscreen || (window.innerWidth == screen.width && window.innerHeight == screen.height);
         if(fullscreen){
                
                 $('.submit').prop('disabled', false);
@@ -198,7 +220,7 @@
         
 
         $(window).resize(function( e ) {
-            var fullscreen = true; //screenfull.isFullscreen || (window.innerWidth == screen.width && window.innerHeight == screen.height);
+            var fullscreen = screenfull.isFullscreen || (window.innerWidth == screen.width && window.innerHeight == screen.height);
             if(fullscreen){
                 $('.submit').prop('disabled', false);
                 $('.submit_button_div').show("slow");
@@ -215,13 +237,57 @@
 
         });
         
-        showPage("#page0");
+        showPage("#page"+current_question);
 
     });
 
 </script>
 
-<!-- PAGE 1 - GENERAL INSTRUCTIONS -->
+<!-- PAGE 0 - GENERAL INSTRUCTIONS -->
+
+<div id="page0" class="page container size-16-9">
+  <div class="row">
+    <div id="" class="col-xs-12">
+      <em>Page 1/3</em>
+    </div>
+  </div>
+  <div class="row">
+    <div id="" class="col-xs-12">
+       <h3 id="page_title">Scientific Study on Judgment and Visualization</h3>
+    </div>
+  </div>
+   
+  <div class="row">
+    <div class="col-xs-7">
+      <p class="lead"><strong>Important:</strong></p>
+
+      <div class="well well-sm">
+        <ul>
+        <li class="scaled_text" id="description_paragraph1">You can participate in this series of experiments <b id="bold1">only once</b>. If you have already completed a HIT with the same title (even a while ago), you <b id="bold2">cannot</b> complete this one and we would have to reject your HIT.</li>
+        <li class="scaled_text" id="description_paragraph2">This HIT takes about 5 minutes to complete.</li>
+        <li class="scaled_text" id="description_paragraph3">Read the instructions carefully and answer all questions before proceeding to the next page. HITs that are not completed carefully will be <b id="bold3">rejected</b> and the worker will not be paid.</li>
+        <li class="scaled_text" id="description_paragraph4">You should remain focused, and once you start the HIT, you must not stop unless you have completed all the pages. Special attention must be given to the next page.</li>
+        <li class="scaled_text" id="question1">To maximize your concentration on this HIT, we ask you to take it in <b id="bold4">Full Screen Mode.</b></li>   
+        </ul>
+       </div>
+    </div>
+
+    <div class="col-xs-5">
+      <p class="lead"><strong>Please Enter Full Screen Mode to proceed:</strong></p>
+
+      <div class="well well-sm">
+        <p class="scaled_text" id="question1">To enter <b id="bold6">Full Screen Mode</b>, please press <b id="bold8">F11</b> on your keyboard or click this button: <button id="enter_full_screen1" type="button" class="btn btn-default enter_full_screen">Enter Full Screen Mode</button></p> (Your browser may ask you to "Allow" access for this)
+
+      </div>
+      <div id="submit_button_div1" class="submit_button_div">
+      <p class="text-success" id="question1"><b id="bold7">Full Screen Mode</b> entered successfully, please proceed to take the survey.</p>
+      <button type="submit" id="submitButton1"  name="submit" class="btn btn-default submit">Next Page</button>
+      <div id="error" class="error text-danger"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--
 <div id="page0" class="page">
 <p id="page_count">Page 1/4</p><hr id="hr1">
 
@@ -245,15 +311,202 @@
 <div id="error" class="error text-danger"></div>
 </div>
 </div>
+-->
+<!-- PAGE 1 - QUESTION -->
+<div id="page1" class="page container size-16-9">
+  <div class="row">
+    <div id="" class="col-xs-12">
+      <em>Page 2/3</em>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-7">
+      <p class="lead"><strong>Read the text below carefully and answer the question as best as you can.</strong></p>
+
+      <div class="well well-sm">
+        <p>10 out of every 1,000 women at age forty who participate in routine screening have breast cancer.</p>
+        <p>8 of every 10 women with breast cancer will get a positive mammography.</p>
+        <p>95 out of every 990 women without breast cancer will also get a positive mammography.</p>
+      </div>
+
+      <p class="lead"><strong>This is illustrated by the following diagram:</strong></p>
+
+      <div class="text-center">
+        <img id="page1_diagram" src="" class="img-responsive" alt="Diagram"/>
+      </div>
+    </div>
+
+    <div class="col-xs-5">
+      <p class="lead"><strong>Please answer the following question:</strong></p>
+
+      <div class="well well-sm">
+        <p>There is a new representative sample of women at age forty who got a positive mammography in routine screening.</p>
+        <p>How many of these women do you expect to actually have breast cancer?</p>
+      </div>
+
+      <div class="lead">
+        <strong >Answer:</strong>
+        <input id="intput_a1" class="answer" name="answer1" type="text"/>&nbsp;<strong>of</strong>&nbsp;<input id="intput_a1" class="answer" name="answer2" type="text"/>&nbsp;<strong>Women</strong>
+      </div>
+
+      <br/>
+
+      <p class="lead"><strong>How confident are you in your answer?</strong></p>
+
+      <ul class="list-inline pull-down text-center">
+        <li style="width:19%">
+          No Confidence<br/>
+          <input type="radio" id="likert-1" name="likert" value="1" /><label for="likert-1">&nbsp;1</label>
+        </li>
+        <li style="width:19%">
+          <input type="radio" id="likert-2" name="likert" value="2" /><label for="likert-2">&nbsp;2</label>
+        </li>
+        <li style="width:19%">
+          Reasonable<br/>Confidence<br/>
+          <input type="radio" id="likert-3" name="likert" value="3" /><label for="likert-3">&nbsp;3</label>
+        </li>
+        <li style="width:19%">
+          <input type="radio" id="likert-4" name="likert" value="4" /><label for="likert-4">&nbsp;4</label>
+        </li>
+        <li style="width:19%">
+          Very High<br/>Confidence<br/>
+          <input type="radio" id="likert-5" name="likert" value="5" /><label for="likert-5">&nbsp;5</label>
+        </li>
+      </ul>
+
+      <br/>
+      <br/>
+      <button type="submit" class="btn btn-default submit">Next Page</button>
+      <div id="error" class="error text-danger"></div>
+
+    </div>
+  </div>
+</div>
 
 <!-- PAGE 2 - QUESTION -->
+<div id="page2" class="page container size-16-9">
+  <div class="row">
+    <div id="" class="col-xs-12">
+      <em>Page 3/3</em>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-10">
+      <p class="lead"><strong>What is your Gender?</strong></p>
+      <ul class="list-inline pull-down text-left">
+        <li>
+          <input type="radio" id="gender-1" name="gender" value="Male" /><label for="gender-1">&nbsp;Male</label>
+        </li>
+        <li>
+          <input type="radio" id="gender-2" name="gender" value="Female" /><label for="gender-2">&nbsp;Female</label>
+        </li>
+      </ul>  
+    
+      <p class="lead"><strong>What is the highest level of education that you have completed?</strong></p>
+      <div class="col-xs-4">
+      <select id="education" name="education" class="form-control">
+          <option value="">---</option>
+          <option value="Elementary School">Elementary School</option>
+          <option value="High School">High School</option>
+          <option value="Undergraduate Degree">Undergraduate Degree</option>
+          <option value="Professional School">Professional School</option>
+          <option value="Graduate Degree">Graduate Degree</option>
+      </select>
+      </div></br>
+
+      <p class="lead"><strong>What category of occupation do you belong to?</strong></p>
+      <div class="col-xs-4">
+      <select id="occupation" name="occupation" class="form-control">
+        <option value="">---</option>
+        <option value="Unemployed, Retired, Homemaker">Unemployed, Retired, Homemaker</option>
+        <option value="Management Occupations">Management Occupations</option>
+        <option value="Business and Financial Operations Occupations">Business and Financial Operations Occupations</option>
+        <option value="Computer and Mathematical Occupations">Computer and Mathematical Occupations</option>
+        <option value="Architecture and Engineering Occupations">Architecture and Engineering Occupations</option>
+        <option value="Life, Physical, and Social Science Occupations">Life, Physical, and Social Science Occupations</option>
+        <option value="Community and Social Services Occupations">Community and Social Services Occupations</option>
+        <option value="Legal Occupations">Legal Occupations</option>
+        <option value="Education, Training, and Library Occupations">Education, Training, and Library Occupations</option>
+        <option value="Student, Trainee">"Student, Trainee</option>
+        <option value="Arts, Design, Entertainment, Sports, and Media Occupations">Arts, Design, Entertainment, Sports, and Media Occupations</option>
+        <option value="Healthcare Practitioners and Technical Occupations">Healthcare Practitioners and Technical Occupations</option>
+        <option value="Healthcare Support Occupations">Healthcare Support Occupations</option>
+        <option value="Protective Service Occupations">Protective Service Occupations</option>
+        <option value="Food Preparation and Serving Related Occupations">Food Preparation and Serving Related Occupations</option>
+        <option value="Building and Grounds Cleaning and Maintenance Occupations">Building and Grounds Cleaning and Maintenance Occupations</option>
+        <option value="Personal Care and Service Occupations">Personal Care and Service Occupations</option>
+        <option value="Sales and Related Occupations">Sales and Related Occupations</option>
+        <option value="Office and Administrative Support Occupations">Office and Administrative Support Occupations</option>
+        <option value="Farming, Fishing, and Forestry Occupations">Farming, Fishing, and Forestry Occupations</option>
+        <option value="Construction and Extraction Occupations">Construction and Extraction Occupations</option>
+        <option value="Installation, Maintenance, and Repair Occupations">Installation, Maintenance, and Repair Occupations</option>
+        <option value="Production Occupations">Production Occupations</option>
+        <option value="Transportation and Material Moving Occupations">Transportation and Material Moving Occupations</option>
+        <option value="Military Specific Occupations">Military Specific Occupations</option>
+        <option value="Other">Other</option>
+      </select>
+      </div></br>
+      <p class="lead"><strong>Are you color blind?</strong></p>
+      <ul class="list-inline pull-down text-left">
+        <li>
+          <input type="radio" id="color_blind-1" name="color_blind" value="Yes" /><label for="color_blind-1">&nbsp;Yes</label>
+        </li>
+        <li>
+          <input type="radio" id="color_blind-2" name="color_blind" value="No" /><label for="color_blind-2">&nbsp;No</label>
+        </li>
+        <li>
+          <input type="radio" id="color_blind-3" name="color_blind" value="Dont know" /><label for="color_blind-3">&nbsp;Don't know</label>
+        </li>
+      </ul>
+
+      <p class="lead"><strong>Have you had any training or education in how to calculate conditional probabilities (tasks such as this experiment)?</strong></p>
+      <ul class="list-inline pull-down text-left">
+        <li style="width:19%">
+          Very little or None<br/>
+          <input type="radio" id="training-1" name="training" value="1" /><label for="training-1">&nbsp;1</label>
+        </li>
+        <li style="width:19%">
+          A little<br/> 
+          <input type="radio" id="training-2" name="training" value="2" /><label for="training-2">&nbsp;2</label>
+        </li>
+        <li style="width:19%">
+          Moderate<br/>
+          <input type="radio" id="training-3" name="training" value="3" /><label for="training-3">&nbsp;3</label>
+        </li>
+        <li style="width:19%">
+          Quite a bit <br/>
+          <input type="radio" id="training-4" name="training" value="4" /><label for="training-4">&nbsp;4</label>
+        </li>
+        <li style="width:19%">
+          A lot<br/>
+          <input type="radio" id="training-5" name="training" value="5" /><label for="training-5">&nbsp;5</label>
+        </li>
+      </ul>
+    
+
+   
+      <p class="lead"><strong>Please provide any comments or concerns:</strong></p>
+      <textarea id="comments" name="comments" class="form-control" rows="5"></textarea>
+     
+
+      <br/>
+      <br/>
+      <button type="submit" class="btn btn-default submit">Submit</button>
+      <div id="error" class="error text-danger"></div>
+
+    </div>
+  </div>
+</div>
+
+
+<!--
 <div id="page1" class="page">
 
   <div id="im_description_row" class="row">
     <div id="im_description_col" class="scaled_text width100 col-xs-10 col-sm-10 col-md-10">
         <p id="page_count">Page 2/4</p>
         <strong id="description_paragraph1">Read the text below carefully and answer the question as best as you can.</strong>
-        <!--<p id="description_paragraph1">Study the diagram below carefully and answer the question as best as you can.</p>-->
+       
         <div id='scenario'></div>    
         <div id='scenario_diagram'></div>  
         <div id='scenario_question'></div> 
@@ -287,7 +540,7 @@
     <div id="error" class="error text-danger"></div>
     </div>
 </div>
-
+-->
 <!-- FORM - QUESTION -->
 <form id="mainForm" action="/?worker_id={{worker_id}}&condition={{condition}}" method="post">{% csrf_token %}
     <input type="hidden" id="currentQ" name="currentQ" value="{{qnum}}">

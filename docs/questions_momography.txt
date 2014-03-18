@@ -23,6 +23,20 @@
 				
 				]},
 }
+
+{name: "IconArray Diagram", interactionLevel: 1, graph: {name:"", size:1000, units:"Women", detail: "", 
+				children: 
+				[
+				{name:"A", detail: "Have Breast Cancer", size: 10, units:"Women", 
+					children:[ {name:"B'", size: 2,units:"Women", detail: "Got Negative Mammography"},{name:"B", size: 8, units:"Women", detail: "Got Positive Mammography"}, 
+							 ]},
+				 {name:"A'", detail: "Does Not Have Breast Cancer", size: 990, units:"Women", 
+					children:[{name:"B", size: 95, units:"Women", detail: "Got Positive Mammography"}, 
+					          {name:"B'", size: 895, units:"Women", detail: "Got Negative Mammography"}]},
+				
+				]},
+}
+	
 		
 
 {name: "Sankey Diagram", interactionLevel: 1, graph: {

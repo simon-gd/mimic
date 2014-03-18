@@ -42,12 +42,23 @@ def create_experiment_session(request, worker_id, condition, survey):
     except ObjectDoesNotExist:
         user = ExperimentUser.objects.create(worker_id=worker_id)
     
-    experiments = Experiment.objects.filter(user=user).filter(finished=True)
-    if len(experiments) >= 1:
+    experiments = Experiment.objects.filter(user=user)
+    if len(experiments) > 1:
         # user already took an existing survey
         return None, None
         #redirect(reverse('no_active_survey'))
         #return HttpResponseRedirect(reverse('no_active_survey'))
+    elif len(experiments) == 1:
+        experiment = experiments[0]
+        if experiment.finished == True:
+            #already finished the experiment, cannot retake it
+            return None, None
+        
+        if not request.session.exists(request.session.session_key):
+            request.session.create()
+
+        request.session['experiment_id'] = experiment.id
+        return experiment, user
     else:
         # figure condition counts
         #all_experiments = Experiment.objects.filter(survey=survey)
@@ -93,7 +104,8 @@ def create_experiment_session(request, worker_id, condition, survey):
                                              remote_host=REMOTE_HOST,
                                              http_referer=HTTP_REFERER,
                                              http_user_agent=request.META['HTTP_USER_AGENT'],
-                                             allMetaData=jsonMETA)
+                                             allMetaData=jsonMETA,
+                                             finished=False)
         request.session['experiment_id'] = experiment.id
         return experiment, user
     
@@ -101,7 +113,7 @@ def create_experiment_session(request, worker_id, condition, survey):
 
 def get_questions(survey):
     finalQuestions =[]
-    for sm in SurveyMembership.objects.filter(survey=survey).order_by('order'):
+    for sm in SurveyMembership.objects.filter(survey=survey).order_by('-order'):
         finalQuestions.append(sm.question)
     return finalQuestions;
 
@@ -190,43 +202,61 @@ def appendData(oldData, newData):
 
     return json.dumps(concatMouseData)
 """
-# Used to save questions via json
-def save_question(request):
-    survey = get_active_survey()
-    if not survey:
-        return redirect(reverse('no_active_survey'))
-    
+
+def processWorkerIDAndExperiment(survey, request):
+    if not request.session.exists(request.session.session_key):
+        request.session.create()
+
     if "worker_id" in request.GET:
         worker_id = request.GET["worker_id"]
     elif "worker_id" in request.POST:
             worker_id = request.POST["worker_id"]
-    elif request.session.has_key('worker_id'):
+    elif "worker_id" in request.session:
         worker_id = request.session['worker_id']
     else:
-        return redirect(reverse('need_worker_id'))
+        return None, None, None, None
     request.session['worker_id'] = worker_id
     
     if "condition" in request.GET:
         condition = request.GET["condition"]
     elif "condition" in request.POST:
         condition = request.POST["condition"]
-    elif request.session.has_key('condition'):
+    elif "condition" in request.session:
         condition = request.session['condition']
     else:
-        return redirect(reverse('need_worker_id'))
+        return None, None, None, None
     request.session['condition'] = condition
 
     user = None
-    if request.session.has_key('experiment_id'):
-        experiment = get_object_or_404(Experiment, id=request.session['experiment_id'])
-        if experiment.survey != survey:
+    if 'experiment_id' in request.session:
+        try:
+            experiment = get_object_or_404(Experiment, id=request.session['experiment_id'])
+            if experiment.survey != survey or experiment.condition != condition:
+                experiment, user = create_experiment_session(request, worker_id, condition, survey)
+            else:
+                try:
+                    user = ExperimentUser.objects.get(worker_id=worker_id)
+                except:
+                    experiment, user = create_experiment_session(request, worker_id, condition, survey)
+        except:
             experiment, user = create_experiment_session(request, worker_id, condition, survey)
-        else:
-            user = ExperimentUser.objects.get(worker_id=worker_id)
     else:
         experiment, user = create_experiment_session(request, worker_id, condition, survey)
-    
+
+
     if experiment == None or user == None:
+        return None, None, None, None
+
+    return worker_id, condition, experiment, user
+ 
+# Used to save questions via json
+def save_question(request):
+    survey = get_active_survey()
+    if not survey:
+        return redirect(reverse('no_active_survey'))
+    
+    worker_id, condition, experiment, user = processWorkerIDAndExperiment(survey, request)
+    if worker_id== None or condition == None or experiment == None or user == None:
         return redirect(reverse('no_active_survey'))
 
     # Lets create the survey
@@ -250,15 +280,26 @@ def save_question(request):
             compressedMouseData = zlib.compress(mouseData).decode('latin1')
         
         answer = ""
+        question_finished = False
         if 'answer' in request.POST:
             answer = request.POST['answer']
+            question_finished = True
 
         confidence = 0
         if 'confidence' in request.POST:
             confidence = request.POST['confidence']
         
+        try:
+            # answer exists
+            exp_answer = ExperimentAnswer.objects.get(question=current_question, experiment=experiment, user=user)
+            exp_answer.mouseData=compressedMouseData
+            exp_answer.answer=answer
+            exp_answer.confidence=confidence
+            exp_answer.finished=question_finished
+            exp_answer.save()
 
-        ExperimentAnswer.objects.create(question=current_question, experiment=experiment, user=user, mouseData=compressedMouseData, answer=answer, confidence=confidence)
+        except ObjectDoesNotExist:
+            ExperimentAnswer.objects.create(question=current_question, experiment=experiment, user=user, mouseData=compressedMouseData, answer=answer, confidence=confidence, finished=question_finished)
 
     return HttpResponse('{"status": "Done"}\n', mimetype="application/json")
 
@@ -269,45 +310,10 @@ def home(request):
     if not survey:
         return redirect(reverse('no_active_survey'))
     
-    if "worker_id" in request.GET:
-        worker_id = request.GET["worker_id"]
-    elif "worker_id" in request.POST:
-            worker_id = request.POST["worker_id"]
-    elif request.session.has_key('worker_id'):
-        worker_id = request.session['worker_id']
-    else:
-        return redirect(reverse('need_worker_id'))
-    request.session['worker_id'] = worker_id
-    
-    if "condition" in request.GET:
-        condition = request.GET["condition"]
-    elif "condition" in request.POST:
-        condition = request.POST["condition"]
-    elif request.session.has_key('condition'):
-        condition = request.session['condition']
-    else:
-        return redirect(reverse('need_worker_id'))
-    request.session['condition'] = condition
-
-    user = None
-    if request.session.has_key('experiment_id'):
-        try:
-            experiment = get_object_or_404(Experiment, id=request.session['experiment_id'])
-            if experiment.survey != survey or experiment.condition != condition:
-                experiment, user = create_experiment_session(request, worker_id, condition, survey)
-            else:
-                try:
-                    user = ExperimentUser.objects.get(worker_id=worker_id)
-                except:
-                    experiment, user = create_experiment_session(request, worker_id, condition, survey)
-        except:
-            experiment, user = create_experiment_session(request, worker_id, condition, survey)
-    else:
-        experiment, user = create_experiment_session(request, worker_id, condition, survey)
-    
-    if experiment == None or user == None:
+    worker_id, condition, experiment, user = processWorkerIDAndExperiment(survey, request)
+    if worker_id== None or condition == None or experiment == None or user == None:
         return redirect(reverse('no_active_survey'))
-    
+
     # Lets create the survey
     questions = get_questions(survey)
     error = ""
@@ -315,9 +321,19 @@ def home(request):
     if total_questions < 1:
         return HttpResponseRedirect(reverse('no_active_survey'))
 
-    current_question_num = 0
+    #existing_ans = ExperimentAnswer.objects.filter(user=user)
+    #questions_answered = ExperimentAnswer.objects.filter(experiment=experiment).count()
+    #questions_answered_finished = ExperimentAnswer.objects.filter(experiment=experiment, finished=True).count()
+
+    current_question_num = ExperimentAnswer.objects.filter(experiment=experiment, finished=True).count()
+
+    print("current_question_num", current_question_num)
+
+    """
     if request.method == 'POST': # If the form has been submitted...
+        print("request.method == 'POST'")
         #validate the Current question
+        # for now, it means we are done so this is not needed
         if request.POST.has_key('currentQ'):
             currentQ = int(request.POST['currentQ'])-1
             if currentQ != current_question_num:
@@ -335,7 +351,17 @@ def home(request):
             if request.POST.has_key('mouseData'):
                 mouseData = request.POST['mouseData']
                 compressedMouseData = zlib.compress(mouseData).decode('latin1')
-            ExperimentAnswer.objects.update_or_create(question=current_question, answer=answer_text, experiment=experiment, user=user, mouseData=compressedMouseData, finished=True, confidence=confidence)
+
+            try:
+                # answer exists
+                exp_answer = ExperimentAnswer.objects.get(question=current_question, experiment=experiment, user=user)
+                exp_answer.mouseData=compressedMouseData
+                exp_answer.answer=answer
+                exp_answer.confidence=confidence
+                exp_answer.finished=True
+                exp_answer.save()
+            except ObjectDoesNotExist:
+                ExperimentAnswer.objects.create(question=current_question, experiment=experiment, user=user, mouseData=compressedMouseData, answer=answer, confidence=confidence, finished=True)
             # lets move on to the next question
             current_question_num += 1
             
@@ -372,7 +398,15 @@ def home(request):
                 mouseData = request.POST['mouseData']
                 compressedMouseData = zlib.compress(mouseData).decode('latin1')
                 current_question = questions[current_question_num-1]
-                ExperimentAnswer.objects.update_or_create(question=current_question, answer=None, experiment=experiment, user=user, mouseData=compressedMouseData, finished=False)
+                try:
+                    # answer exists
+                    exp_answer = ExperimentAnswer.objects.get(question=current_question, experiment=experiment, user=user)
+                    exp_answer.mouseData=compressedMouseData
+                    exp_answer.answer=None
+                    exp_answer.finished=False
+                    exp_answer.save()
+                except ObjectDoesNotExist:
+                    ExperimentAnswer.objects.create(question=current_question, experiment=experiment, user=user, mouseData=compressedMouseData, answer=None, finished=False)
     else:
        if current_question_num >= total_questions: # All validation rules pass
                 # Check that we are actually done
@@ -387,26 +421,30 @@ def home(request):
                 else:
                     experiment.finished = False
                     experiment.save()
-
+    """
     if current_question_num >= total_questions: # All validation rules pass
-                # Check that we are actually done
-                expected_answers = SurveyMembership.objects.filter(survey=survey).count()
-                actual_answers = ExperimentAnswer.objects.filter(experiment=experiment).count()
-                print(current_question_num, total_questions, expected_answers, actual_answers)
-                if actual_answers >= expected_answers:
-                    if not experiment.finished:
-                        experiment.finished = True
-                        experiment.save()
-                    return HttpResponseRedirect(reverse('done')) # Redirect after POST
-                else:
-                    experiment.finished = False
-                    experiment.save()
+            # Check that we are actually done
+            #expected_answers = SurveyMembership.objects.filter(survey=survey).count()
+            #actual_answers = ExperimentAnswer.objects.filter(experiment=experiment, finished=True).count()
+            #print(current_question_num, total_questions, expected_answers, actual_answers)
+            #if actual_answers >= expected_answers:
+            if not experiment.finished:
+                experiment.finished = True
+                experiment.save()
+            return HttpResponseRedirect(reverse('done')) # Redirect after POST
+            #else:
+            #    experiment.finished = False
+            #    experiment.save()
     #jsonString = '{"question": "how are you?"}'
     #questionData = json.loads(jsonString)
-    if len(questions) > current_question_num and current_question_num > 0:
-        current_question = questions[current_question_num-1]
-    else:
-        current_question = questions[0]
+    current_question = questions[current_question_num]
+    #if current_question_num > 0:
+    #    current_question_num = current_question_num + 1
+
+    #if len(questions) >= current_question_num and current_question_num > 0:
+    #    current_question = questions[current_question_num-1]
+    #else:
+    #    current_question = questions[0]
    # current_question
     return render(request, 'question_v3.html',
                               {'error': error,

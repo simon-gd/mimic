@@ -79,7 +79,7 @@ IconArrayDiagram.prototype.createLegend = function(nodes)
 IconArrayDiagram.prototype.initialize = function(data, width, height, interactionLevel) {
 	this.Container_initialize(); 
 	this.data = data;
-	this.width = (width) ? Number(width)-10 : 600;
+	this.width = (width) ? Number(width)-30 : 600;
 	this.height = (height) ? Number(height)-50 : 600;
 	this.interactionLevel = interactionLevel || 2;
 	
@@ -161,7 +161,7 @@ IconArrayDiagram.prototype.initialize = function(data, width, height, interactio
 	
 	this.addChild(legendContainer);
 	
-	arEasel.gridLayout(this, {vSpace: 10, hSpace: 3, hLayout: false});
+	arEasel.gridLayout(this, {vSpace: 10, hSpace: 10, hLayout: false});
 }
 
 

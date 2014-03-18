@@ -2,7 +2,57 @@
 {% load staticfiles %}
 
 {% block extra_css %}
-<style>
+
+
+<style type="text/css">
+    /* Customize font sizes based on media queries */
+    @media(max-width:767px){   /* Smaller than 800 wide... */
+      div, p {
+        font-size: 8px;
+      }
+    }
+    @media(min-width:768px){   /* 800w + */
+      div, p {
+        font-size: 10px;
+      }
+    }
+    @media(min-width:992px){   /* 1024w + */
+      div, p {
+        font-size: 11px;
+      }
+    }
+    @media(min-width:1200px){  /* 1280w + */
+      div, p {
+        font-size: 14px;
+      }
+    }
+
+    .size-16-9 {
+      /*width: 95vw;  Let Bootstrap sizes handle */
+      height: 56vw; /* rounded from 9/16 = 56.25 */
+      /*overflow: hidden;*/
+      /*margin: 8vw auto 0 auto;*/
+      border: 1px solid black;
+    }
+
+    .lead {
+      font-size: 1.1em;
+      margin-top: 1.2em;
+      margin-bottom: 0.8em;
+    }
+
+    .answer {
+      width: 5em;
+    }
+
+    .likert {
+      text-indent: 10px;
+    }
+
+    img {
+      border: 0px solid black;
+    }
+/*
 #wrapper_div2 {
     width: 100%;
     height: 100%;
@@ -29,7 +79,7 @@
 h3{
     font-size: 18px;
     font-size: 3vw; 
-}
+}*/
 </style>
 {% endblock extra_css %}
 
