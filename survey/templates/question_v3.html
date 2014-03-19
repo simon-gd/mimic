@@ -92,7 +92,7 @@ h3{
     //$(":input").each(function (i) { $(this).attr('tabindex', i + 1); });
    
     var tabindex = 1;
-    $('#mainForm').find(':input').each(function() {
+    $(':input').each(function() {
         if (this.type != "hidden") {
             var $input = $(this);
             $input.attr("tabindex", tabindex);

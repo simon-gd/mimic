@@ -82,7 +82,7 @@
         var confidence = 0;
         var worker_id = "{{worker_id|safe}}";
         var condition = "{{condition|safe}}";
-        var debug = {{debug|safe}};
+        var debug = parseInt({{debug|safe}});
 
         console.log("current_question", current_question);
 
@@ -101,14 +101,18 @@
        
         
         // Question submits
-        $('.submit').click(function() {
+        if(!debug){
+        $('.submit').click(function(e) {
+           
+            logFormatted(e);
+
             $(".error").html("");
             if(current_question == 0){
           
             }else if(current_question == 1){
                 var a1 = $('input:text[name=answer1]').val();
                 var a2 = $('input:text[name=answer2]').val();
-                confidence = $('input:radio[name=likert]:checked').val();
+                confidence = $('input:radio[name=confidence]:checked').val();
                 //console.log(b);
                 if(!a1 || !a2){
                 
@@ -172,8 +176,12 @@
            
             
         });
+        } // not debug condition
 
         $(".answer").keydown(function(event) {
+            if(debug){
+                return;
+            }
             var key = event.charCode || event.keyCode || 0;
             // Allow: backspace, delete, tab, escape, and enter
             if ( key == 46 ||key == 8 ||key == 9 || key == 27 || key == 13 || 
@@ -192,12 +200,16 @@
             }
         });
 
-        $(window).on('beforeunload', function(){
-          // Save the question because we are leaving
-          var concatLogBuffer = JSON.stringify(logBuffer);
-          $.post("./survey/save_question/", { 'mouseData': concatLogBuffer, 'worker_id':worker_id, 'condition':condition, 'currentQ': current_question, 'csrfmiddlewaretoken': '{{ csrf_token }}'} );
-          return ''; //Are you sure you want to leave?';
-        });
+        if(!debug){
+              
+            $(window).on('beforeunload', function(){
+          
+              // Save the question because we are leaving
+              var concatLogBuffer = JSON.stringify(logBuffer);
+              $.post("./survey/save_question/", { 'mouseData': concatLogBuffer, 'worker_id':worker_id, 'condition':condition, 'currentQ': current_question, 'csrfmiddlewaretoken': '{{ csrf_token }}'} );
+              return ''; //Are you sure you want to leave?';
+            });
+        }
         $('.enter_full_screen').click(function () {
             if (screenfull.enabled) {
                 screenfull.request();
@@ -347,7 +359,7 @@
 
       <div class="lead">
         <strong >Answer:</strong>
-        <input id="intput_a1" class="answer" name="answer1" type="text"/>&nbsp;<strong>of</strong>&nbsp;<input id="intput_a1" class="answer" name="answer2" type="text"/>&nbsp;<strong>Women</strong>
+        <input id="input_a1" class="answer" name="answer1" type="text"/>&nbsp;<strong>of</strong>&nbsp;<input id="input_a2" class="answer" name="answer2" type="text"/>&nbsp;<strong>Women</strong>
       </div>
 
       <br/>
@@ -357,21 +369,21 @@
       <ul class="list-inline pull-down text-center">
         <li style="width:19%">
           No Confidence<br/>
-          <input type="radio" id="likert-1" name="likert" value="1" /><label for="likert-1">&nbsp;1</label>
+          <input type="radio" id="confidence-1" name="confidence" value="1" /><label id="confidence-1-label" for="confidence-1">&nbsp;1</label>
         </li>
         <li style="width:19%">
-          <input type="radio" id="likert-2" name="likert" value="2" /><label for="likert-2">&nbsp;2</label>
+          <input type="radio" id="confidence-2" name="confidence" value="2" /><label id="confidence-2-label" for="confidence-2">&nbsp;2</label>
         </li>
         <li style="width:19%">
           Reasonable<br/>Confidence<br/>
-          <input type="radio" id="likert-3" name="likert" value="3" /><label for="likert-3">&nbsp;3</label>
+          <input type="radio" id="confidence-3" name="confidence" value="3" /><label id="confidence-3-label" for="confidence-3">&nbsp;3</label>
         </li>
         <li style="width:19%">
-          <input type="radio" id="likert-4" name="likert" value="4" /><label for="likert-4">&nbsp;4</label>
+          <input type="radio" id="confidence-4" name="confidence" value="4" /><label id="confidence-4-label" for="confidence-4">&nbsp;4</label>
         </li>
         <li style="width:19%">
           Very High<br/>Confidence<br/>
-          <input type="radio" id="likert-5" name="likert" value="5" /><label for="likert-5">&nbsp;5</label>
+          <input type="radio" id="confidence-5" name="confidence" value="5" /><label id="confidence-5-label" for="confidence-5">&nbsp;5</label>
         </li>
       </ul>
 

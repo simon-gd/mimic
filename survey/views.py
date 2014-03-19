@@ -113,7 +113,7 @@ def create_experiment_session(request, worker_id, condition, survey):
 
 def get_questions(survey):
     finalQuestions =[]
-    for sm in SurveyMembership.objects.filter(survey=survey).order_by('-order'):
+    for sm in SurveyMembership.objects.filter(survey=survey).order_by('order'):
         finalQuestions.append(sm.question)
     return finalQuestions;
 
@@ -272,7 +272,7 @@ def save_question(request):
         else:
             current_question_num = 0
 
-        current_question = questions[current_question_num-1]
+        current_question = questions[current_question_num]
 
         compressedMouseData = ""
         if 'mouseData' in request.POST:

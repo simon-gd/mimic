@@ -578,7 +578,7 @@ def debug_question(request, question_id):
     #get order
     qnum = 1
     membership = get_object_or_404(SurveyMembership, question=question)
-    qnum = membership.order - 1
+    qnum = membership.order
     if "tracking" in request.GET:
         debug = 0
         # XXX hack
@@ -609,7 +609,7 @@ def debug_question2(request):
 def json_all_questions(request, survey_id):
     survey = get_object_or_404(Survey, id=survey_id)
     questions = []
-    for mb in survey.surveymembership_set.all().order_by('-order'):
+    for mb in survey.surveymembership_set.all().order_by('order'):
         questions.append(mb.question)
     json_questions = serializers.serialize("json", questions)
     return HttpResponse(json_questions, mimetype="application/json")
@@ -1264,7 +1264,7 @@ def json_answers22(request, survey_id, question_id):
                 expAns_id = a.id
                 cursor_y = a.cursor_y
                 suveyMembership = SurveyMembership.objects.get(survey=survey, question=a.question)
-                q_order = suveyMembership.order - 1
+                q_order = suveyMembership.order
         if expAns_id == -1:
             exp.state = 1
             exp.save()
