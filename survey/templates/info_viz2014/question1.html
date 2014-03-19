@@ -202,13 +202,12 @@
 
         if(!debug){
               
-            $(window).on('beforeunload', function(){
-          
-              // Save the question because we are leaving
-              var concatLogBuffer = JSON.stringify(logBuffer);
-              $.post("./survey/save_question/", { 'mouseData': concatLogBuffer, 'worker_id':worker_id, 'condition':condition, 'currentQ': current_question, 'csrfmiddlewaretoken': '{{ csrf_token }}'} );
-              return ''; //Are you sure you want to leave?';
-            });
+            //$(window).on('beforeunload', function(){
+            // Save the question because we are leaving
+            //  var concatLogBuffer = JSON.stringify(logBuffer);
+            //  $.post("./survey/save_question/", { 'mouseData': concatLogBuffer, 'worker_id':worker_id, 'condition':condition, 'currentQ': current_question, 'csrfmiddlewaretoken': '{{ csrf_token }}'} );
+            //  return ''; //Are you sure you want to leave?';
+            //});
         }
         $('.enter_full_screen').click(function () {
             if (screenfull.enabled) {
