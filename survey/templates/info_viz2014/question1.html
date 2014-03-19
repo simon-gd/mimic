@@ -185,7 +185,7 @@
         } // not debug condition
 
         $(".answer").keydown(function(event) {
-            if(debug){
+            if(debug || bowser.safari){
                 return;
             }
             var key = event.charCode || event.keyCode || 0;
