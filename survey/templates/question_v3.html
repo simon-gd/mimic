@@ -87,8 +87,6 @@ h3{
 <script type="text/javascript">
     var logBuffer = [];
     
-    var answer_inputCount = 0;
-    
     //$(":input").each(function (i) { $(this).attr('tabindex', i + 1); });
    
     var tabindex = 1;
@@ -107,7 +105,7 @@ h3{
         var sel = rangy.getSelection();
         text = sel.toString();
         if(text.length > 0){
-            var selectionData = rangy.serializeSelection(sel, true, $("#mainForm")[0]);
+            var selectionData = rangy.serializeSelection(sel, true, $("#body")[0]);
             return [text, selectionData];
         }else{
             return ["",""];

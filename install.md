@@ -39,3 +39,5 @@ exec gunicorn wsgi:application
 sudo start mimic
 sudo status mimic
 sudo stop mimic
+
+/var/log/upstart/mimic.log

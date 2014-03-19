@@ -70,7 +70,10 @@
     }
 
     $(document).ready(function() {
-
+        
+        if( bowser.msie && bowser.version < 11){
+            $("#button_for_fullscreen_ie").html("");
+        }
 
         assignIDs();
 
@@ -203,19 +206,27 @@
         if(!debug){
               
             //$(window).on('beforeunload', function(){
-            // Save the question because we are leaving
+          
+              // Save the question because we are leaving
             //  var concatLogBuffer = JSON.stringify(logBuffer);
             //  $.post("./survey/save_question/", { 'mouseData': concatLogBuffer, 'worker_id':worker_id, 'condition':condition, 'currentQ': current_question, 'csrfmiddlewaretoken': '{{ csrf_token }}'} );
             //  return ''; //Are you sure you want to leave?';
             //});
         }
+        
+    
         $('.enter_full_screen').click(function () {
             if (screenfull.enabled) {
                 screenfull.request();
             }
+            if (window.ActiveXObject){
+                var wscript = new ActiveXObject("Wscript.shell");
+                wscript.SendKeys("{F11}");
+            }
+
         });
     
-        var fullscreen = debug || screenfull.isFullscreen || (window.innerWidth == screen.width && window.innerHeight == screen.height);
+        var fullscreen = debug || screenfull.isFullscreen || ( (screen.availHeight || screen.height-30) <= window.innerHeight);
         if(fullscreen){
                
                 $('.submit').prop('disabled', false);
@@ -228,11 +239,28 @@
                 if(current_question > 0){
                     $('#myModal').modal('show');
                 }
-            }
-        
+       }
+       if (screenfull.enabled) {
+           document.addEventListener(screenfull.raw.fullscreenchange, function () {
+                var fullscreen = debug || screenfull.isFullscreen || ( (screen.availHeight || screen.height-30) <= window.innerHeight);
+                if(fullscreen){
+               
+                        $('.submit').prop('disabled', false);
+                        $('.submit_button_div').show("slow");
+                        $('#myModal').modal('hide');
+                
+                    }else{
+                        $('.submit').prop('disabled', true);
+                        $('.submit_button_div').hide();
+                        if(current_question > 0){
+                            $('#myModal').modal('show');
+                        }
+               }
+            }); 
+        }
 
         $(window).resize(function( e ) {
-            var fullscreen = debug || screenfull.isFullscreen || (window.innerWidth == screen.width && window.innerHeight == screen.height);
+            var fullscreen = debug || screenfull.isFullscreen || ( (screen.availHeight || screen.height-30) <= window.innerHeight);
             if(fullscreen){
                 $('.submit').prop('disabled', false);
                 $('.submit_button_div').show("slow");
@@ -288,7 +316,7 @@
       <p class="lead"><strong>Please Enter Full Screen Mode to proceed:</strong></p>
 
       <div class="well well-sm">
-        <p class="scaled_text" id="question1">To enter <b id="bold6">Full Screen Mode</b>, please press <b id="bold8">F11</b> on your keyboard or click this button: <button id="enter_full_screen1" type="button" class="btn btn-default enter_full_screen">Enter Full Screen Mode</button></p> (Your browser may ask you to "Allow" access for this)
+        <p class="scaled_text" id="question1">To enter <b id="bold6">Full Screen Mode</b>, please press <b id="bold8">F11</b> on your keyboard <span id="button_for_fullscreen_ie">or click this button: <button id="enter_full_screen1" type="button" class="btn btn-default enter_full_screen">Enter Full Screen Mode</button> <br/>(Your browser may ask you to "Allow" access for this)</span> </p>
 
       </div>
       <div id="submit_button_div1" class="submit_button_div">
