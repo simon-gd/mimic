@@ -454,6 +454,7 @@ def home(request):
                                'question_template': current_question.template,
                                'question':current_question.data,
                                'condition': condition,
+                               'debug':0,
                                'qnum':current_question_num,
                                'qtotal':total_questions-1 })
     

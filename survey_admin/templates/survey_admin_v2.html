@@ -127,6 +127,14 @@ $(document).ready(function() {
   $("select#viz_type").change(function() {
      viz_type = parseInt($(this).val());
   });
+
+  //$("#preprocess_link").click(function() {
+  //      var preprocess_url = '{% url "json_preprocess_answers" "999" %}'.replace (999, g_survey);
+  //      $.getJSON(preprocess_url, function(result) {
+//	      alert("preprocess finished", result);
+//	  });
+//  });
+
   $("select#study").change(function() {
       if ($(this).val() == 'Z') {
 	  $("select#question").html("<option>Select a question</option>");
@@ -136,6 +144,10 @@ $(document).ready(function() {
       else {
 	 
 	  g_survey = $(this).val()
+      
+      var preprocess_url = '{% url "json_preprocess_answers" "999" %}'.replace (999, g_survey);
+      $("#preprocess_link_div").html('<a id="preprocess_link" href="'+preprocess_url+'" target="_blank">Process new answers</a>');
+
 	  var url = '{% url "json_all_questions" "999" %}'.replace (999, g_survey);
 	  $.getJSON(url, function(questions) {
 	      var options = '<option value="-1">Select a question</option>';
@@ -730,6 +742,7 @@ $(document).ready(function() {
       <!-- <a id="group_clear" class="btn" style="width: 150px; margin: 3px;" href="#">Clear grouping</a><br/>
     <a id="group_conditions" class="btn" style="width: 150px; margin: 3px;" href="#">Group by conditions</a>-->
     </form>
+    <div id="preprocess_link_div"></div>
     Selected UserID: <span id="current_user">N/A</span>
     <div id="experiment_info">
     </div>

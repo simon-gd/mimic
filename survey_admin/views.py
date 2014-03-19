@@ -130,6 +130,7 @@ def json_preprocess_answers(request, survey_id):
     #return save_answers_to_azure(request, survey_id)
     #return json_preprocess_answers_v1(request, survey_id)
     #return json_preprocess_answers_to_mongodb(request, survey_id)
+    json_preprocess_answers_v2(request, survey_id)
     return HttpResponse('{"status":"done"}', mimetype="application/json")
 
 def json_preprocess_answers_to_mongodb(request, survey_id):
@@ -391,11 +392,13 @@ def json_preprocess_answers_v2(request, survey_id):
     create_count = 0
     updated_count = 0
     errors = []
-    force_reprocess = True
-    
+    force_reprocess = False
+    if "force_reprocess" in request.GET:
+        force_reprocess = request.GET["force_reprocess"]
+
     for a in expAns:
         p_a = None
-        rawEventData = a.mouseData
+        rawEventData = zlib.decompress(a.mouseData.encode('latin1')) 
         if len(rawEventData) == 0 or rawEventData[0] != "[" or a.answer ==  None:
             continue
         try:
@@ -408,22 +411,24 @@ def json_preprocess_answers_v2(request, survey_id):
             p_a = ExperimentAnswerProcessed.objects.create(source_answer=a, experiment=a.experiment, question=a.question, answer=str(a.answer), confidence=a.confidence, user=a.user)
             create_count += 1
         
-        p_a.answer = a.answer
-        #validate answer
+        if len(a.answer) > 0:
+            p_a.answer = a.answer
+            #validate answer
         
-        correct_answer = json.loads(a.question.correct_answer.encode('utf-8'))
-        answer = json.loads(p_a.answer.encode('utf-8'))
-        for k,v in answer.iteritems():
-            answer[k] = str(v)
+            correct_answer = json.loads(a.question.correct_answer.encode('utf-8'))
+            answer = json.loads(p_a.answer.encode('utf-8'))
+            if len(answer) > 0:
+                for k,v in answer.iteritems():
+                    answer[k] = str(v)
 
-        for k,v in correct_answer.iteritems():
-            val = str(v)
-            if val.isdigit():
-                prev_a = answer[k]
-                answer[k] = re.sub("[^\d\.]", "", answer[k])
-                if answer[k] != prev_a:
-                    print("changed ", answer[k], prev_a)
-        p_a.answer = json.dumps(answer)
+                #for k,v in correct_answer.iteritems():
+                #    val = str(v)
+                #    if val.isdigit():
+                #        prev_a = answer[k]
+                #        answer[k] = re.sub("[^\d\.]", "", answer[k])
+                #        if answer[k] != prev_a:
+                #            print("changed ", answer[k], prev_a)
+                p_a.answer = json.dumps(answer)
 
         clicks = 0
         scrolls = 0
@@ -471,33 +476,33 @@ def json_preprocess_answers_v2(request, survey_id):
                     clicks += 1
                     xPos = line[1]['pageX']
                     yPos = line[1]['pageY']
-                    clickEvents.append({'time':line[1]['timeStamp'], 'x':xPos, 'y':yPos, 'type':"click", 'e':line[1], 'extra': line[2]})
-                    miscEvents.append({'time':line[1]['timeStamp'], 'x':xPos, 'y':yPos, 'type':"click", 'e':line[1], 'extra': line[2]})
+                    clickEvents.append({'time':line[1]['timeStamp']-start_time, 'x':xPos, 'y':yPos, 'type':"click", 'e':line[1], 'extra': line[2]})
+                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'x':xPos, 'y':yPos, 'type':"click", 'e':line[1], 'extra': line[2]})
                 elif line[0] == "scroll":
                     scrolls += 1
                     dx = line[2]['scrollOffset']['pageXOffset']
                     dy = line[2]['scrollOffset']['pageYOffset']
-                    scrollEvents.append({'time':line[1]['timeStamp'], 'dx':dx, 'dy':dy, 'type':"scroll", 'e':line[1], 'extra': line[2]})
-                    miscEvents.append({'time':line[1]['timeStamp'], 'dx':dx, 'dy':dy, 'type':"scroll", 'e':line[1], 'extra': line[2]})
+                    scrollEvents.append({'time':line[1]['timeStamp']-start_time, 'dx':dx, 'dy':dy, 'type':"scroll", 'e':line[1], 'extra': line[2]})
+                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'dx':dx, 'dy':dy, 'type':"scroll", 'e':line[1], 'extra': line[2]})
                 elif line[0] == "keydown":
                     keydown += 1
-                    keydownEvents.append({'time':line[1]['timeStamp'], 'key':line[1]['which'], 'type':"keydown", 'e':line[1], 'extra': line[2]})
-                    miscEvents.append({'time':line[1]['timeStamp'], 'key':line[1]['which'], 'type':"keydown", 'e':line[1], 'extra': line[2]})
+                    keydownEvents.append({'time':line[1]['timeStamp']-start_time, 'key':line[1]['which'], 'type':"keydown", 'e':line[1], 'extra': line[2]})
+                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'key':line[1]['which'], 'type':"keydown", 'e':line[1], 'extra': line[2]})
                 elif line[0] == "mousemove":
                     cursor_y.append(float(line[1]['pageY']))
-                    mouseMoveEvents.append({'time':line[1]['timeStamp'], 'x':line[1]['pageX'], 'y':line[1]['pageY'], 'type':"mousemove", 'e':line[1], 'extra': line[2]})
-                    miscEvents.append({'time':line[1]['timeStamp'], 'x':line[1]['pageX'], 'y':line[1]['pageY'], 'type':"mousemove", 'e':line[1], 'extra': line[2]})
+                    mouseMoveEvents.append({'time':line[1]['timeStamp']-start_time, 'x':line[1]['pageX'], 'y':line[1]['pageY'], 'type':"mousemove", 'e':line[1], 'extra': line[2]})
+                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'x':line[1]['pageX'], 'y':line[1]['pageY'], 'type':"mousemove", 'e':line[1], 'extra': line[2]})
                 elif line[0] == "init":
-                    initEvents.append({'time':line[1]['timeStamp'], 'type':"init", 'e':line[1], 'extra': line[2]})
-                    miscEvents.append({'time':line[1]['timeStamp'], 'type':"init", 'e':line[1], 'extra': line[2]})
+                    initEvents.append({'time':line[1]['timeStamp']-start_time, 'type':"init", 'e':line[1], 'extra': line[2]})
+                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'type':"init", 'e':line[1], 'extra': line[2]})
                     window_w = line[2]['window']['width']
                     window_h = line[2]['window']['height']
                 elif line[0] == "resize":
                     rw = line[2]['window']['width']
                     rh = line[2]['window']['height']
-                    miscEvents.append({'time':line[1]['timeStamp'], 'x':rw, 'y':rh, 'type':"resize", 'e':line[1], 'extra': line[2]}) 
+                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'x':rw, 'y':rh, 'type':"resize", 'e':line[1], 'extra': line[2]}) 
                 else:
-                    miscEvents.append({'time':line[1]['timeStamp'], 'type': line[0], 'e':line[1], 'extra': line[2]})
+                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'type': line[0], 'e':line[1], 'extra': line[2]})
 
         except Exception as e:
             error = "json_preprocess_answers: time Error: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
@@ -568,7 +573,14 @@ def debug_question(request, question_id):
         condition = 0
         
     question = get_object_or_404(Question, id=question_id)
+    debug = 1
+    #if question.data
+    #get order
+    qnum = 1
+    membership = get_object_or_404(SurveyMembership, question=question)
+    qnum = membership.order - 1
     if "tracking" in request.GET:
+        debug = 0
         # XXX hack
         t = question.base_template
         #if question.id > 13:
@@ -585,19 +597,19 @@ def debug_question(request, question_id):
         #    t = 'question_v1_no_tracking.html'
     print(t)
     
-    return render(request, t, {'question_template': question.template, 'question': question.data, 'condition':condition, 'qnum':1,'qtotal':1})
+    return render(request, t, {'question_template': question.template, 'question': question.data, 'condition':condition, 'qnum':qnum,'qtotal':1, 'debug':debug})
 
 @staff_member_required
 def debug_question2(request):
     template = request.GET["template"]
     data = request.GET["data"]
-    return render(request, 'question.html', {'question_template': "questions/"+template, 'question': data, 'qnum':1,'qtotal':1})
+    return render(request, 'question.html', {'question_template': "questions/"+template, 'question': data, 'qnum':1,'qtotal':1, 'debug':0})
 
 @staff_member_required
 def json_all_questions(request, survey_id):
     survey = get_object_or_404(Survey, id=survey_id)
     questions = []
-    for mb in survey.surveymembership_set.all().order_by('order'):
+    for mb in survey.surveymembership_set.all().order_by('-order'):
         questions.append(mb.question)
     json_questions = serializers.serialize("json", questions)
     return HttpResponse(json_questions, mimetype="application/json")

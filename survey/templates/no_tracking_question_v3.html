@@ -1,8 +1,59 @@
 {% extends "base_v2.html" %}
 {% load staticfiles %}
+
 {% block extra_css %}
-<style>
-#map {
+
+
+<style type="text/css">
+    /* Customize font sizes based on media queries */
+    @media(max-width:767px){   /* Smaller than 800 wide... */
+      div, p {
+        font-size: 8px;
+      }
+    }
+    @media(min-width:768px){   /* 800w + */
+      div, p {
+        font-size: 10px;
+      }
+    }
+    @media(min-width:992px){   /* 1024w + */
+      div, p {
+        font-size: 11px;
+      }
+    }
+    @media(min-width:1200px){  /* 1280w + */
+      div, p {
+        font-size: 14px;
+      }
+    }
+
+    .size-16-9 {
+      /*width: 95vw;  Let Bootstrap sizes handle */
+      height: 56vw; /* rounded from 9/16 = 56.25 */
+      /*overflow: hidden;*/
+      /*margin: 8vw auto 0 auto;*/
+      border: 1px solid black;
+    }
+
+    .lead {
+      font-size: 1.1em;
+      margin-top: 1.2em;
+      margin-bottom: 0.8em;
+    }
+
+    .answer {
+      width: 5em;
+    }
+
+    .likert {
+      text-indent: 10px;
+    }
+
+    img {
+      border: 0px solid black;
+    }
+/*
+#wrapper_div2 {
     width: 100%;
     height: 100%;
     min-height: 100%;
@@ -21,22 +72,21 @@
 }
 
 .scaled_text{
-    font-size: 12px;
-    /* 100 = view port width, as 1vw = 1/100th of that
-       So if the container is 50% of view port (as here)
-       then factor that into how you want it to size.
-       Let's say you like 5vw if it were the whole width,
-       then for this container, size it at 2.5vw (5 * .5 [i.e. 50%])
-    */
-    font-size: 1.0vw; 
+    font-size: 16px;
+    font-size: 1.2vh;
 }
+
+h3{
+    font-size: 18px;
+    font-size: 3vw; 
+}*/
 </style>
 {% endblock extra_css %}
+
 {% block extra_head %}
 <script type="text/javascript">
     var logBuffer = [];
     
-    head.ready(function() {
     var answer_inputCount = 0;
     
     //$(":input").each(function (i) { $(this).attr('tabindex', i + 1); });
@@ -333,129 +383,13 @@
         logBuffer.push(eventObject);    
     }
 
-    $(document).ready(function(){
-      // Document Mouse Events
-      $(document).mousemove( function( e ) {
-        // First mouse move lets add a ready event
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-      
-      $(document).click( function( e ) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-
-      $(document).dblclick( function( e ) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-
-      $(document).mouseenter( function( e ) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-
-      $(document).mouseleave( function( e ) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-      
-      $(document).mousedown( function( e ) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-      $(document).mouseup( function( e ) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-      
-      // Keyboard Events
-      $(document).keydown(function(e) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-      $(document).keyup(function(e) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-      $(document).keypress(function(e) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-      $(document).focusin(function(e) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-      $(document).focusout(function(e) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-      $(document).mousewheel(function(e) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-        
-      // Window Events
-      $(window).resize(function( e ) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-      $(window).scroll(function( e ) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-      $(window).focus(function(e) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-      $(window).blur(function(e) {
-        if(logBuffer.length ==0){
-            logFormatted(e, "init");
-        }
-        logFormatted(e);
-      });
-     
-    }); //$(document).ready(function() {
+   
     
-    }); //head.ready(function() {
 </script>
 {% endblock extra_head %}
 
 {% block content %}
- <div id="map">
+ <div id="wrapper_div2">
         {% include question_template %}
 </div>
 {% endblock content %}

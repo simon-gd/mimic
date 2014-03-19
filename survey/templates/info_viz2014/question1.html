@@ -80,8 +80,9 @@
         var current_question =  parseInt({{qnum|safe}});
         var answer = "";
         var confidence = 0;
-        var worker_id = {{worker_id|safe}};
-        var condition = {{condition|safe}};
+        var worker_id = "{{worker_id|safe}}";
+        var condition = "{{condition|safe}}";
+        var debug = {{debug|safe}};
 
         console.log("current_question", current_question);
 
@@ -203,7 +204,7 @@
             }
         });
     
-        var fullscreen = screenfull.isFullscreen || (window.innerWidth == screen.width && window.innerHeight == screen.height);
+        var fullscreen = debug || screenfull.isFullscreen || (window.innerWidth == screen.width && window.innerHeight == screen.height);
         if(fullscreen){
                
                 $('.submit').prop('disabled', false);
@@ -220,7 +221,7 @@
         
 
         $(window).resize(function( e ) {
-            var fullscreen = screenfull.isFullscreen || (window.innerWidth == screen.width && window.innerHeight == screen.height);
+            var fullscreen = debug || screenfull.isFullscreen || (window.innerWidth == screen.width && window.innerHeight == screen.height);
             if(fullscreen){
                 $('.submit').prop('disabled', false);
                 $('.submit_button_div').show("slow");
