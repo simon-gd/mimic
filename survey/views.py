@@ -331,8 +331,11 @@ def home(request):
     #questions_answered_finished = ExperimentAnswer.objects.filter(experiment=experiment, finished=True).count()
 
     current_question_num = ExperimentAnswer.objects.filter(experiment=experiment, finished=True).count()
+    debugFull = 0
+    if "debugFull" in request.GET:
+        debugFull = 1
 
-    print("current_question_num", current_question_num)
+    #print("current_question_num", current_question_num)
 
     """
     if request.method == 'POST': # If the form has been submitted...
@@ -459,7 +462,7 @@ def home(request):
                                'question_template': current_question.template,
                                'question':current_question.data,
                                'condition': condition,
-                               'debug':0,
+                               'debug':debugFull,
                                'qnum':current_question_num,
                                'qtotal':total_questions-1 })
     
