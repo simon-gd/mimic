@@ -172,6 +172,7 @@
                               'csrfmiddlewaretoken': '{{ csrf_token }}'}
                       }).done(function() {
                              if(total_pages == current_question){
+                                 //$('.submit').prop('disabled', false);
                                  $('#mainForm').submit();
                              }
                         
@@ -191,8 +192,9 @@
                     current_question++;
                     $("#currentQ").val(current_question);        
                     showPage("#page"+current_question.toString());
+                    $('.submit').prop('disabled', false);
                 }
-                $('.submit').prop('disabled', false);
+                
             }).fail(function() {
                 $('.submit').prop('disabled', false);
                 $(".error").html("<div id='myerror1' class='alert alert-error'>Error: Submission didn't work, please try again.</div>");
