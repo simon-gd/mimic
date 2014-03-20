@@ -259,6 +259,9 @@ def save_question(request):
     if worker_id== None or condition == None or experiment == None or user == None:
         return redirect(reverse('no_active_survey'))
 
+
+    question_finished = False
+
     # Lets create the survey
     questions = get_questions(survey)
     error = ""
@@ -278,9 +281,9 @@ def save_question(request):
         if 'mouseData' in request.POST:
             mouseData = request.POST['mouseData']
             compressedMouseData = zlib.compress(mouseData).decode('latin1')
-        
+            question_finished = True
+
         answer = ""
-        question_finished = False
         if 'answer' in request.POST:
             answer = request.POST['answer']
             question_finished = True
@@ -292,9 +295,11 @@ def save_question(request):
         try:
             # answer exists
             exp_answer = ExperimentAnswer.objects.get(question=current_question, experiment=experiment, user=user)
-            exp_answer.mouseData=compressedMouseData
-            exp_answer.answer=answer
-            exp_answer.confidence=confidence
+            if len(compressedMouseData) > 0:
+                exp_answer.mouseData=compressedMouseData
+            else:
+                exp_answer.answer=answer
+                exp_answer.confidence=confidence
             exp_answer.finished=question_finished
             exp_answer.save()
 
@@ -466,12 +471,12 @@ def done(request):
         worker_id = request.session['worker_id']
         user = ExperimentUser.objects.get(worker_id=worker_id)
     else:
-         return HttpResponseRedirect(reverse('need_worker_id'))
+        return HttpResponseRedirect(reverse('no_active_survey'))
     
     if request.session.has_key('experiment_id'):
         experiment_id = request.session['experiment_id']
     else:
-        return HttpResponseRedirect(reverse('worker_id'))
+        return HttpResponseRedirect(reverse('no_active_survey'))
 
     experiment = get_object_or_404(Experiment, id=experiment_id)
     survey = experiment.survey
