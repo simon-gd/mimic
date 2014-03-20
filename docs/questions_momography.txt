@@ -40,7 +40,7 @@
 		
 
 {name: "Sankey Diagram", interactionLevel: 1, graph: {
-				showLabels: false,
+				showLabels: true,
                                 nodes: [{name: "",detail:"Women over 40", units: "Women"},
                                 {name: "B", detail: "Got Positive Mammography", units: "Women"},
                                 {name: "B'", detail: "Got Negative Mammography", units: "Women"}, 
@@ -55,7 +55,7 @@
                                 {source: 2,target: 4, value: 895, units:"Women"}]}}	
 
 {name: "Sankey Diagram", interactionLevel: 1, graph: {
-                                showLabels: false,
+                                showLabels: true,
 				nodes: [{name: "",detail:"Women over 40", units: "Women"},
                                 {name: "A", detail:"Have Breast Cancer", units: "Women"},
                                 {name: "A'", detail: "Does Not Have Breast Cancer", units: "Women"},
