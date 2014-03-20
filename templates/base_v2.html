@@ -46,6 +46,9 @@
 
 
     <script>
+        if (!window.console) {var console = {};}
+        if (!console.log) {console.log = function() {};}
+        if (!console.error) {console.error = function() {};}
         var nsURL = "{% url 'survey.views.not_supported' %}";
         if ((!Modernizr.canvas || !Modernizr.inlinesvg) && window.location.href.indexOf(nsURL) == -1) {
           window.location.href = nsURL;
