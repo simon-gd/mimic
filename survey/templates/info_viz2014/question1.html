@@ -63,7 +63,7 @@
     }
 
     function assignImages(condition){
-        var image_size = (screen.width < 992) ? "1024" : "1280";
+        var image_size = (screen.width < 1200) ? "1024" : "1280"; //992
         var image_path = "img/infoViz2014_exp1/__diagram" + condition + "_"+ image_size + ".png";
         var filename = ("{% static '111' %}").replace('111', image_path);
         $('#page1_diagram').attr("src", filename);
@@ -102,8 +102,8 @@
         $('#scenario_question').html(getHTMLforQuestion(question));
         $('#scenario_diagram').html(getHTMLforDiagram(c1_image_path, condition));
 
-        checkResolution(1024,768);
-
+        //checkResolution(1024,768);
+        checkResolution(1000, 560);
        
         
         // Question submits
@@ -362,7 +362,7 @@
       <p class="lead"><strong>This is illustrated by the following diagram:</strong></p>
 
       <div class="text-center">
-        <img id="page1_diagram" src="" class="img-responsive" alt="Diagram"/>
+        <img id="page1_diagram" src="" alt="Diagram"/>
       </div>
     </div>
 
@@ -442,7 +442,7 @@
           <option value="Professional School">Professional School</option>
           <option value="Graduate Degree">Graduate Degree</option>
       </select>
-      </div></br>
+      </div></br></br>
 
       <p class="lead"><strong>What category of occupation do you belong to?</strong></p>
       <div class="col-xs-4">
@@ -475,7 +475,7 @@
         <option value="Military Specific Occupations">Military Specific Occupations</option>
         <option value="Other">Other</option>
       </select>
-      </div></br>
+      </div></br></br>
       <p class="lead"><strong>Are you color blind?</strong></p>
       <ul class="list-inline pull-down text-left">
         <li>
