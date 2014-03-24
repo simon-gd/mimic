@@ -54,11 +54,12 @@
           window.location.href = nsURL;
         }
         //(bowser.safari && bowser.version >= 5) ||
+        //(bowser.opera && bowser.version >= 11.0) ||
 
         if( (bowser.msie && bowser.version >= 9) ||
             (bowser.chrome && bowser.version >= 14) ||
             (bowser.firefox && bowser.version >= 4.0) ||
-            (bowser.opera && bowser.version >= 11.0) ||
+            
             window.location.href.indexOf(nsURL) != -1) {
           // We are good
         }else{
