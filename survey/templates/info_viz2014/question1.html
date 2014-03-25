@@ -94,17 +94,20 @@
 
         assignImages(condition);
         
-        var scenario_text = "10 out of every 1,000 women at age forty who participate in routine screening have breast cancer. <br id='br2'>8 of every 10 women with breast cancer will get a positive mammography. <br id='br3'>95 out of every 990 women without breast cancer will also get a positive mammography. <br id='br5'>";
-        var question = "There is a new representative sample of women at age forty who got a positive mammography in routine screening. <br id='br4'>How many of these women do you expect to actually have breast cancer?";
-        var c1_image_path = "{% static 'img/infoViz2014_exp1/diagram_' %}";
+        //var scenario_text = "10 out of every 1,000 women at age forty who participate in routine screening have breast cancer. <br id='br2'>8 of every 10 women with breast cancer will get a positive mammography. <br id='br3'>95 out of every 990 women without breast cancer will also get a positive mammography. <br id='br5'>";
+        //var question = "There is a new representative sample of women at age forty who got a positive mammography in routine screening. <br id='br4'>How many of these women do you expect to actually have breast cancer?";
+        //var c1_image_path = "{% static 'img/infoViz2014_exp1/diagram_' %}";
 
-        $('#scenario').html(getHTMLforScenarioText(scenario_text));
-        $('#scenario_question').html(getHTMLforQuestion(question));
-        $('#scenario_diagram').html(getHTMLforDiagram(c1_image_path, condition));
+        //$('#scenario').html(getHTMLforScenarioText(scenario_text));
+        //$('#scenario_question').html(getHTMLforQuestion(question));
+        //$('#scenario_diagram').html(getHTMLforDiagram(c1_image_path, condition));
 
         //checkResolution(1024,768);
         checkResolution(1000, 560);
        
+        if(condition == "0"){
+            $('#illustration_div').hide();
+        }
         
         // Question submits
         if(!debug){
@@ -141,15 +144,16 @@
                 var education = $('#education option:selected').val();
                 var color_blind = $('input:radio[name=color_blind]:checked').val();
                 var training = $('input:radio[name=training]:checked').val();
+                var calculation_question = $('input:radio[name=calculation_question]:checked').val();
                 var comments = $('#comments').val();
 
-                if(!gender || !occupation || !education || !color_blind || !training){
+                if(!gender || !occupation || !education || !color_blind || !training || !calculation_question){
                 
                     $(".error").html("<div id='myerror4' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
                     return;     
                 }
 
-                answer = {'gender':gender, 'occupation':occupation, 'education':education, 'color_blind':color_blind, 'training':training, 'comments':comments};
+                answer = {'gender':gender, 'occupation':occupation, 'education':education, 'color_blind':color_blind, 'training':training, 'calculation_question': calculation_question,'comments':comments};
             }
             
             $('.submit').prop('disabled', true);
@@ -312,7 +316,7 @@
       <div id="submit_button_div1" class="submit_button_div">
       <p class="text-success" id="question1"><b id="bold7">Full Screen Mode</b> entered successfully, please proceed to take the survey.</p>
       <button type="submit" id="submitButton1"  name="submit" class="btn btn-default submit">Next Page</button>
-      <div id="error" class="error text-danger"></div>
+      <div id="error1" class="error text-danger"></div>
       </div>
     </div>
   </div>
@@ -356,12 +360,13 @@
       <div class="well well-sm">
         <p>At age forty, when women participate in routine screening for breast cancer, 10 out of 1000 will have breast cancer. However, 8 of every 10 women with breast cancer will get a positive mammography, and 95 out of every 990 women without breast cancer will also get a positive mammography.</p>
       </div>
-
+      <div id="illustration_div">
       <p class="lead"><strong>This is illustrated by the following diagram:</strong></p>
 
       <div class="text-center">
         <img id="page1_diagram" src="" alt="Diagram"/>
       </div>
+      </div>  
     </div>
 
     <div class="col-xs-5">
@@ -404,7 +409,7 @@
       <br/>
       <br/>
       <button type="submit" class="btn btn-default submit">Next Page</button>
-      <div id="error" class="error text-danger"></div>
+      <div id="error2" class="error text-danger"></div>
 
     </div>
   </div>
@@ -418,7 +423,7 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-xs-10">
+    <p class="col-xs-10">
       <p class="lead"><strong>What is your Gender?</strong></p>
       <ul class="list-inline pull-down text-left">
         <li>
@@ -509,18 +514,35 @@
           <input type="radio" id="training-5" name="training" value="5" /><label for="training-5">&nbsp;5</label>
         </li>
       </ul>
-    
-
+      
+        <p id="p3" class="lead"><strong>Did you try to compute an exact answer to the mammography problem? (as opposed to just estimating the answer)</strong></p>
+        <ul class="list-inline pull-down text-left">
+        <li>
+          <input type="radio" id="calculation_question-1" name="calculation_question" value="Yes" /><label for="calculation_question-1">&nbsp;Yes</label>
+        </li>
+        <li>
+          <input type="radio" id="calculation_question-2" name="calculation_question" value="No" /><label for="calculation_question-2">&nbsp;No</label>
+        </li>
+        <li>
+          <input type="radio" id="calculation_question-3" name="calculation_question" value="Unsure" /><label for="calculation_question-3">&nbsp;Unsure</label>
+        </li>
+      </ul>
+        
    
-      <p class="lead"><strong>Please provide any comments or concerns:</strong></p>
+
+      <p class="lead">Please provide any comments or concerns:</p>
       <textarea id="comments" name="comments" class="form-control" rows="5"></textarea>
      
 
       <br/>
-      <br/>
-      <button type="submit" class="btn btn-default submit">Submit</button>
-      <div id="error" class="error text-danger"></div>
-      <div id="calculating" class="calculating"></div>
+      <div class="row">
+          
+         <div class="col-md-1"><button type="submit" class="btn btn-default submit">Submit</button></div> 
+         <div class="col-md-9"><span id="error3" class="error text-danger"></span><span id="calculating" class="calculating"></span></div> 
+         
+      </div>
+      
+     
 
     </div>
   </div>
