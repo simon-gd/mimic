@@ -398,7 +398,13 @@ def json_preprocess_answers_v2(request, survey_id):
 
     for a in expAns:
         p_a = None
-        rawEventData = zlib.decompress(a.mouseData.encode('latin1')) 
+        rawEventData = ""
+        try:
+            rawEventData = zlib.decompress(a.mouseData.encode('latin1'))
+        except Exception as e:
+            continue
+
+
         if len(rawEventData) == 0 or rawEventData[0] != "[" or a.answer ==  None:
             continue
         try:
