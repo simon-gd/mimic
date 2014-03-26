@@ -10,7 +10,7 @@ import ast
 import base64
 from django.core import serializers
 from django.core.urlresolvers import reverse
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.template import RequestContext
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse
@@ -130,8 +130,8 @@ def json_preprocess_answers(request, survey_id):
     #return save_answers_to_azure(request, survey_id)
     #return json_preprocess_answers_v1(request, survey_id)
     #return json_preprocess_answers_to_mongodb(request, survey_id)
-    json_preprocess_answers_v2(request, survey_id)
-    return HttpResponse('{"status":"done"}', mimetype="application/json")
+    return json_preprocess_answers_v2(request, survey_id)
+    #return HttpResponse('{"status":"done"}', mimetype="application/json")
 
 def json_preprocess_answers_to_mongodb(request, survey_id):
     client = MongoClient('localhost', 27017)
@@ -385,12 +385,24 @@ def json_preprocess_answers_v1(request, survey_id):
             print(str(create_count+updated_count)+"/"+str(len(expAns)), " saving ", p_a, p_a.id, p_a.source_answer.id, p_a.answer)
     return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+'}', mimetype="application/json")
 
+def mydeflate(data):   # zlib only provides the zlib compress format, not the deflate format;
+  try:               # so on top of all there's this workaround:
+    return zlib.decompress(data, -zlib.MAX_WBITS)
+  except zlib.error:
+    try:               # so on top of all there's this workaround:
+        return zlib.decompress(data)
+    except zlib.error:
+        return ""
+    
+
+
 def json_preprocess_answers_v2(request, survey_id):
     #newer JSON Interaction Data processing version 2
     survey = get_object_or_404(Survey, id=survey_id)
     expAns = ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True, experiment__state=0)
     create_count = 0
     updated_count = 0
+    skipped_count = 0
     errors = []
     force_reprocess = False
     if "force_reprocess" in request.GET:
@@ -400,18 +412,23 @@ def json_preprocess_answers_v2(request, survey_id):
         p_a = None
         rawEventData = ""
         try:
-            rawEventData = zlib.decompress(a.mouseData.encode('latin1'))
+            rawEventData = mydeflate(a.mouseData.encode('latin1')) #.encode('latin1')
         except Exception as e:
-            continue
-
-
+            print("filed to decompress data", a.pk)
+            
         if len(rawEventData) == 0 or rawEventData[0] != "[" or a.answer ==  None:
+            skipped_count += 1
             continue
+
         try:
             p_a = ExperimentAnswerProcessed.objects.get(source_answer=a)
             updated_count += 1
             if not force_reprocess:
                 continue
+        except MultipleObjectsReturned:
+            ExperimentAnswerProcessed.objects.filter(source_answer=a).delete()
+            p_a = ExperimentAnswerProcessed.objects.create(source_answer=a, experiment=a.experiment, question=a.question, answer=str(a.answer), confidence=a.confidence, user=a.user)
+            create_count += 1
         except ExperimentAnswerProcessed.DoesNotExist:
             # create a new
             p_a = ExperimentAnswerProcessed.objects.create(source_answer=a, experiment=a.experiment, question=a.question, answer=str(a.answer), confidence=a.confidence, user=a.user)
@@ -547,7 +564,7 @@ def json_preprocess_answers_v2(request, survey_id):
             
             p_a.save()
             print(str(create_count+updated_count)+"/"+str(len(expAns)), " saving ", p_a, p_a.id, p_a.source_answer.id)
-    return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+'}', mimetype="application/json")
+    return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+',"skipped":'+str(skipped_count)+'}', mimetype="application/json")
 
 
 @staff_member_required
@@ -1117,11 +1134,14 @@ def json_answers(request, survey_id, question_id):
     for a in expAns:
         confidenceClick = 0
         mouseClickDataRaw = a.mouse_click_event
-        clickEventData = zlib.decompress(mouseClickDataRaw.encode('latin1'))
-        clickEventDataJSON = json.loads(clickEventData.encode('utf-8'))
-        for line in clickEventDataJSON:
-            if 'e' in line and 'target' in line['e'] and 'id' in line['e']['target'] and "confidence" in line['e']['target']['id']:
-                confidenceClick += 1
+        try:
+            clickEventData = zlib.decompress(mouseClickDataRaw.encode('latin1'))
+            clickEventDataJSON = json.loads(clickEventData.encode('utf-8'))
+            for line in clickEventDataJSON:
+                if 'e' in line and 'target' in line['e'] and 'id' in line['e']['target'] and "confidence" in line['e']['target']['id']:
+                    confidenceClick += 1
+        except Exception as e:
+            pass
             #clicks += 1
             #        xPos = line[1]['pageX']
             #        yPos = line[1]['pageY']

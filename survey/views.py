@@ -280,7 +280,7 @@ def save_question(request):
         compressedMouseData = ""
         if 'mouseData' in request.POST:
             mouseData = request.POST['mouseData']
-            compressedMouseData = zlib.compress(mouseData).decode('latin1')
+            compressedMouseData = mouseData #zlib.compress(mouseData).decode('latin1')
             question_finished = True
 
         answer = ""
