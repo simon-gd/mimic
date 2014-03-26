@@ -417,16 +417,17 @@ def json_preprocess_answers_v2(request, survey_id):
 
     for a in expAns:
         p_a = None
-        rawEventData = ""
-        try:
-            rawEventData =  zlib.decompress(a.mouseData.encode('latin1')) #.encode('latin1')
-        except Exception as e:
-            rawEventData = a.mouseData
-            print("filed to decompress data", a.pk)
-            
+        rawEventData = a.mouseData
         if len(rawEventData) == 0 or rawEventData[0] != "[" or a.answer ==  None:
             skipped_count += 1
             continue
+        #try:
+        #    rawEventData =  zlib.decompress(a.mouseData.encode('latin1')) #.encode('latin1')
+        #except Exception as e:
+        #    rawEventData = a.mouseData
+        #    print("filed to decompress data", a.pk)
+            
+        
 
         try:
             p_a = ExperimentAnswerProcessed.objects.get(source_answer=a)
