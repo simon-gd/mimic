@@ -385,15 +385,22 @@ def json_preprocess_answers_v1(request, survey_id):
             print(str(create_count+updated_count)+"/"+str(len(expAns)), " saving ", p_a, p_a.id, p_a.source_answer.id, p_a.answer)
     return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+'}', mimetype="application/json")
 
+
+"""
+import gzip
+
+
 def mydeflate(data):   # zlib only provides the zlib compress format, not the deflate format;
   try:               # so on top of all there's this workaround:
-    return zlib.decompress(data, -zlib.MAX_WBITS)
+    return zlib.decompress(data)
   except zlib.error:
     try:               # so on top of all there's this workaround:
-        return zlib.decompress(data)
+        compressedstream = StringIO.StringIO(data)
+        gzipper = gzip.GzipFile(fileobj=compressedstream)
+        return gzipper.read()
     except zlib.error:
         return ""
-    
+"""    
 
 
 def json_preprocess_answers_v2(request, survey_id):
@@ -412,8 +419,10 @@ def json_preprocess_answers_v2(request, survey_id):
         p_a = None
         rawEventData = ""
         try:
-            rawEventData = mydeflate(a.mouseData.encode('latin1')) #.encode('latin1')
+            rawEventData =  zlib.decompress(a.mouseData.encode('latin1')) #.encode('latin1')
         except Exception as e:
+            if rawEventData[0] == "[":
+                rawEventData = a.mouseData
             print("filed to decompress data", a.pk)
             
         if len(rawEventData) == 0 or rawEventData[0] != "[" or a.answer ==  None:
