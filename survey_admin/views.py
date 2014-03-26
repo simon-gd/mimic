@@ -421,8 +421,7 @@ def json_preprocess_answers_v2(request, survey_id):
         try:
             rawEventData =  zlib.decompress(a.mouseData.encode('latin1')) #.encode('latin1')
         except Exception as e:
-            if rawEventData[0] == "[":
-                rawEventData = a.mouseData
+            rawEventData = a.mouseData
             print("filed to decompress data", a.pk)
             
         if len(rawEventData) == 0 or rawEventData[0] != "[" or a.answer ==  None:
