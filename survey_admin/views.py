@@ -432,7 +432,7 @@ def json_preprocess_answers_v2(request, survey_id):
     #return HttpResponse('{"created":'+str(0)+',"updated":'+str(0)+',"skipped":'+str(0)+'}', mimetype="application/json")
     expected_answers = SurveyMembership.objects.filter(survey=survey).count()
                 
-    expAns = queryset_iterator(ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True, experiment__state=0), chunksize=500) #.iterator() # experiment__state=0)
+    expAns = queryset_iterator(ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True, experiment__state=0), chunksize=100) #.iterator() # experiment__state=0)
     create_count = 0
     updated_count = 0
     skipped_count = 0
