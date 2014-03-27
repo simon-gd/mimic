@@ -401,12 +401,38 @@ def mydeflate(data):   # zlib only provides the zlib compress format, not the de
     except zlib.error:
         return ""
 """    
+from django import db
+import gc
 
+def queryset_iterator(queryset, chunksize=1000):
+    '''''
+    Iterate over a Django Queryset ordered by the primary key
+
+    This method loads a maximum of chunksize (default: 1000) rows in it's
+    memory at the same time while django normally would load all rows in it's
+    memory. Using the iterator() method only causes it to not preload all the
+    classes.
+
+    Note that the implementation of the iterator does not support ordered query sets.
+    '''
+    pk = 0
+    last_pk = queryset.order_by('-pk')[0].pk
+    queryset = queryset.order_by('pk')
+    while pk < last_pk:
+        for row in queryset.filter(pk__gt=pk)[:chunksize]:
+            pk = row.pk
+            yield row
+        gc.collect()
 
 def json_preprocess_answers_v2(request, survey_id):
+    db.reset_queries()
     #newer JSON Interaction Data processing version 2
     survey = get_object_or_404(Survey, id=survey_id)
-    expAns = ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True, experiment__state=0)
+    #ExperimentAnswerProcessed.objects.filter(experiment__survey=survey).delete()
+    #return HttpResponse('{"created":'+str(0)+',"updated":'+str(0)+',"skipped":'+str(0)+'}', mimetype="application/json")
+    expected_answers = SurveyMembership.objects.filter(survey=survey).count()
+                
+    expAns = queryset_iterator(ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True, experiment__state=0), chunksize=500) #.iterator() # experiment__state=0)
     create_count = 0
     updated_count = 0
     skipped_count = 0
@@ -418,22 +444,29 @@ def json_preprocess_answers_v2(request, survey_id):
     for a in expAns:
         p_a = None
         rawEventData = a.mouseData
-        if len(rawEventData) == 0 or rawEventData[0] != "[" or a.answer ==  None:
+        if len(rawEventData) == 0 or a.answer ==  None:
             skipped_count += 1
+            a.experiment.state = 2 #Error
+            a.experiment.save()
             continue
-        #try:
-        #    rawEventData =  zlib.decompress(a.mouseData.encode('latin1')) #.encode('latin1')
-        #except Exception as e:
-        #    rawEventData = a.mouseData
+
+        if rawEventData[0] != "[":
+            try:
+                rawEventData =  zlib.decompress(a.mouseData.encode('latin1')) 
+            except Exception as e:
+                skipped_count += 1
+                a.experiment.state = 2 #Error
+                a.experiment.save()
+                continue
         #    print("filed to decompress data", a.pk)
             
         
 
         try:
             p_a = ExperimentAnswerProcessed.objects.get(source_answer=a)
-            updated_count += 1
             if not force_reprocess:
                 continue
+            updated_count += 1
         except MultipleObjectsReturned:
             ExperimentAnswerProcessed.objects.filter(source_answer=a).delete()
             p_a = ExperimentAnswerProcessed.objects.create(source_answer=a, experiment=a.experiment, question=a.question, answer=str(a.answer), confidence=a.confidence, user=a.user)
@@ -546,14 +579,16 @@ def json_preprocess_answers_v2(request, survey_id):
             continue
         
         if p_a != None:
-            if time < 1.0:
-                error = "json_preprocess_answers: time too small: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
-                errors.append(error)
-                print(error)
-                p_a.delete()
-                a.experiment.state = 1 #Invalid
-                a.experiment.save()
-
+            #if time < 1.0:
+                #error = "json_preprocess_answers: time too small: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
+                #errors.append(error)
+                #print(error)
+                #p_a.delete()
+                #a.experiment.state = 1 #Invalid
+                #a.experiment.save()
+            #if a.experiment.state == 1:
+            #    a.experiment.state = 0
+            #    a.experiment.save()     
             # compressed data
             p_a.init_event = zlib.compress(json.dumps( initEvents )).decode('latin1')
             p_a.mouse_move_event = zlib.compress(json.dumps( mouseMoveEvents )).decode('latin1')
@@ -572,8 +607,18 @@ def json_preprocess_answers_v2(request, survey_id):
             p_a.cursor_y =  json.dumps( cursor_y )
             
             p_a.save()
-            print(str(create_count+updated_count)+"/"+str(len(expAns)), " saving ", p_a, p_a.id, p_a.source_answer.id)
-    return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+',"skipped":'+str(skipped_count)+'}', mimetype="application/json")
+            print(str(create_count+updated_count), " saving ", p_a, p_a.id, p_a.source_answer.id)
+    # cleanup experiments
+    expTest = Experiment.objects.filter(survey=survey, finished=True,state=0)
+    experiments_disabled = 0
+    for e_test in expTest:
+        actual_answers = ExperimentAnswer.objects.filter(experiment=e_test).count()
+        if actual_answers != expected_answers:
+            e_test.state = 1
+            e_test.save()
+            experiments_disabled += 1
+
+    return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+',"skipped":'+str(skipped_count)+',"experiments_disabled":'+str(experiments_disabled)+'}', mimetype="application/json")
 
 
 @staff_member_required
@@ -1150,7 +1195,7 @@ def json_answers(request, survey_id, question_id):
                 if 'e' in line and 'target' in line['e'] and 'id' in line['e']['target'] and "confidence" in line['e']['target']['id']:
                     confidenceClick += 1
         except Exception as e:
-            pass
+            print("failed to decompress")
             #clicks += 1
             #        xPos = line[1]['pageX']
             #        yPos = line[1]['pageY']
