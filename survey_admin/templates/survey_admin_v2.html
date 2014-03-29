@@ -528,18 +528,18 @@ $(document).ready(function() {
 				      var myrows = args.rows;
 				      try{
 					
-					if(viz_type == 0 || viz_type == 1){
+					if(viz_type == 0){
 					  // We only interested in first selection
 					  var row = args.rows[0];
 					  var mygrid = args.grid;
-					  var thisRow = grid.getDataItem(row)
+					  var thisRow = mygrid.getDataItem(row)
 					  if ("__group" in thisRow){
 					    // We selected a group
 					    if(viz_type == 0){
 					      alert("This Visualization does not support Composite Visualizations.");
 					    } else if(viz_type == 1){
 					      //console.log("thisRow: ", thisRow.value, thisRow);
-					      url = '{% url "comp_heatmap" "111" "222" "333" %}'.replace (111, g_survey).replace (222, question_id).replace (333, thisRow.value);
+					      url = '{% url "comp_heatmap" "111" "222" "333" "444" %}'.replace (111, g_survey).replace (222, question_id).replace (333, thisRow.value);
 					      //console.log("thisRow: ", url);
 					      $("#vizIframe").attr('src', url);
 					    } 
@@ -570,6 +570,34 @@ $(document).ready(function() {
 					      $("#vizIframe").attr('src', url);
 					    });
 					  }
+                    } else if(viz_type == 1){
+                        var mygrid = args.grid;
+                        
+                        console.log("selectin changes", myrows);
+                        if (myrows.length == 1){
+                            var row = myrows[0];
+                            var thisRow = mygrid.getDataItem(row);
+                            var item_id = thisRow.id;
+                            url = '{% url "heatmap" "999" %}'.replace (999, item_id);
+					        $("#vizIframe").attr('src', url);
+                        }else{
+                            var ids = "";
+                            var this_condition = 0;
+                            for(var i=0; i < myrows.length; ++i){
+                                var row = myrows[i];
+                                var thisRow = mygrid.getDataItem(row);
+                                this_condition = thisRow.condition;
+                                console.log(thisRow.id);
+                                ids += thisRow.id + ",";
+                            }
+
+
+
+                            url = '{% url "comp_heatmap" "111" "222" "333" "444" %}'.replace (111, g_survey).replace (222, question_id).replace (333, this_condition).replace (444, ids);
+                            console.log(url);
+                            $("#vizIframe").attr('src', url);
+                        }
+
 					}else{
 					      // custom selection
 					      

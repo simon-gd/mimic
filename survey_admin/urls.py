@@ -31,7 +31,7 @@ urlpatterns = patterns('',
     url(r'^comp/expmap/(?P<survey_id>\d+)/(?P<question_id>\d+)/$', 'survey_admin.views.comp_expmap', name='comp_expmap'),
     url(r'^comp/static_mouse_paths/(?P<survey_id>\d+)/(?P<question_id>\d+)/(?P<condition>\d+)/$', 'survey_admin.views.comp_mouse_paths', name='comp_static_mouse_paths'),
     url(r'^comp/animated_mouse_paths/(?P<survey_id>\d+)/(?P<question_id>\d+)/(?P<condition>\d+)/$', 'survey_admin.views.comp_animated_mouse_paths', name='comp_animated_mouse_paths'),
-    url(r'^comp/heatmap/(?P<survey_id>\d+)/(?P<question_id>\d+)/(?P<condition>\d+)/$', 'survey_admin.views.comp_heatmap', name='comp_heatmap'),
+    url(r'^comp/heatmap/(?P<survey_id>\d+)/(?P<question_id>\d+)/(?P<condition>\d+)/(?P<ids>[\d.,/_\-]+)/$', 'survey_admin.views.comp_heatmap', name='comp_heatmap'),
     
     url(r'^expmap/(?P<experiment_id>\d+)/$', 'survey_admin.views.expmap', name='expmap'),
     url(r'^static_mouse_paths/(?P<answer_id>\d+)/$', 'survey_admin.views.static_mouse_paths', name='static_mouse_paths'),

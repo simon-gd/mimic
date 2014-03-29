@@ -1178,7 +1178,7 @@ def update_experiment_state(request, survey_id, user_id, state):
 def json_answers(request, survey_id, question_id):
     survey = get_object_or_404(Survey, id=survey_id)
     
-    expAns = ExperimentAnswerProcessed.objects.filter(experiment__survey=survey, experiment__state__in=[0], question__id = question_id)
+    expAns = ExperimentAnswerProcessed.objects.filter(experiment__survey=survey, experiment__state__in=[0, 3], question__id = question_id)
     answers = { 'data': []}
     
     #max_questions = 2000
@@ -1886,11 +1886,15 @@ def comp_animated_mouse_paths (request, survey_id, question_id, condition):
                                                                  'mouseClicks':mouseClicks}, context_instance=RequestContext(request))
 
 @staff_member_required
-def comp_heatmap (request, survey_id, question_id, condition):
+def comp_heatmap (request, survey_id, question_id, condition, ids):
     survey = get_object_or_404(Survey, id=survey_id)
     current_question = get_object_or_404(Question, id=question_id)
-    
-    expAnswers = ExperimentAnswerProcessed.objects.filter(question=current_question,experiment__survey=survey, experiment__survey_condition=condition, experiment__finished=True)
+    ids = ids[:-1]
+    idList = ids.split(",")
+    print(idList)
+
+
+    expAnswers = ExperimentAnswerProcessed.objects.filter(pk__in=idList)#question=current_question,experiment__survey=survey, experiment__finished=True) #experiment__survey_condition=condition
 
     mouseMoves = []
     for expAns in expAnswers:
@@ -2018,7 +2022,7 @@ def heatmap(request, answer_id):
 
 @staff_member_required
 def comp_expmap(request, survey_id, question_id):
-    experiment = Experiment.objects.filter(survey__id = survey_id)
+    experiment = Experiment.objects.filter(survey__id = survey_id, finished=True, state=0)
     ips = "["
     for exp in experiment:
         ipr = exp.remote_address
