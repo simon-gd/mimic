@@ -1,3 +1,27 @@
+# The MIT License (MIT)
+#
+# Copyright (c) 2014 Autodesk, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# http://opensource.org/licenses/MIT
+
 import json
 import math
 import csv
@@ -130,8 +154,9 @@ def json_preprocess_answers(request, survey_id):
     #return save_answers_to_azure(request, survey_id)
     #return json_preprocess_answers_v1(request, survey_id)
     #return json_preprocess_answers_to_mongodb(request, survey_id)
-    return json_preprocess_answers_v2(request, survey_id)
+    #return json_preprocess_answers_v2(request, survey_id)
     #return HttpResponse('{"status":"done"}', mimetype="application/json")
+    return get_screen_sizes(request, survey_id)
 
 def json_preprocess_answers_to_mongodb(request, survey_id):
     client = MongoClient('localhost', 27017)
@@ -424,6 +449,30 @@ def queryset_iterator(queryset, chunksize=1000):
             yield row
         gc.collect()
 
+def get_screen_sizes(request, survey_id):
+    survey = get_object_or_404(Survey, id=survey_id)
+    expAns = ExperimentAnswerProcessed.objects.filter(question_id=15, experiment__finished=True) #experiment__survey=survey, experiment__finished=True,
+    screenSizes = []
+    writer = csv.writer(open("screensizes.csv", 'w'), dialect='excel')
+    for a in expAns:
+        #print("got",a.id)
+        try:
+            rawEventData =  zlib.decompress(a.misc_event.encode('latin1'))
+            mouseDataJSON = json.loads(rawEventData.encode('utf-8'))
+            for line in mouseDataJSON:
+                if "extra" in line:
+                    if "screen" in line["extra"]:
+                        sizeis = {"w":line["extra"]["screen"]["width"], "h":line["extra"]["screen"]["height"]}
+                        screenSizes.append([line["extra"]["screen"]["width"], line["extra"]["screen"]["height"]])
+                        #writer.writerow([line["extra"]["screen"]["width"], line["extra"]["screen"]["height"]])
+                        #print(sizeis)
+
+        except Exception as e:    
+            print("error: failed to decompress", e)
+    writer.writerows(screenSizes)
+    
+    return HttpResponse(json.dumps(screenSizes), mimetype="application/json")
+
 def json_preprocess_answers_v2(request, survey_id):
     db.reset_queries()
     #newer JSON Interaction Data processing version 2
@@ -432,7 +481,7 @@ def json_preprocess_answers_v2(request, survey_id):
     #return HttpResponse('{"created":'+str(0)+',"updated":'+str(0)+',"skipped":'+str(0)+'}', mimetype="application/json")
     expected_answers = SurveyMembership.objects.filter(survey=survey).count()
                 
-    expAns = queryset_iterator(ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True, experiment__state=0), chunksize=100) #.iterator() # experiment__state=0)
+    expAns = queryset_iterator(ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True), chunksize=100) #.iterator() # experiment__state=0) experiment__state=0
     create_count = 0
     updated_count = 0
     skipped_count = 0
@@ -446,17 +495,20 @@ def json_preprocess_answers_v2(request, survey_id):
         rawEventData = a.mouseData
         if len(rawEventData) == 0 or a.answer ==  None:
             skipped_count += 1
-            a.experiment.state = 2 #Error
-            a.experiment.save()
+            print("error: ", len(rawEventData), a.answer)
+            #a.experiment.state = 2 #Error
+            #a.experiment.save()
             continue
 
         if rawEventData[0] != "[":
             try:
                 rawEventData =  zlib.decompress(a.mouseData.encode('latin1')) 
+               
             except Exception as e:
                 skipped_count += 1
-                a.experiment.state = 2 #Error
-                a.experiment.save()
+                print("error: failed to decompress")
+                #a.experiment.state = 2 #Error
+                #a.experiment.save()
                 continue
         #    print("filed to decompress data", a.pk)
             
@@ -560,8 +612,8 @@ def json_preprocess_answers_v2(request, survey_id):
                 elif line[0] == "init":
                     initEvents.append({'time':line[1]['timeStamp']-start_time, 'type':"init", 'e':line[1], 'extra': line[2]})
                     miscEvents.append({'time':line[1]['timeStamp']-start_time, 'type':"init", 'e':line[1], 'extra': line[2]})
-                    window_w = line[2]['window']['width']
-                    window_h = line[2]['window']['height']
+                    window_w = line[2]['window']['screenX']
+                    window_h = line[2]['window']['screenY']
                 elif line[0] == "resize":
                     rw = line[2]['window']['width']
                     rh = line[2]['window']['height']
@@ -573,9 +625,9 @@ def json_preprocess_answers_v2(request, survey_id):
             error = "json_preprocess_answers: time Error: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
             errors.append(error)
             print(error, e)
-            p_a.delete()
-            a.experiment.state = 2 #Error
-            a.experiment.save()
+            #p_a.delete()
+            #a.experiment.state = 2 #Error
+            #a.experiment.save()
             continue
         
         if p_a != None:
