@@ -77,7 +77,7 @@ def create_experiment_session(request, worker_id, condition, survey):
         if experiment.finished == True:
             #already finished the experiment, cannot retake it
             return None, None
-        
+
         if not request.session.exists(request.session.session_key):
             request.session.create()
 
@@ -478,7 +478,8 @@ def home(request):
     #else:
     #    current_question = questions[0]
    # current_question
-    return render(request, 'question_v3.html',
+    
+    return render(request, current_question.base_template,
                               {'error': error,
                                'user':user,
                                'worker_id':worker_id,
