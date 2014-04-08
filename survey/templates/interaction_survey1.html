@@ -158,6 +158,8 @@
         }
 
         var drawBox = function(svg, selection){
+            //console.log(selection);
+            //console.log(selection.node());
             var rect = selection.node().getBBox();
             var offset = 0; // enlarge rect box 2 px on left & right side
             //selection.classed("mute", (selection.classed("mute") ? false : true));
@@ -191,13 +193,40 @@
         }
 
         var labels = ["woman-8", "woman-10", "woman-95", "woman-1000", "woman-990", "have-breast-cancer", "does-not-have-breast-cancer", "got-positive-mammography"];
-
+        function importNode(node, allChildren) {
+            // summary:
+            // Manually imports node to the provided document
+            switch (node.nodeType) {
+            case document.ELEMENT_NODE:
+                var newNode = document.createElementNS(node.namespaceURI, node.nodeName);
+                if(node.attributes && node.attributes.length > 0){
+                    for(var i = 0, il = node.attributes.length; i < il; i++){
+                        newNode.setAttribute(node.attributes[i].nodeName, node.getAttribute(node.attributes[i].nodeName));
+                    }
+                }
+                if(allChildren && node.childNodes && node.childNodes.length > 0){
+                    for(var i = 0, il = node.childNodes.length; i < il; i++){
+                        newNode.appendChild(importNode(node.childNodes[i], allChildren));
+                    }
+                }
+            
+                return newNode;
+                break;
+            
+            case document.TEXT_NODE:
+            case document.CDATA_SECTION_NODE:
+            case document.COMMENT_NODE:
+              return document.createTextNode(node.nodeValue);
+              break;
+            }
+        }
         function assignImages2(condition){
             var image_size = (screen.width < 1200) ? "1024" : "1280";
             var image_w = (screen.width < 1200) ? "533" : "649";
             var image_h = (screen.width < 1200) ? "358" : "458";
             var svg= d3.select("#page1_diagram_div")
                 .append("svg")
+                .attr("xmlns","http://www.w3.org/2000/svg")
                 .attr("id", "canvas")
                 .attr("width", image_w)
                 .attr("height", image_h);
@@ -205,7 +234,16 @@
             d3.xml(image_name, "image/svg+xml", function(xml) {
                 //document.body.appendChild(xml.documentElement);
                 //var importedNode = document.importNode(xml.documentElement, true);
-                d3.select("#canvas").node().appendChild(xml.documentElement);
+                //console.log(xml);
+                try{
+                    //importedNode = document.importNode(xml.documentElement, true);
+                    d3.select("#canvas").node().appendChild(xml.documentElement);
+                }catch(e){
+                    // IE case
+                    importNode(xml.documentElement,  d3.select("#canvas").node());
+                }
+                
+                //$("#canvas").append(xml);
                 svg = d3.select("#Layer_1");
                 if(condition == "0" || condition == "2"){
                     return svg;
@@ -253,7 +291,7 @@
                 var text_item_id = "text-"+item+"-";
                 
                 $('*[id*='+text_item_id+']').each(function() {
-                    console.log(this);
+                    //console.log(this);
                     $(this).hover(
                       function() {
                             svg.selectAll("*[id^="+item_id+"]").style("fill","white").style("cursor", "pointer"); 
