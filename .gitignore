@@ -213,3 +213,4 @@ docs/_build/
 *.pyc
 mimic/settings/local.py
 mimic/settings/production.py
+manage.py

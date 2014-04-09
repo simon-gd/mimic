@@ -154,9 +154,9 @@ def json_preprocess_answers(request, survey_id):
     #return save_answers_to_azure(request, survey_id)
     #return json_preprocess_answers_v1(request, survey_id)
     #return json_preprocess_answers_to_mongodb(request, survey_id)
-    #return json_preprocess_answers_v2(request, survey_id)
+    return json_preprocess_answers_v2(request, survey_id)
     #return HttpResponse('{"status":"done"}', mimetype="application/json")
-    return get_screen_sizes(request, survey_id)
+    #return get_screen_sizes(request, survey_id)
 
 def json_preprocess_answers_to_mongodb(request, survey_id):
     client = MongoClient('localhost', 27017)
