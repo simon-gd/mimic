@@ -119,7 +119,6 @@
     <script type="text/javascript" src="{% static 'js/lib/rangy-core.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/lib/rangy-serializer.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/app/detect-zoom.js' %}"></script>
-
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -178,31 +177,39 @@
             var s = Snap("#svgcanvas");
             var tux = Snap.load(image_name, function ( svg ) { 
                 s.append( svg );
-                if(condition == "0" || condition == "2"){
-                    return s;
-                }
-                $.each( labels, function( index, item ){
-                    var item_id = item+"-";
-                    var text_item_id = "text-"+item+"-";
-                    
-                    var r = s.selectAll("*[id^="+item_id+"]");
-                    r.attr({fill:"orangered"});
-                    
-                    $.each( r, function( r_i, r_item ){
-                        drawBox(s, r_item);
-                        //r.each(function(d,i) { drawBox(svg, d3.select(this)); });
-                        r_item.mouseover(function(d){
-                               s.selectAll("*[id^="+item_id+"]").attr({fill:"blue", cursor: "pointer"}); 
-                               s.selectAll("*[id^=box-"+item_id+"]").attr({opacity:100});
-                               $("*[id^="+text_item_id+"]").css("background","orangered").css("color","white").css("cursor", "pointer"); 
+                
+                //$(window).bind('svgload', function() {
+                    if(condition == "0" || condition == "2"){
+                        //return s;
+                        $('.hover_text').css("color", "black");
+                    }else{
+                        $.each( labels, function( index, item ){
+                            var item_id = item+"-";
+                            var text_item_id = "text-"+item+"-";
+                            
+                            var r = s.selectAll("*[id^="+item_id+"]");
+                            r.attr({fill:"orangered"});
+                            
+                            $.each( r, function( r_i, r_item ){
+                                drawBox(s, r_item);
+                                //r.each(function(d,i) { drawBox(svg, d3.select(this)); });
+                                r_item.mouseover(function(d){
+                                       s.selectAll("*[id^="+item_id+"]").attr({fill:"white", cursor: "pointer"}); 
+                                       s.selectAll("*[id^=box-"+item_id+"]").attr({opacity:100});
+                                       $("*[id^="+text_item_id+"]").css("background","orangered").css("color","white").css("cursor", "pointer"); 
+                                });
+                                r_item.mouseout(function(d){
+                                       s.selectAll("*[id^="+item_id+"]").attr({fill:"orangered"}); 
+                                       s.selectAll("*[id^=box-"+item_id+"]").attr({opacity:0});                           
+                                       $("*[id^="+text_item_id+"]").css("background","none").css("color","orangered"); 
+                                });
+                            });
                         });
-                        r_item.mouseout(function(d){
-                               s.selectAll("*[id^="+item_id+"]").attr({fill:"orangered"}); 
-                               s.selectAll("*[id^=box-"+item_id+"]").attr({opacity:0});                           
-                               $("*[id^="+text_item_id+"]").css("background","none").css("color","orangered"); 
-                        });
-                    });
-                });
+                        assignInteractions(condition, s);
+            
+                    }
+                //});
+                
             }); 
             /*
             d3.xml(image_name, "image/svg+xml", function(xml) {
@@ -269,7 +276,7 @@
                     //console.log(this);
                     $(this).hover(
                       function() {
-                          svg.selectAll("*[id^="+item_id+"]").attr({fill:"blue", cursor: "pointer"}); 
+                          svg.selectAll("*[id^="+item_id+"]").attr({fill:"white", cursor: "pointer"}); 
                           svg.selectAll("*[id^=box-"+item_id+"]").attr({opacity:100});
                           $("*[id^="+text_item_id+"]").css("background","orangered").css("color","white").css("cursor", "pointer"); 
 
@@ -282,7 +289,7 @@
                 });//inner each
             }); //outer each
         }
-
+        
         $(document).ready(function() {
 
             if( bowser.msie && bowser.version < 10){
@@ -305,13 +312,9 @@
             var debug = parseInt({{debug|safe}});
         
             checkResolution(1000, 560);
-
-            var svg = assignImages2(condition);
-            if(condition == "1" || condition == "3"){
-                    assignInteractions(condition, svg);
-            }else{
-                $('.hover_text').css("color", "black");
-            }
+            
+            
+            
 
 
             //if(condition == "0"){
@@ -406,6 +409,11 @@
                                 $("#currentQ").val(current_question);
                                 showPage("#page"+current_question.toString());
                                 $('.submit').prop('disabled', false);
+                                
+                                if(current_question==1){
+                                    console.log("Calling assignImages2")
+                                    assignImages2(condition);
+                                }
                             }
 
                         }).fail(function() {
