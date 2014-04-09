@@ -192,7 +192,7 @@
                         drawBox(s, r_item);
                         //r.each(function(d,i) { drawBox(svg, d3.select(this)); });
                         r_item.mouseover(function(d){
-                               s.selectAll("*[id^="+item_id+"]").attr({fill:"white", cursor: "pointer"}); 
+                               s.selectAll("*[id^="+item_id+"]").attr({fill:"blue", cursor: "pointer"}); 
                                s.selectAll("*[id^=box-"+item_id+"]").attr({opacity:100});
                                $("*[id^="+text_item_id+"]").css("background","orangered").css("color","white").css("cursor", "pointer"); 
                         });
@@ -269,7 +269,7 @@
                     //console.log(this);
                     $(this).hover(
                       function() {
-                          svg.selectAll("*[id^="+item_id+"]").attr({fill:"white", cursor: "pointer"}); 
+                          svg.selectAll("*[id^="+item_id+"]").attr({fill:"blue", cursor: "pointer"}); 
                           svg.selectAll("*[id^=box-"+item_id+"]").attr({opacity:100});
                           $("*[id^="+text_item_id+"]").css("background","orangered").css("color","white").css("cursor", "pointer"); 
 
@@ -545,8 +545,10 @@
                 </div>
                 <div class="row">
                     <div class="col-xs-7">
-                        <p class="lead"><strong>Read the text below carefully and answer the question as best as you can.</strong></p>
-
+                        <p class="lead"><strong>Read the text below carefully and answer the question as best as you can.</strong><br/>
+                        Hover over red text to see all occurrences of that text in the problem.
+                        </p>
+                    
                         <div class="well well-sm">
                             <span>At age forty, when women participate in routine screening for breast cancer, <span id="text-woman-10-1" class="hover_text">10</span> out of <span id="text-woman-1000-1" class="hover_text">1000</span> will  <span id="text-have-breast-cancer-1" class="hover_text">have breast cancer</span>. <br/>
                              However, <span id="text-woman-8-1" class="hover_text">8</span> of every <span id="text-woman-10-2" class="hover_text">10</span> women with breast cancer will <span id="text-got-positive-mammography-1" class="hover_text">get a positive mammography</span> and <span id="text-woman-95-1" class="hover_text">95</span> out of every <span id="text-woman-990-1" class="hover_text">990</span> women <span id="text-does-not-have-breast-cancer-1" class="hover_text">without breast cancer</span> will also <span id="text-got-positive-mammography-2" class="hover_text">get a positive mammography</span></p>
