@@ -41,7 +41,7 @@ if ((!Modernizr.canvas || !Modernizr.inlinesvg) && window.location.href.indexOf(
 //(bowser.safari && bowser.version >= 5) ||
 //(bowser.opera && bowser.version >= 11.0) ||
 
-if ((bowser.msie && bowser.version >= 10) ||
+if ((bowser.msie && bowser.version >= 9) ||
     (bowser.chrome && bowser.version >= 14) ||
     (bowser.firefox && bowser.version >= 4.0) ||
     window.location.href.indexOf(nsURL) != -1) {
