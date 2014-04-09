@@ -719,7 +719,7 @@ def debug_question(request, question_id):
         #else:
         #    t = 'question_v1.html'
     else:
-        t = "no_tracking_"+question.base_template
+        t = question.base_template
         #if question.id > 13:
         #    t = 'question_v2_no_tracking.html'
         #else:
