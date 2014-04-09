@@ -313,9 +313,17 @@
         
             checkResolution(1000, 560);
             
+            var svg_has_loaded = false;
             
+            if(condition == "1" || condition == "3"){
+                $("readtextbelow").append("<br/>Hover over red text to see all occurrences of that text in the problem.");
+            }
             
-
+            if(current_question==1){
+                //console.log("Calling assignImages2")
+                assignImages2(condition);
+                svg_has_loaded=true;
+            }
 
             //if(condition == "0"){
             //    $('#illustration_div').hide();
@@ -410,9 +418,10 @@
                                 showPage("#page"+current_question.toString());
                                 $('.submit').prop('disabled', false);
                                 
-                                if(current_question==1){
-                                    console.log("Calling assignImages2")
+                                if(current_question==1 && !svg_has_loaded){
+                                    //console.log("Calling assignImages2")
                                     assignImages2(condition);
+                                    svg_has_loaded = true;
                                 }
                             }
 
@@ -553,8 +562,7 @@
                 </div>
                 <div class="row">
                     <div class="col-xs-7">
-                        <p class="lead"><strong>Read the text below carefully and answer the question as best as you can.</strong><br/>
-                        Hover over red text to see all occurrences of that text in the problem.
+                        <p id="readtextbelow" class="lead"><strong>Read the text below carefully and answer the question as best as you can.</strong>
                         </p>
                     
                         <div class="well well-sm">
