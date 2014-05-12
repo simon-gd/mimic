@@ -193,7 +193,6 @@
     <Folder Include="survey\templates\" />
     <Folder Include="survey\templates\admin\" />
     <Folder Include="survey\templates\errors\" />
-    <Folder Include="survey\templates\info_viz2014\" />
     <Folder Include="survey\templates\questions\" />
     <Folder Include="survey\templates\questions_micallef\" />
     <Folder Include="survey\tests\" />
@@ -2304,12 +2303,6 @@
     <Content Include="survey\templates\errors\need_worker_id.html" />
     <Content Include="survey\templates\errors\not_supported.html" />
     <Content Include="survey\templates\errors\no_active_survey.html" />
-    <Content Include="survey\templates\info_viz2014\question1.html" />
-    <Content Include="survey\templates\info_viz2014\question2.html" />
-    <Content Include="survey\templates\interaction_survey1.html" />
-    <Content Include="survey\templates\no_tracking_question_v1.html" />
-    <Content Include="survey\templates\no_tracking_question_v2.html" />
-    <Content Include="survey\templates\no_tracking_question_v3.html" />
     <Content Include="survey\templates\questions\canvas_illustrated_question.html" />
     <Content Include="survey\templates\questions\canvas_simple_question.html" />
     <Content Include="survey\templates\questions\html_cancer_spacific.html" />
@@ -2330,10 +2323,7 @@
     <Content Include="survey\templates\questions_micallef\page3.html" />
     <Content Include="survey\templates\questions_micallef\page4.html" />
     <Content Include="survey\templates\question_v0.html" />
-    <Content Include="survey\templates\question_v1.html" />
-    <Content Include="survey\templates\question_v1_no_tracking.html" />
     <Content Include="survey\templates\question_v2.html" />
-    <Content Include="survey\templates\question_v2_no_tracking.html" />
     <Content Include="survey\templates\question_v3.html" />
     <Content Include="survey\templates\README.txt" />
     <Content Include="survey\templates\survey.html" />
