@@ -23,7 +23,7 @@
 # http://opensource.org/licenses/MIT
 
 from django.contrib import admin
-from survey.models import Question, Survey, SurveyMembership, Experiment, ExperimentUser, ExperimentAnswer
+from survey.models import Question, Survey, SurveyMembership, Experiment, ExperimentUser, ExperimentAnswer, ExperimentAnswerProcessed
 
 class SurveyAdmin(admin.ModelAdmin):
     list_display = ('slug', 'pub_date')
@@ -43,3 +43,4 @@ admin.site.register(SurveyMembership, SurveyMembershipAdmin)
 admin.site.register(Experiment)
 admin.site.register(ExperimentUser)
 admin.site.register(ExperimentAnswer)
+admin.site.register(ExperimentAnswerProcessed)

@@ -51,46 +51,6 @@ def queryset_iterator(queryset, chunksize=1000):
             yield row
         gc.collect()
 
-def json_preprocess_serveys_to_mongodb(request, survey_id):
-    pass
-
-def json_preprocess_answers_to_mongodb(request, survey_id):
-    client = MongoClient('localhost', 27017)
-    user_name = "admin"
-    survey = get_object_or_404(Survey, id=survey_id)
-    collection_name = "survey-"+str(survey.id)
-    db = client["mimic_"+user_name]
-    collection = db[collection_name]
-    expAns = ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True)
-    for a in expAns:
-        rawEventData = a.mouseData
-        if survey_id=='4' and rawEventData[0] != "[":
-            eventData = zlib.decompress(rawEventData.encode('latin1'))
-        else:
-            eventData = rawEventData
-        try:
-            #blob_service.get_blob_metadata(container_name, "ExperimentAnswer-"+str(a.id)+'.json')
-            ans = {"experiment_id": a.experiment.id,
-                    "survey_condition": a.experiment.survey_condition,
-                    "remote_address": a.experiment.remote_address,
-                    "http_user_agent":a.experiment.http_user_agent,
-                    "question_id": a.question.id,
-                    "correct_answer": json.loads(a.question.correct_answer.encode('utf-8')),
-                    "answer": json.loads(a.answer.encode('utf-8')),
-                    "confidence":a.confidence,
-                    "participant_id":a.user.id,
-                    "participant_worker_id":a.user.worker_id,
-                    "submitted_at":a.submitted_at,
-                    "event_data": json.loads(eventData.encode('utf-8')),
-            }
-            ans_id = collection.insert(ans)
-            print("inserted: ", ans_id)
-        except e: 
-            print("error: ", e)
-
-    return HttpResponse('{"status":"done"}', mimetype="application/json")
-
-
 
 def export_survey(survey_id):
     survey = Survey.objects.filter(id=survey_id)

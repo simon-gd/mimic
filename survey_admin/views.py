@@ -53,7 +53,7 @@ from scipy import stats
 
 from mimic.settings import local as settings
 
-from migrate_data import *
+#from migrate_data import *
 
 # Survey Admin Views
 
@@ -131,17 +131,7 @@ def get_file_list(request):
         fileNames.append(f.name)
     jsonFileNames = json.dumps(fileNames)    
     return HttpResponse(jsonFileNames, mimetype="application/json")
-"""
-def json_preprocess_answers_compressdb(request, survey_id):
-    survey = get_object_or_404(Survey, id=survey_id)
-    expAns = ExperimentAnswer.objects.filter(experiment__survey=survey)
-    for a in expAns:
-        rawEventData = a.mouseData
-        compressed = zlib.compress(rawEventData).decode('latin1')
-        a.mouseData = compressed
-        a.save()
-    return HttpResponse('{"status":"done"}', mimetype="application/json")
-"""
+
 def processLine(line):
     vals = line.split('\t')
     
@@ -318,15 +308,7 @@ def json_preprocess_answers_130(request, survey_id):
 
 @staff_member_required
 def json_preprocess_answers(request, survey_id):
-    #export_survey(survey_id)
-    #return HttpResponse('{"status":"done"}', mimetype="application/json")
-    #return save_answers_to_azure(request, survey_id)
-    #return json_preprocess_answers_v1(request, survey_id)
-    #return json_preprocess_answers_to_mongodb(request, survey_id)
     return json_preprocess_answers_130(request, survey_id)
-    #return HttpResponse('{"status":"done"}', mimetype="application/json")
-    #return get_screen_sizes(request, survey_id)
-
 
 
 @staff_member_required
@@ -350,38 +332,17 @@ def survey_analysis(request):
 
 @desktop_only
 def debug_question(request, question_id):
-    #http://localhost:8000/survey/admin/debug_question/2/?condition=0&tracking=1
-    
     if "condition" in request.GET:
         condition = request.GET["condition"]
     else:
         condition = 0
-        
     question = get_object_or_404(Question, id=question_id)
     debug = 1
-    #if question.data
-    #get order
     qnum = 1
     memberships = SurveyMembership.objects.filter(question=question)
     print(memberships[0])
     qnum = memberships[0].order
-    #if "tracking" in request.GET:
-    #     debug = 0
-        # XXX hack
-        #t = question.base_template
-        #if question.id > 13:
-        #    t = 'question_v2.html'
-        #if question.id > 13:
-        #    t = 'question_v2.html'
-        #else:
-        #    t = 'question_v1.html'
-    #else:
-    #    t = question.base_template
-        #if question.id > 13:
-        #    t = 'question_v2_no_tracking.html'
-        #else:
-        #    t = 'question_v1_no_tracking.html'
-    #print(t)
+    
     
     return render(request, question.base_template, {'question_template': question.template, 'question': question.data, 'condition':condition, 'qnum':qnum,'qtotal':1, 'debug':debug})
 
@@ -448,9 +409,6 @@ def json_answers(request, survey_id, question_id):
     expAns = ExperimentAnswerProcessed.objects.filter(experiment__survey=survey, experiment__state__in=[0, 3], question__id = question_id)
     answers = { 'data': []}
     
-    #max_questions = 2000
-    #q0 = 0
-    #q1 = 0
     ids = []
     for a in expAns:
         confidenceClick = 0
@@ -463,29 +421,9 @@ def json_answers(request, survey_id, question_id):
                     confidenceClick += 1
         except Exception as e:
             print("failed to decompress")
-            #clicks += 1
-            #        xPos = line[1]['pageX']
-            #        yPos = line[1]['pageY']
-            #        clickEvents.append({'time':line[1]['timeStamp'], 'x':xPos, 'y':yPos, 'type':"click", 'e':line[1], 'extra': line[2]})
-            #        miscEvents.append({'time':line[1]['timeStamp'], 'x':xPos, 'y':yPos, 'type':"click", 'e':line[1], 'extra': line[2]})
                     
         condition = a.experiment.survey_condition
-        #if int(condition) == 0:
-        #   q0 += 1
-        #    if q0 > max_questions:
-        #        continue
-        #if int(condition) == 1:
-        #    q1 += 1
-        #    if q1 > max_questions:
-        #        continue
         correct_answer = a.question.correct_answer
-        #if a.question.correct_answer and "of" in a.question.correct_answer:
-        #    numbers = a.question.correct_answer.split(' of ', 2)
-        #    answersO = {}
-        #    answersO['a1'] = numbers[0]
-        #    answersO['a2'] = numbers[1]
-        #    correct_answer = json.dumps(answersO)
-        
         cursor_y = a.cursor_y
         v = {'version':2,'id':a.id, 'experiment_id': a.experiment.id, 'state': a.experiment.state, 'condition': condition,
              'answer':a.answer, 'correct_answer': correct_answer, 'confidence':a.confidence,'user':a.user.id,
@@ -493,68 +431,6 @@ def json_answers(request, survey_id, question_id):
         ids.append(a.experiment.id)
         answers['data'].append(v)
     json_answers = json.dumps( answers ) #serializers.serialize("json", answers)
-    #json_answers = json_answers.replace("NaN", "0")
-    
-    #Experiments = Experiment.objects.all()
-    #for experiment in Experiments:
-    #    if experiment.survey.id == 4:
-    #        experiment.version = 2
-    #    else:
-    #        experiment.version = 1
-    #    experiment.save()
-    #ExperimentAnswers = ExperimentAnswerProcessed.objects.all()
-    #for expAns in ExperimentAnswers:
-    #    if expAns.experiment.survey.id == 4:
-    #        expAns.version = 2
-    #    else:
-    #        expAns.version = 1
-    #Experiments.delete()
-    """
-    Experiments = Experiment.objects.filter(survey=survey).exclude(id__in=ids)
-    print("expAnsLimited",len(Experiments))
-    data = serializers.serialize("json", Experiments, relations = ('user'))
-    out = open("data/micallef-replication/Experiment_unused.json", "w")
-    out.write(data)
-    out.close()
-    
-    ExperimentAnswers = ExperimentAnswer.objects.filter(experiment__survey=survey).exclude(experiment__id__in=ids)
-    print("ExperimentAnswer",len(ExperimentAnswers))
-    data = serializers.serialize("json", ExperimentAnswers)
-    out = open("data/micallef-replication/ExperimentAnswers_unused.json", "w")
-    out.write(data)
-    out.close()
-    
-    ExperimentAnswerProcesseds = ExperimentAnswerProcessed.objects.filter(experiment__survey=survey).exclude(experiment__id__in=ids)
-    print("ExperimentAnswer",len(ExperimentAnswerProcesseds))
-    data = serializers.serialize("json", ExperimentAnswerProcesseds)
-    out = open("data/micallef-replication/ExperimentAnswerProcesseds_unsued.json", "w")
-    out.write(data)
-    out.close()
-    
-    print("users",len(Experiments))
-    """
-    """
-    Experiments = Experiment.objects.filter(id__in=ids)
-    print("expAnsLimited",len(Experiments))
-    data = serializers.serialize("json", Experiments, relations = ('user'))
-    out = open("data/micallef-replication/Experiment.json", "w")
-    out.write(data)
-    out.close()
-    
-    ExperimentAnswers = ExperimentAnswer.objects.filter(experiment__id__in=ids)
-    print("ExperimentAnswer",len(ExperimentAnswers))
-    data = serializers.serialize("json", ExperimentAnswers)
-    out = open("data/micallef-replication/ExperimentAnswers.json", "w")
-    out.write(data)
-    out.close()
-    
-    ExperimentAnswerProcesseds = ExperimentAnswerProcessed.objects.filter(experiment__id__in=ids)
-    print("ExperimentAnswer",len(ExperimentAnswerProcesseds))
-    data = serializers.serialize("json", ExperimentAnswerProcesseds)
-    out = open("data/micallef-replication/ExperimentAnswerProcesseds.json", "w")
-    out.write(data)
-    out.close()
-    """
     return HttpResponse(json_answers, mimetype="application/json")
 
 @staff_member_required
@@ -566,10 +442,6 @@ def json_analysis(request, survey_id, question_id):
     condition_data = []
     for i in range(condition_count):
         condition_data.append({})
-    
-    
-    #correct_p = 8.0
-    #correct_p = 103.0
     
     for a in expAns:
         condition = a.experiment.survey_condition
@@ -789,200 +661,11 @@ def json_answers_old(request, survey_id, question_id):
             scrolls = 0
             time = 0
             keydown = 0
-            
-        """
-        try:
-            
-            mouseData = a.mouseData
-            
-            if mouseData[0] == "[":
-                version = 2
-            else:
-                version = 1
-            
-            if version == 2:
-                mouseDataJSON = json.loads(mouseData.encode('utf-8'))
-                # Count Clicks
-                clicks = 0
-                scrolls = 0
-                keydown = 0
-                for line in mouseDataJSON:
-                    if line[0] == "click":
-                        clicks += 1
-                    if line[0] == "scroll":
-                        scrolls += 1
-                    if line[0] == "keydown":
-                        keydown += 1
-                # Figure out time
-                i = 0
-                firstLine = mouseDataJSON[i]
-                while (int(firstLine[1]['timeStamp']) == 0):
-                    i += 1
-                    firstLine =  mouseDataJSON[i]
-                i = -1
-                lastLine = mouseDataJSON[i]
-                while (int(lastLine[1]['timeStamp']) == 0):
-                    i -= 1
-                    lastLine = mouseDataJSON[i]
-                start_time = 0
-                try:
-                    time1 = float(firstLine[1]['timeStamp'])
-                    start_time = time1
-                    time2 = float(lastLine[1]['timeStamp'])
-                    #print(time1, time2)
-                    time = (time2-time1) / 1000.0
-                    condition_data[condition]['times'].append(time)
-                except Exception as e:
-                    print("json_answers: Error2: ", e)
-                    time = "undefined"
-                
-                for line_i in range(0, len(mouseDataJSON)):
-                    line = mouseDataJSON[line_i]
-                    if line[0] == "mousemove":
-                        movePts.append({'time': float(line[1]['timeStamp'])-start_time, 'x': float(line[1]['pageX']) , 'y': float(line[1]['pageY'])})
-                    if line[0] == "click":
-                        clickPts.append({'time': float(line[1]['timeStamp'])-start_time, 'x': float(line[1]['pageX']) , 'y': float(line[1]['pageY'])})
-                    elif line[0] == "keydown":
-                        line_j = getPrevMoveJSON(line_i, mouseDataJSON)
-                        if line_j <  len(mouseDataJSON):
-                            line_prev = mouseDataJSON[line_j]
-                            if 'pageX' in line_prev[1]:
-                                keyPts.append({'time': float(line[1]['timeStamp'])-start_time, 'x': float(line_prev[1]['pageX']) , 'y': float(line_prev[1]['pageY'])})
-                            else:
-                                keyPts.append({'time': float(line[1]['timeStamp'])-start_time, 'x': 0 , 'y': 0})
-                
-            elif version == 1:
-                mouseLines = mouseData.splitlines()
-               
-                clicks = 0
-                scrolls = 0
-                keydown = 0
-                for line in mouseLines:
-                    pline = processLine(line)
-                    if pline['action'] == "click":
-                        clicks += 1
-                    elif pline['action'] == "scroll":
-                        scrolls += 1
-                    elif pline['action'] == "keydown":
-                        keydown += 1
-                    elif pline['action'] == "ready":
-                        w = pline['x']
-                        h = pline['y']
-                        screen = w+"_"+h
-                        screensListW.append(int(w))
-                        screensListH.append(int(h))
-                        if screen in answers['screendata']['counts']:
-                            answers['screendata']['counts'][screen] += 1
-                        else:
-                            answers['screendata']['counts'][screen] =  1
-                condition_data[condition]['clickList'].append(clicks)
-                
-                i = 0
-                firstLine = mouseLines[i]
-                while (int(processLine(firstLine)['time']) == 0):
-                    i += 1
-                    firstLine = mouseLines[i]
-                i = -1
-                lastLine = mouseLines[i]
-                while (int(processLine(lastLine)['time']) == 0):
-                    i -= 1
-                    lastLine = mouseLines[i]
-                start_time = 0
-                try:
-                    time1 = float(processLine(firstLine)['time'])
-                    start_time = time1
-                    time2 = float(processLine(lastLine)['time'])
-                    #print(time1, time2)
-                    time = (time2-time1) / 1000.0
-                    condition_data[condition]['times'].append(time)
-                except Exception as e:
-                    print("json_answers: Error2: ", e)
-                    time = "undefined"
-                
-                
-                for line_i in range(0, len(mouseLines)):
-                    line = mouseLines[line_i]
-                    pline = processLine(line)
-                    if pline['action'] == "mousemove":
-                        movePts.append({'time': float(pline['time'])-start_time, 'x': float(pline['x']) , 'y': float(pline['y'])})
-                    if pline['action'] == "click":
-                        clickPts.append({'time': float(pline['time'])-start_time, 'x': float(pline['x']) , 'y': float(pline['y'])})
-                    elif pline['action'] == "keydown":
-                        line_j = getPrevMove(line_i, mouseLines)
-                        if line_j <  len(mouseLines):
-                            line_prev = mouseLines[line_j]
-                            pline_prev = processLine(line_prev)
-                            if 'x' in pline_prev:
-                                keyPts.append({'time': float(pline['time'])-start_time, 'x': float(pline_prev['x']) , 'y': float(pline_prev['y'])})
-                            else:
-                                keyPts.append({'time': float(pline['time'])-start_time, 'x': 0 , 'y': 0})
-
-        except Exception as e:
-            print("json_answers: Error: ", e)
-            clicks = 0
-            scrolls = 0
-            time = 0
-            keydown = 0
-        
-        if "{" in a.answer:
-            answer = json.loads(a.answer.encode('utf-8'))
-            for k,v in answer.iteritems():
-                if k not in condition_data[condition]['data']:
-                    condition_data[condition]['data'][k] = {}
-
-                if v not in condition_data[condition]['data'][k]:
-                    condition_data[condition]['data'][k][v] = 1
-                else:
-                    condition_data[condition]['data'][k][v] += 1
-        
-        else:
-            if condition_data[condition]['data'].has_key(a.answer):
-                condition_data[condition]['data'][a.answer] += 1
-            else:
-                condition_data[condition]['data'][a.answer] = 1
-        
-        if a.question.slug not in global_count:
-            global_count[a.question.slug] = {}
-        
-        if a.answer in global_count[a.question.slug]:
-            global_count[a.question.slug][a.answer] += 1
-        else:
-            global_count[a.question.slug][a.answer] = 1
-        
-        try:
-            answerInt = float(a.answer)
-            global_stats.append(answerInt)
-        except:
-            pass
-        """
         v = {'version':version,'id':a.id, 'experiment_id': a.experiment.id, 'state': a.experiment.state, 'condition': condition, 'answer':a.answer, 'correct_answer':a.question.correct_answer, 'confidence':a.confidence,'user':a.user.id, 'time':time, 'clicks':clicks, 'scrolls':scrolls, 'keydown': keydown, 'clickPts': clickPts, 'keyPts': keyPts, 'movePts': movePts, 'mouseData':mouseData}
         #print(keyPts)
         #print(clickPts)
         answers['data'].append(v)
     
-    """
-    answers['screendata']['stats']['meanW'] = np.mean(screensListW)
-    answers['screendata']['stats']['stdW'] = np.std(screensListW)
-    answers['screendata']['stats']['meanH'] = np.mean(screensListH)
-    answers['screendata']['stats']['stdH'] = np.std(screensListH)
-    
-    answers['global_counts'] = global_count
-    answers['global_stats'] = {}
-    answers['global_stats']['mean'] = np.mean(global_stats)
-    answers['global_stats']['std'] = np.std(global_stats)
-    
-    for i in range(condition_count):
-        meanTime = np.mean(condition_data[i]['times'])
-        stdTime = np.std(condition_data[i]['times'])
-        meanClicks = np.mean(condition_data[i]['clickList'])
-        stdClicks = np.std(condition_data[i]['clickList'])
-        answers['stats'][i] = {}
-        answers['stats'][i]['meanTime'] = meanTime
-        answers['stats'][i]['stdTime'] = stdTime
-        answers['stats'][i]['meanClicks'] = meanClicks
-        answers['stats'][i]['stdClicks'] = stdClicks
-        answers['stats'][i]['data'] = condition_data[i]['data']
-    """
     json_answers = json.dumps( answers ) #serializers.serialize("json", answers)
     json_answers = json_answers.replace("NaN", "0")
     #print(json_answers)
@@ -1274,94 +957,10 @@ def comp_heatmap (request, survey_id, question_id, condition, ids):
                                                'mouseMoves':mouseMovesJSONcomp,
                                                'mouseClicks':""}, context_instance=RequestContext(request))
     
-    """
-    fname = ("%s\cache\comp_mouse_moves_%s_%s_%s.p") % (settings.SITE_ROOT, survey_id, question_id, condition)
-    # try_cache
-    if os.path.isfile(fname):
-        print("loading cache")
-        mouseMoves,mouseClicks = pickle.load( open( fname, "rb" ) )
-    else:
-        expAnswers = ExperimentAnswer.objects.filter(question=current_question,experiment__survey=survey, experiment__survey_condition=condition, experiment__finished=True)
-        #"+ str(10*len(expAnswers)) +"
-        mouseMoves = "{'max': 10, 'data': ["
-        mouseClicks = "{'max': 10, 'data': ["
-        print("comp_heatmap stared")
-        count = 0
-        for expAns in expAnswers:
-            mouseDataRaw = expAns.mouseData
-            mouseData = json.loads(mouseDataRaw.encode('utf-8'))
-            for line in mouseData:
-                if line[0] == "init":
-                    mouseMoves.append({'time':line[1]['timeStamp'], 'type':"init", 'e':line[1], 'extra': line[2]})
-                    print("init", line[2]['window'])
-                    w = line[2]['window']['width']
-                    h = line[2]['window']['height']
-                    
-                elif line[0] == "resize":
-                    rw = line[2]['window']['width']
-                    rh = line[2]['window']['height']
-                    mouseMoves.append({'time':line[1]['timeStamp'], 'x':rw, 'y':rh, 'type':"resize", 'e':line[1], 'extra': line[2]}) #"{\"time\":\"" + vals[0] + "\",\"x\":" + rw + ", \"y\":" + rh + ", \"type\":\"resize\"},"
-                    
-                    #print("resize", w, h)
-                
-                elif line[0] == "mousemove":
-                    mouseMoves.append({'time':line[1]['timeStamp'], 'x':line[1]['pageX'], 'y':line[1]['pageY'], 'type':"mousemove", 'e':line[1], 'extra': line[2]})
-
-            #mouseLines = mouseData.splitlines()
-            #print("processing answer", count, " out of ", len(expAnswers))
-            #for line in mouseLines:
-            #    vals = line.split('\t');
-            #    if vals[1] == "mousemove":
-            #        mouseMoves += "{'count':" + str(1) + ",'x':" + vals[2] + ",'y':" + vals[3] + "},";
-            #    elif vals[1] == "click":
-            #        mouseClicks += "{'count':" + str(1) + ",'x':" + vals[2] + ",'y':" + vals[3] + "},";
-            count +=1
-        mouseMoves += "]}"
-        mouseClicks += "]}"
-        #save cache
-        data = (mouseMoves,mouseClicks)
-        pickle.dump( data, open( fname, "wb" ) )
-    
-    print("comp_heatmap sending to client now")
-    return render_to_response('heatmap.html', {'survey':survey,
-                                               'question':current_question.data,
-                                               'condition': condition,
-                                               'question_template': current_question.template,
-                                               'mouseMoves':mouseMoves,
-                                               'mouseClicks':mouseClicks}, context_instance=RequestContext(request))
-    """
+  
 
 @staff_member_required
 def heatmap(request, answer_id):
-    """
-    expAns = get_object_or_404(ExperimentAnswer, id=answer_id)
-    
-    survey = expAns.experiment.survey
-    current_question = expAns.question
-    condition = expAns.experiment.survey_condition
-    
-    mouseDataRaw = expAns.mouseData
-    mouseData = json.loads(mouseDataRaw.encode('utf-8'))
-    mouseMoves = {'max':10, 'data':[]}
-    mouseClicks = {'max':10, 'data':[]}
-    
-    for line in mouseData:
-        if line[0] == "mousemove":
-            mouseMoves['data'].append({'time':line[1]['timeStamp'], 'x':line[1]['pageX'], 'y':line[1]['pageY'], 'type':"mousemove", 'e':line[1], 'extra': line[2]})
-        elif line[0] == "click":
-            mouseMoves['data'].append({'time':line[1]['timeStamp'], 'x':line[1]['pageX'], 'y':line[1]['pageY'], 'type':"click", 'e':line[1], 'extra': line[2]})
-
-    #for line in mouseLines:
-    #    vals = line.split('\t');
-    #    if vals[1] == "mousemove":
-    #        mouseMoves += "{count:" + str(1) + ",x:" + vals[2] + ",y:" + vals[3] + "},";
-    #    elif vals[1] == "click":
-    #        mouseClicks += "{count:" + str(1) + ",x:" + vals[2] + ",y:" + vals[3] + "},";
-    #mouseMoves += "]}"
-    #mouseClicks += "]}"
-    mouseMovesJSON = json.dumps(mouseMoves)
-    mouseClicksJSON = json.dumps(mouseClicks)
-    """
     expAns = get_object_or_404(ExperimentAnswerProcessed, id=answer_id)
     survey = expAns.experiment.survey
     current_question = expAns.question
@@ -1392,28 +991,6 @@ def comp_expmap(request, survey_id, question_id):
             ips += "\"" + ip[0] + "\","
     ips += "]"
     return render_to_response('ip_map.html', {'ips':ips}, context_instance=RequestContext(request))
-    """
-    expAns = ExperimentAnswer.objects.filter(question__id = question_id, experiment__survey__id = survey_id)
-    ips = "["
-    for expA in expAns:
-        bla = expA.experiment.allMetaData
-        index = bla.find("HTTP_X_FORWARDED_FOR")
-        ip = bla[index+24:index+24+16]
-        q_index = ip.find(",")
-        if q_index != -1:
-            ip = ip[0:q_index]
-            
-        q_index = ip.find("'")
-        if q_index != -1:
-            ip = ip[0:q_index]
-        
-        if ip.find(":") == -1:
-            print("ip", ip)
-            #metaData = json.loads(bla)
-            ips += "\"" + ip + "\","
-    ips += "]"
-    return render_to_response('ip_map.html', {'ips':ips}, context_instance=RequestContext(request))
-    """
     
 @staff_member_required
 def expmap(request, experiment_id):
@@ -1425,50 +1002,4 @@ def expmap(request, experiment_id):
     if len(ip) > 0:
         ips += "\"" + ip[0] + "\","
     ips += "]"
-    return render_to_response('ip_map.html', {'ips':ips}, context_instance=RequestContext(request))
-    """
-    ips = "["
-    if experiment_id:
-        exp = get_object_or_404(Experiment, id=experiment_id)
-        bla = exp.allMetaData
-        #bla = bla.replace("\'", "\"");
-        #HTTP_X_FORWARDED_FOR metaData["HTTP_X_FORWARDED_FOR"]
-        index = bla.find("HTTP_X_FORWARDED_FOR")
-        ip = bla[index+24:index+24+16]
-        q_index = ip.find(",")
-        if q_index != -1:
-            ip = ip[0:q_index]
-            
-        q_index = ip.find("'")
-        if q_index != -1:
-            ip = ip[0:q_index]
-        
-        if ip.find(":") == -1:
-            print("ip", ip)
-            #metaData = json.loads(bla)
-            ips += "\"" + ip + "\","
-    else:
-        experiments = Experiment.objects.filter(finished=True)
-        
-        for exp in experiments:
-            
-            bla = exp.allMetaData
-            #bla = bla.replace("\'", "\"");
-            #HTTP_X_FORWARDED_FOR metaData["HTTP_X_FORWARDED_FOR"]
-            index = bla.find("HTTP_X_FORWARDED_FOR")
-            ip = bla[index+24:index+24+16]
-            q_index = ip.find(",")
-            if q_index != -1:
-                ip = ip[0:q_index]
-                
-            q_index = ip.find("'")
-            if q_index != -1:
-                ip = ip[0:q_index]
-            
-            if ip.find(":") == -1:
-                print("ip", ip)
-                #metaData = json.loads(bla)
-                ips += "\"" + ip + "\","
-    ips += "]"
-    """
     return render_to_response('ip_map.html', {'ips':ips}, context_instance=RequestContext(request))
