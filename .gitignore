@@ -211,6 +211,7 @@ docs/_build/
 *.log
 *.pot
 *.pyc
+templates_survey
 mimic/settings/local.py
 mimic/settings/production.py
 manage.py
