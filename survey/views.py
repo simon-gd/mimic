@@ -27,6 +27,8 @@ import re
 import operator
 import zlib
 import base64
+import os
+
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.admin.views.decorators import staff_member_required
@@ -37,6 +39,12 @@ from django.template import RequestContext
 
 from survey.models import Question, Survey, SurveyMembership, Experiment, ExperimentUser, ExperimentAnswer
 from survey.forms import WorkerIDForm
+
+from mimic.settings import local as settings
+
+if settings.MIMIC_USE_AZURE_BLOB:
+    from azure.storage import *
+
 #-----------------
 # Decorators
 #-----------------
@@ -141,6 +149,7 @@ def get_questions(survey):
         finalQuestions.append(sm.question)
     return finalQuestions;
 
+"""
 def get_questions_desired(survey):
     finalQuestions =[]
     questions = {}
@@ -172,6 +181,7 @@ def get_questions_desired(survey):
             survey.save()
             return []
     return finalQuestions
+"""
 #-----------------
 # Views
 #-----------------
@@ -186,6 +196,7 @@ def not_supported(request):
     request.session.flush()
     return render(request, 'errors/not_supported.html', {}, context_instance=RequestContext(request))
 
+"""
 @desktop_only
 def need_worker_id(request):
     survey = get_active_survey()
@@ -203,6 +214,7 @@ def need_worker_id(request):
     else:
         form = WorkerIDForm() # An unbound form
         return render(request, 'errors/need_worker_id.html', {'form':form, 'directions': directions })
+"""
 
 # -- Main Views --
 # ----------------
@@ -272,7 +284,32 @@ def processWorkerIDAndExperiment(survey, request):
         return None, None, None, None
 
     return worker_id, condition, experiment, user
- 
+
+def saveMouseData(survey, worker_id, question_id, rawEventData):
+    # XXX need to add support for multiple blob files per answer 
+    url = ""
+    blob_name = "ExperimentAnswer-"+str(worker_id)+"-"+str(question_id)+'.json'
+    container_name = "sraw-"+str(survey.id)
+
+    if settings.MIMIC_USE_AZURE_BLOB:
+        blob_service = BlobService(account_name=settings.AZURE_STORAGE_ACCOUNT, account_key=settings.AZURE_STORAGE_KEY)
+        blob_service.create_container(container_name)
+        try:
+            blob_service.get_blob_metadata(container_name, blob_name)
+            url = blob_service.make_blob_url(container_name, blob_name)
+        except:     
+            blob_service.put_blob(container_name, blob_name , rawEventData, x_ms_blob_type='BlockBlob')
+            url = blob_service.make_blob_url(container_name, blob_name)
+            print(url)
+    else:
+        directory = os.path.join(settings.MEDIA_ROOT,container_name)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        url = os.path.join(directory, blob_name)
+        with open(url, 'w') as outfile:
+            json.dump(rawEventData, outfile)
+    return url
+
 # Used to save questions via json
 def save_question(request):
     survey = get_active_survey()
@@ -301,34 +338,29 @@ def save_question(request):
 
         current_question = questions[current_question_num]
 
-        compressedMouseData = ""
+        mouseDataLink = ""
         if 'mouseData' in request.POST:
             mouseData = request.POST['mouseData']
-            compressedMouseData = mouseData #zlib.compress(mouseData).decode('latin1')
+            mouseDataLink = saveMouseData(survey, worker_id, current_question.id, mouseData)
             question_finished = True
 
         answer = ""
         if 'answer' in request.POST:
             answer = request.POST['answer']
             question_finished = True
-
-        confidence = 0
-        if 'confidence' in request.POST:
-            confidence = request.POST['confidence']
         
         try:
             # answer exists
             exp_answer = ExperimentAnswer.objects.get(question=current_question, experiment=experiment, user=user)
-            if len(compressedMouseData) > 0:
-                exp_answer.mouseData=compressedMouseData
+            if len(mouseDataLink) > 0:
+                exp_answer.mouseData=mouseDataLink
             else:
                 exp_answer.answer=answer
-                exp_answer.confidence=confidence
             exp_answer.finished=question_finished
             exp_answer.save()
 
         except ObjectDoesNotExist:
-            ExperimentAnswer.objects.create(question=current_question, experiment=experiment, user=user, mouseData=compressedMouseData, answer=answer, confidence=confidence, finished=question_finished)
+            ExperimentAnswer.objects.create(question=current_question, experiment=experiment, user=user, mouseData=mouseDataLink, answer=answer, finished=question_finished)
 
     return HttpResponse('{"status": "Done"}\n', mimetype="application/json")
 

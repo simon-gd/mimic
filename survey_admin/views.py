@@ -31,7 +31,10 @@ import numpy as np
 import zlib
 import re
 import ast
-import base64
+from base64 import b64decode, b64encode
+import urllib2
+from distutils.version import LooseVersion, StrictVersion
+
 from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
@@ -47,10 +50,10 @@ from survey_admin.models import CodeFile
 
 from django.conf import settings
 from scipy import stats
-from azure.storage import *
+
 from mimic.settings import local as settings
 
-from pymongo import MongoClient
+from migrate_data import *
 
 # Survey Admin Views
 
@@ -128,7 +131,7 @@ def get_file_list(request):
         fileNames.append(f.name)
     jsonFileNames = json.dumps(fileNames)    
     return HttpResponse(jsonFileNames, mimetype="application/json")
-
+"""
 def json_preprocess_answers_compressdb(request, survey_id):
     survey = get_object_or_404(Survey, id=survey_id)
     expAns = ExperimentAnswer.objects.filter(experiment__survey=survey)
@@ -138,7 +141,7 @@ def json_preprocess_answers_compressdb(request, survey_id):
         a.mouseData = compressed
         a.save()
     return HttpResponse('{"status":"done"}', mimetype="application/json")
-
+"""
 def processLine(line):
     vals = line.split('\t')
     
@@ -149,339 +152,19 @@ def processLine(line):
     else:
         return {"time": vals[0], "action": vals[1], "x": vals[2], "y": vals[3] }
 
-@staff_member_required
-def json_preprocess_answers(request, survey_id):
-    #return save_answers_to_azure(request, survey_id)
-    #return json_preprocess_answers_v1(request, survey_id)
-    #return json_preprocess_answers_to_mongodb(request, survey_id)
-    return json_preprocess_answers_v2(request, survey_id)
-    #return HttpResponse('{"status":"done"}', mimetype="application/json")
-    #return get_screen_sizes(request, survey_id)
+import requests
 
-def json_preprocess_answers_to_mongodb(request, survey_id):
-    client = MongoClient('localhost', 27017)
-    user_name = "admin"
+def json_preprocess_answers_130(request, survey_id):
     survey = get_object_or_404(Survey, id=survey_id)
-    collection_name = "survey-"+str(survey.id)
-    db = client["mimic_"+user_name]
-    collection = db[collection_name]
-    expAns = ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True)
-    for a in expAns:
-        rawEventData = a.mouseData
-        if survey_id=='4' and rawEventData[0] != "[":
-            eventData = zlib.decompress(rawEventData.encode('latin1'))
-        else:
-            eventData = rawEventData
-        try:
-            #blob_service.get_blob_metadata(container_name, "ExperimentAnswer-"+str(a.id)+'.json')
-            ans = {"experiment_id": a.experiment.id,
-                    "survey_condition": a.experiment.survey_condition,
-                    "remote_address": a.experiment.remote_address,
-                    "http_user_agent":a.experiment.http_user_agent,
-                    "question_id": a.question.id,
-                    "correct_answer": json.loads(a.question.correct_answer.encode('utf-8')),
-                    "answer": json.loads(a.answer.encode('utf-8')),
-                    "confidence":a.confidence,
-                    "participant_id":a.user.id,
-                    "participant_worker_id":a.user.worker_id,
-                    "submitted_at":a.submitted_at,
-                    "event_data": json.loads(eventData.encode('utf-8')),
-            }
-            ans_id = collection.insert(ans)
-            print("inserted: ", ans_id)
-        except e: 
-            print("error: ", e)
+    api_version = StrictVersion(survey.user_data_version)
 
-    return HttpResponse('{"status":"done"}', mimetype="application/json")
-@staff_member_required
-def save_answers_to_azure(request, survey_id):
-    user_name = "admin"
-    survey = get_object_or_404(Survey, id=survey_id)
-    container_name = "survey-"+str(survey.id)
-    
-    blob_service = BlobService(account_name=settings.AZURE_STORAGE_ACCOUNT, account_key=settings.AZURE_STORAGE_KEY)
-    blob_service.create_container(container_name)
-    
-    expAns = ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True)
-    for a in expAns:
-        rawEventData = a.mouseData
-        if survey_id=='4' and rawEventData[0] != "[":
-            eventData = zlib.decompress(rawEventData.encode('latin1'))
-        else:
-            eventData = rawEventData
-        try:
-            blob_service.get_blob_metadata(container_name, "ExperimentAnswer-"+str(a.id)+'.json')
-        except: 
-            with open('media/ExperimentAnswer-'+str(a.id)+'.json', 'w') as outfile:
-                json.dump(eventData, outfile)
-            blob_service.put_blob(container_name, "ExperimentAnswer-"+str(a.id)+'.json', eventData, x_ms_blob_type='BlockBlob')
-    return HttpResponse('{"status":"done"}', mimetype="application/json")
-
-def json_preprocess_answers_v1(request, survey_id):
-    #old style interaction data processing version 2
-    survey = get_object_or_404(Survey, id=survey_id)
-    expAns = ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True)
-    create_count = 0
-    updated_count = 0
-    errors = []
-    force_reprocess = True
-    last_mouse=[0,0]
-    for a in expAns:
-        try:
-            p_a = None
-            rawEventData = a.mouseData
-            try:
-                p_a = ExperimentAnswerProcessed.objects.get(source_answer=a)
-                updated_count += 1
-                if not force_reprocess:
-                    continue
-            except ExperimentAnswerProcessed.DoesNotExist:
-                # create a new
-                p_a = ExperimentAnswerProcessed.objects.create(source_answer=a, experiment=a.experiment, question=a.question, answer=str(a.answer), confidence=a.confidence, user=a.user)
-                create_count += 1
-            
-            if " of " in a.answer:
-                numbers = a.answer.split(' of ', 2)
-                answersO = {}
-                answersO['a1'] = numbers[0]
-                answersO['a2'] = numbers[1]
-                p_a.answer = json.dumps(answersO)
-                #print("p_a.answer", p_a.answer)
-            else:
-                p_a.answer = a.answer
-    
-            clicks = 0
-            scrolls = 0
-            time = 0
-            keydown = 0
-            cursor_y = []
-            window_w = 0
-            window_h = 0
-            mouseMoveEvents = []
-            initEvents = []
-            clickEvents = []
-            keydownEvents = []
-            scrollEvents = []
-            miscEvents = []
-        
-            
-            mouseLines = rawEventData.splitlines()
-            
-            i = 0
-            firstLine = mouseLines[i]
-            while (int(processLine(firstLine)['time']) == 0):
-                i += 1
-                firstLine = mouseLines[i]
-            i = -1
-            lastLine = mouseLines[i]
-            while (int(processLine(lastLine)['time']) == 0):
-                i -= 1
-                lastLine = mouseLines[i]
-            start_time = 0
-            try:
-                time1 = float(processLine(firstLine)['time'])
-                start_time = time1
-                time2 = float(processLine(lastLine)['time'])
-                time = (time2-time1) / 1000.0
-                print(time, time1, time2)
-            except Exception as e:
-                error = "json_preprocess_answers: time Error: id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
-                errors.append(error)
-                print(error, e)
-                if p_a:
-                    p_a.delete()
-                a.experiment.state = 2 #Error
-                a.experiment.save()
-                continue
-            
-            line_i = 0
-            
-            while line_i < len(mouseLines):
-                line = mouseLines[line_i]
-                pline = processLine(line)
-                if pline['action'] == "mousemove":
-                    mouseMoveEvents.append({'time': float(pline['time'])-start_time, 'type':"mousemove", 'x': float(pline['x']) , 'y': float(pline['y'])})
-                    miscEvents.append({'time': float(pline['time'])-start_time, 'type':"mousemove", 'x': float(pline['x']) , 'y': float(pline['y'])})
-                    last_mouse=[float(pline['x']), float(pline['y'])]
-                    cursor_y.append(float(pline['y']))
-                    line_i += 1
-                elif pline['action'] == "click":
-                    clicks += 1
-                    clickEvents.append({'time': float(pline['time'])-start_time, 'type':"click", 'x': float(pline['x']) , 'y': float(pline['y'])})
-                    miscEvents.append({'time': float(pline['time'])-start_time, 'type':"click", 'x': float(pline['x']) , 'y': float(pline['y'])})
-                    last_mouse=[float(pline['x']), float(pline['y'])]
-                    line_i += 1
-                elif pline['action'] == "resize":
-                    miscEvents.append({'time': float(pline['time'])-start_time, 'type':"resize",  'x': float(pline['x']) , 'y': float(pline['y'])})
-                    line_i += 1
-                elif pline['action'] == "keydown":
-                    keydown += 1
-                    keydownEvents.append({'time': float(pline['time'])-start_time, 'type':"keydown", 'key':pline['key'], 'x': 0 , 'y': 0})
-                    miscEvents.append({'time': float(pline['time'])-start_time, 'type':"keydown", 'key':pline['key'], 'x': 0 , 'y': 0})
-                    line_i += 1
-                elif pline['action'] == "scroll":
-                   
-                    dx = 0
-                    dy = 0
-                    scroll_count = 1
-                    line_j = line_i+1
-                    if (line_j < len(mouseLines)):
-                        line_next = mouseLines[line_j]
-                        pline_next = processLine(line_next)
-                        while (line_j < len(mouseLines)) and pline_next['action'] == "scroll":
-                            scroll_count += 1
-                            line_j += 1
-                            line_next = mouseLines[line_j]
-                            pline_next = processLine(line_next)
-                        if 'x' in pline_next and pline_next['x'] != "undefined":
-                            next_mouse=[float(pline_next['x']), float(pline_next['y'])]
-                    dx = (next_mouse[0] - last_mouse[0])/scroll_count
-                    dy = (next_mouse[1] - last_mouse[1])/scroll_count
-                    
-                    for i in range(0,scroll_count):
-                        #scroll_x.append(dx)
-                        #scroll_y.append(dy)
-                        line_next = mouseLines[line_i+i]
-                        pline_next = processLine(line_next)
-                        scrollEvents.append({'time':float(pline_next['time']), 'dx':dx, 'dy':dy, 'type':"scroll"})
-                        miscEvents.append({'time':float(pline_next['time']), 'dx':dx, 'dy':dy, 'type':"scroll"})
-                    
-                        #scrolls += "{\"time\":\"" + pline_next['time'] + "\",\"dx\":" + str(dx) + ", \"dy\":" + str(dy) + "},"
-                        #mouseMoves += "{\"time\":\"" + pline_next['time']  + "\",\"dx\":" + str(dx) + ", \"dy\":" + str(dy) + ", \"type\":\"scroll\"},"
-                    line_i += scroll_count
-                    scrolls += scroll_count
-                    
-                    #scrollEvents.append({'time': float(pline['time'])-start_time, 'dx': dx , 'dy': dy})
-                    #miscEvents.append({'time': float(pline['time'])-start_time, 'dx':  dx , 'dy': dy})
-                elif pline['action'] == "ready":
-                    initEvents.append({'time':float(pline['time']), 'type':"init"})
-                    miscEvents.append({'time':float(pline['time']), 'type':"init"})
-                    window_w = float(pline['x'])
-                    window_h =float(pline['y'])
-                    line_i += 1
-                else:
-                    line_i += 1
-                    
-                
-                if 'x' in pline and pline['x'] != "undefined":
-                    last_mouse=[float(pline['x']), float(pline['y'])]
-
-        except Exception as e:
-            error = "json_preprocess_answers: time Error: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
-            errors.append(error)
-            print(error, e)
-            if p_a:
-                p_a.delete()
-            a.experiment.state = 2 #Error
-            a.experiment.save()
-            continue
-        
-        if p_a != None:
-            
-            a.experiment.state = 0
-            a.experiment.save()
-            
-            if time < 1.0:
-                error = "json_preprocess_answers: time too small: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
-                errors.append(error)
-                print(error)
-                p_a.delete()
-                a.experiment.state = 1 #Invalid
-                a.experiment.save()
-
-            # compressed data
-            p_a.init_event = zlib.compress(json.dumps( initEvents )).decode('latin1')
-            p_a.mouse_move_event = zlib.compress(json.dumps( mouseMoveEvents )).decode('latin1')
-            p_a.mouse_click_event = zlib.compress(json.dumps( clickEvents )).decode('latin1')
-            p_a.keydown_event = zlib.compress(json.dumps( keydownEvents )).decode('latin1')
-            p_a.scroll_event = zlib.compress(json.dumps( scrollEvents )).decode('latin1')
-            p_a.misc_event = zlib.compress(json.dumps( miscEvents )).decode('latin1')
-            
-            # analitic data
-            p_a.window_h = window_h
-            p_a.window_w = window_w
-            p_a.time = time
-            p_a.clicks_count = clicks
-            p_a.keys_count = keydown
-            p_a.scroll_count = scrolls
-            p_a.cursor_y =  json.dumps( cursor_y )
-            
-            p_a.save()
-            print(str(create_count+updated_count)+"/"+str(len(expAns)), " saving ", p_a, p_a.id, p_a.source_answer.id, p_a.answer)
-    return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+'}', mimetype="application/json")
+    if api_version != StrictVersion("1.3.0"):
+        return HttpResponse('{"error":"Api version not supported in json_preprocess_answers function('+str(api_version)+')"}', mimetype="application/json")
 
 
-"""
-import gzip
-
-
-def mydeflate(data):   # zlib only provides the zlib compress format, not the deflate format;
-  try:               # so on top of all there's this workaround:
-    return zlib.decompress(data)
-  except zlib.error:
-    try:               # so on top of all there's this workaround:
-        compressedstream = StringIO.StringIO(data)
-        gzipper = gzip.GzipFile(fileobj=compressedstream)
-        return gzipper.read()
-    except zlib.error:
-        return ""
-"""    
-from django import db
-import gc
-
-def queryset_iterator(queryset, chunksize=1000):
-    '''''
-    Iterate over a Django Queryset ordered by the primary key
-
-    This method loads a maximum of chunksize (default: 1000) rows in it's
-    memory at the same time while django normally would load all rows in it's
-    memory. Using the iterator() method only causes it to not preload all the
-    classes.
-
-    Note that the implementation of the iterator does not support ordered query sets.
-    '''
-    pk = 0
-    last_pk = queryset.order_by('-pk')[0].pk
-    queryset = queryset.order_by('pk')
-    while pk < last_pk:
-        for row in queryset.filter(pk__gt=pk)[:chunksize]:
-            pk = row.pk
-            yield row
-        gc.collect()
-
-def get_screen_sizes(request, survey_id):
-    survey = get_object_or_404(Survey, id=survey_id)
-    expAns = ExperimentAnswerProcessed.objects.filter(question_id=15, experiment__finished=True) #experiment__survey=survey, experiment__finished=True,
-    screenSizes = []
-    writer = csv.writer(open("screensizes.csv", 'w'), dialect='excel')
-    for a in expAns:
-        #print("got",a.id)
-        try:
-            rawEventData =  zlib.decompress(a.misc_event.encode('latin1'))
-            mouseDataJSON = json.loads(rawEventData.encode('utf-8'))
-            for line in mouseDataJSON:
-                if "extra" in line:
-                    if "screen" in line["extra"]:
-                        sizeis = {"w":line["extra"]["screen"]["width"], "h":line["extra"]["screen"]["height"]}
-                        screenSizes.append([line["extra"]["screen"]["width"], line["extra"]["screen"]["height"]])
-                        #writer.writerow([line["extra"]["screen"]["width"], line["extra"]["screen"]["height"]])
-                        #print(sizeis)
-
-        except Exception as e:    
-            print("error: failed to decompress", e)
-    writer.writerows(screenSizes)
-    
-    return HttpResponse(json.dumps(screenSizes), mimetype="application/json")
-
-def json_preprocess_answers_v2(request, survey_id):
-    db.reset_queries()
-    #newer JSON Interaction Data processing version 2
-    survey = get_object_or_404(Survey, id=survey_id)
-    #ExperimentAnswerProcessed.objects.filter(experiment__survey=survey).delete()
-    #return HttpResponse('{"created":'+str(0)+',"updated":'+str(0)+',"skipped":'+str(0)+'}', mimetype="application/json")
     expected_answers = SurveyMembership.objects.filter(survey=survey).count()
                 
-    expAns = queryset_iterator(ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True), chunksize=100) #.iterator() # experiment__state=0) experiment__state=0
+    expAns = ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True)
     create_count = 0
     updated_count = 0
     skipped_count = 0
@@ -492,28 +175,6 @@ def json_preprocess_answers_v2(request, survey_id):
 
     for a in expAns:
         p_a = None
-        rawEventData = a.mouseData
-        if len(rawEventData) == 0 or a.answer ==  None:
-            skipped_count += 1
-            print("error: ", len(rawEventData), a.answer)
-            #a.experiment.state = 2 #Error
-            #a.experiment.save()
-            continue
-
-        if rawEventData[0] != "[":
-            try:
-                rawEventData =  zlib.decompress(a.mouseData.encode('latin1')) 
-               
-            except Exception as e:
-                skipped_count += 1
-                print("error: failed to decompress")
-                #a.experiment.state = 2 #Error
-                #a.experiment.save()
-                continue
-        #    print("filed to decompress data", a.pk)
-            
-        
-
         try:
             p_a = ExperimentAnswerProcessed.objects.get(source_answer=a)
             if not force_reprocess:
@@ -561,7 +222,13 @@ def json_preprocess_answers_v2(request, survey_id):
         scrollEvents = []
         miscEvents = []
         try:
-            mouseDataJSON = json.loads(rawEventData.encode('utf-8'))
+            eventDataURL = a.mouseData
+            response = requests.get(eventDataURL, timeout=10.0) # urllib2.urlopen(eventDataURL)
+            #jsonEventData = response.text #response.read()
+            #response.close()
+            if response.status_code != 200:
+                print("failded to get the file!!! ", eventDataURL)
+            mouseDataJSON = response.json() #json.loads(jsonEventData.encode('utf-8'))
             i = 0
             firstLine = mouseDataJSON[i]
             while (int(firstLine[1]['timeStamp']) == 0):
@@ -577,16 +244,15 @@ def json_preprocess_answers_v2(request, survey_id):
                 time1 = float(firstLine[1]['timeStamp'])
                 start_time = time1
                 time2 = float(lastLine[1]['timeStamp'])
-                #print(time1, time2)
                 time = (time2-time1) / 1000.0
             except Exception as e:
-                error = "json_preprocess_answers: time Error: id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
-                errors.append(error)
-                print(error, e)
-                p_a.delete()
-                a.experiment.state = 2 #Error
-                a.experiment.save()
-                continue
+                #error = "json_preprocess_answers: time Error: id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
+                ##errors.append(error)
+                print(e)
+                #p_a.delete()
+                #/a.experiment.state = 2 #Error
+                #a.experiment.save()
+                return HttpResponse(mouseDataJSON, mimetype="application/json")
             
             for line in mouseDataJSON:
                 if line[0] == "click":
@@ -612,8 +278,8 @@ def json_preprocess_answers_v2(request, survey_id):
                 elif line[0] == "init":
                     initEvents.append({'time':line[1]['timeStamp']-start_time, 'type':"init", 'e':line[1], 'extra': line[2]})
                     miscEvents.append({'time':line[1]['timeStamp']-start_time, 'type':"init", 'e':line[1], 'extra': line[2]})
-                    window_w = line[2]['window']['screenX']
-                    window_h = line[2]['window']['screenY']
+                    window_w = line[2]['window']['width']
+                    window_h = line[2]['window']['height']
                 elif line[0] == "resize":
                     rw = line[2]['window']['width']
                     rh = line[2]['window']['height']
@@ -622,32 +288,18 @@ def json_preprocess_answers_v2(request, survey_id):
                     miscEvents.append({'time':line[1]['timeStamp']-start_time, 'type': line[0], 'e':line[1], 'extra': line[2]})
 
         except Exception as e:
-            error = "json_preprocess_answers: time Error: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
-            errors.append(error)
+            #error = "json_preprocess_answers: time Error: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
+            #errors.append(error)
             print(error, e)
-            #p_a.delete()
-            #a.experiment.state = 2 #Error
-            #a.experiment.save()
             continue
         
         if p_a != None:
-            #if time < 1.0:
-                #error = "json_preprocess_answers: time too small: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
-                #errors.append(error)
-                #print(error)
-                #p_a.delete()
-                #a.experiment.state = 1 #Invalid
-                #a.experiment.save()
-            #if a.experiment.state == 1:
-            #    a.experiment.state = 0
-            #    a.experiment.save()     
-            # compressed data
-            p_a.init_event = zlib.compress(json.dumps( initEvents )).decode('latin1')
-            p_a.mouse_move_event = zlib.compress(json.dumps( mouseMoveEvents )).decode('latin1')
-            p_a.mouse_click_event = zlib.compress(json.dumps( clickEvents )).decode('latin1')
-            p_a.keydown_event = zlib.compress(json.dumps( keydownEvents )).decode('latin1')
-            p_a.scroll_event = zlib.compress(json.dumps( scrollEvents )).decode('latin1')
-            p_a.misc_event = zlib.compress(json.dumps( miscEvents )).decode('latin1')
+            p_a.init_event = b64encode(zlib.compress(json.dumps(initEvents), 9)) 
+            p_a.mouse_move_event =  b64encode(zlib.compress(json.dumps(mouseMoveEvents), 9))
+            p_a.mouse_click_event =  b64encode(zlib.compress(json.dumps(clickEvents), 9))
+            p_a.keydown_event =  b64encode(zlib.compress(json.dumps(keydownEvents), 9))
+            p_a.scroll_event =  b64encode(zlib.compress(json.dumps(scrollEvents), 9))
+            p_a.misc_event =  b64encode(zlib.compress(json.dumps( miscEvents ), 9))
             
             # analitic data
             p_a.window_h = window_h
@@ -659,18 +311,22 @@ def json_preprocess_answers_v2(request, survey_id):
             p_a.cursor_y =  json.dumps( cursor_y )
             
             p_a.save()
-            print(str(create_count+updated_count), " saving ", p_a, p_a.id, p_a.source_answer.id)
-    # cleanup experiments
-    expTest = Experiment.objects.filter(survey=survey, finished=True,state=0)
-    experiments_disabled = 0
-    for e_test in expTest:
-        actual_answers = ExperimentAnswer.objects.filter(experiment=e_test).count()
-        if actual_answers != expected_answers:
-            e_test.state = 1
-            e_test.save()
-            experiments_disabled += 1
+            print("saving ", p_a.id)
+    return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+',"skipped":'+str(skipped_count)+'}', mimetype="application/json")
 
-    return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+',"skipped":'+str(skipped_count)+',"experiments_disabled":'+str(experiments_disabled)+'}', mimetype="application/json")
+
+
+@staff_member_required
+def json_preprocess_answers(request, survey_id):
+    #export_survey(survey_id)
+    #return HttpResponse('{"status":"done"}', mimetype="application/json")
+    #return save_answers_to_azure(request, survey_id)
+    #return json_preprocess_answers_v1(request, survey_id)
+    #return json_preprocess_answers_to_mongodb(request, survey_id)
+    return json_preprocess_answers_130(request, survey_id)
+    #return HttpResponse('{"status":"done"}', mimetype="application/json")
+    #return get_screen_sizes(request, survey_id)
+
 
 
 @staff_member_required
@@ -706,27 +362,28 @@ def debug_question(request, question_id):
     #if question.data
     #get order
     qnum = 1
-    membership = get_object_or_404(SurveyMembership, question=question)
-    qnum = membership.order
-    if "tracking" in request.GET:
-        debug = 0
+    memberships = SurveyMembership.objects.filter(question=question)
+    print(memberships[0])
+    qnum = memberships[0].order
+    #if "tracking" in request.GET:
+    #     debug = 0
         # XXX hack
-        t = question.base_template
+        #t = question.base_template
         #if question.id > 13:
         #    t = 'question_v2.html'
         #if question.id > 13:
         #    t = 'question_v2.html'
         #else:
         #    t = 'question_v1.html'
-    else:
-        t = question.base_template
+    #else:
+    #    t = question.base_template
         #if question.id > 13:
         #    t = 'question_v2_no_tracking.html'
         #else:
         #    t = 'question_v1_no_tracking.html'
-    print(t)
+    #print(t)
     
-    return render(request, t, {'question_template': question.template, 'question': question.data, 'condition':condition, 'qnum':qnum,'qtotal':1, 'debug':debug})
+    return render(request, question.base_template, {'question_template': question.template, 'question': question.data, 'condition':condition, 'qnum':qnum,'qtotal':1, 'debug':debug})
 
 @staff_member_required
 def debug_question2(request):
@@ -742,448 +399,6 @@ def json_all_questions(request, survey_id):
         questions.append(mb.question)
     json_questions = serializers.serialize("json", questions)
     return HttpResponse(json_questions, mimetype="application/json")
-
-@staff_member_required
-def json_analysis(request, survey_id, question_id):
-    survey = get_object_or_404(Survey, id=survey_id)
-    expAns = ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True, question__id = question_id)
-    answers = {'stats': {}, 'data': [] }
-    condition_count = 5
-    condition_data = []
-    for i in range(condition_count):
-        condition_data.append({})
-    
-    
-    #correct_p = 8.0
-    #correct_p = 103.0
-    
-    for a in expAns:
-        condition = a.experiment.survey_condition
-        
-        if "{" in a.answer and a.question.correct_answer and "{" in a.question.correct_answer:
-            answer = json.loads(a.answer.encode('utf-8'))
-            correct_answer = json.loads(a.question.correct_answer.encode('utf-8'))
-            for k,v in answer.iteritems():
-                if (k) not in condition_data[condition]:
-                    condition_data[condition][k] = {'bias':[], 'error':[], 'counts':{}}
-                v_f = float(v)
-                correct_v_f = float(correct_answer[k])
-                if v_f > 0:
-                    bias = math.log10(v_f/correct_v_f)
-                    error = math.fabs(bias)
-                else:
-                    bias = -1
-                    error = 1
-                if v not in condition_data[condition][k]['counts']:
-                    condition_data[condition][k]['counts'][v] = 1
-                else:
-                    condition_data[condition][k]['counts'][v] += 1
-                    
-                condition_data[condition][k]['bias'].append(bias)
-                condition_data[condition][k]['error'].append(error)
-        elif "of" in a.answer and a.question.correct_answer and "of" in a.question.correct_answer:
-            numbers = a.answer.split(' of ', 2)
-            correct_numbers = a.question.correct_answer.split(' of ', 2)
-            correct_p = float(correct_numbers[0])/ float(correct_numbers[1])
-            correct_n = float(correct_numbers[0])
-            correct_d = float(correct_numbers[1])
-            p = float(numbers[0])/ float(numbers[1])
-            n = float(numbers[0])
-            d = float(numbers[1])
-            #print(p)
-            if p > 0:
-                bias = math.log10(p/correct_p)
-                error = math.fabs(bias)
-            else:
-                bias = -1
-                error = 1
-            if n > 0:
-                bias_n = math.log10(n/correct_n)
-                error_n = math.fabs(bias_n)
-            else:
-                bias_n = -1
-                error_n = 1
-            
-            if d > 0:
-                bias_d = math.log10(d/correct_d)
-                error_d = math.fabs(bias_d)
-            else:
-                bias_d = -1
-                error_d = 1
-                
-            
-            if 'p' not in condition_data[condition]:
-                condition_data[condition]['p'] = {'bias':[], 'error':[]}
-            
-            if 'n' not in condition_data[condition]:
-                condition_data[condition]['n'] = {'bias':[], 'error':[]}
-            if 'd' not in condition_data[condition]:
-                condition_data[condition]['d'] = {'bias':[], 'error':[]}
-            
-                
-            condition_data[condition]['p']['bias'].append(bias)
-            condition_data[condition]['p']['error'].append(error)
-            condition_data[condition]['n']['bias'].append(bias_n)
-            condition_data[condition]['n']['error'].append(error_n)
-            condition_data[condition]['d']['bias'].append(bias_d)
-            condition_data[condition]['d']['error'].append(error_d)
-        
-    
-    json_data = json.dumps( condition_data ) #serializers.serialize("json", answers)
-    #json_data = json_data.replace("NaN", "0")
-
-   
-    print(json_data)
-    return HttpResponse(json_data, mimetype="application/json")
-
-@staff_member_required
-def save_csv_scroll(request, survey_id):
-    survey = get_object_or_404(Survey, id=survey_id)
-    experments = Experiment.objects.filter(survey=survey, finished=True)
-    toCSV = []
-    keys = []
-    baseURL = "http://experiscope.net"
-    for exp in experments:
-        #print(exp)
-        data = {
-            'turk_user_id': exp.user,
-            'user_id': exp.user.id,
-            'condition': VIS_TYPES[exp.survey_condition][1],
-            'ip': exp.remote_address,
-            'map': baseURL+reverse('expmap', args=[exp.id])
-        }
-        if 'user_id' not in keys:
-            keys.append('turk_user_id')
-            keys.append('user_id')
-            keys.append('condition')
-            keys.append('ip')
-            keys.append('map')
-            keys.append('window_w')
-            keys.append('window_h')
-            keys.append('scroll_count')
-            keys.append('scroll_count_up')
-            keys.append('scroll_count_down')
-            keys.append('scroll_y_amount')
-            keys.append('scroll_y_amount_up')
-            keys.append('scroll_y_amount_down')
-        expAnswers = ExperimentAnswer.objects.filter(experiment=exp)
-        for a in expAnswers:
-            #print(a)
-           
-            
-            #get screen size:
-            mouseData = a.mouseData
-            mouseLines = mouseData.splitlines()
-            clicks = 0
-            time = "undefined"
-            
-            scroll_x = []
-            scroll_y = []
-            scroll_y_abs = []
-            scroll_y_up = []
-            scroll_y_down = []
-            last_mouse = [0,0]
-            next_mouse = [0,0]
-            line_i = 0
-            while line_i < len(mouseLines):
-                line = mouseLines[line_i]
-                pline = processLine(line)
-                
-                if pline['action'] == "click":
-                    clicks += 1
-                    last_mouse=[pline['x'], pline['y']]
-                    line_i += 1
-                elif pline['action'] == "ready":
-                    w = pline['x']
-                    h = pline['y']
-                    data['window_w'] = w
-                    data['window_h'] = h
-                    line_i += 1
-                elif pline['action'] == "scroll":
-                    dx = 0
-                    dy = 0
-                    scroll_count = 1
-                    line_j = line_i+1
-                    if (line_j < len(mouseLines)):
-                        line_next = mouseLines[line_j]
-                        pline_next = processLine(line_next)
-                        while (line_j < len(mouseLines)) and pline_next['action'] == "scroll":
-                            scroll_count += 1
-                            line_j += 1
-                            line_next = mouseLines[line_j]
-                            pline_next = processLine(line_next)
-                        if 'x' in pline_next and pline_next['x'] != "undefined":
-                            next_mouse=[float(pline_next['x']), float(pline_next['y'])]
-                    dx = (next_mouse[0] - last_mouse[0])/scroll_count
-                    dy = (next_mouse[1] - last_mouse[1])/scroll_count
-                    
-                    for i in range(0,scroll_count):
-                        scroll_x.append(dx)
-                        scroll_y.append(dy)
-                        scroll_y_abs.append(abs(dy))
-                        if dy > 0:
-                            scroll_y_down.append(dy)
-                        else:
-                            scroll_y_up.append(abs(dy))
-                    line_i += scroll_count
-                else:
-                    line_i += 1
-                
-                if 'x' in pline and pline['x'] != "undefined":
-                    last_mouse=[float(pline['x']), float(pline['y'])]
-            
-            if 'scroll_count' not in data:
-                data['scroll_count'] = 0
-                data['scroll_count_up'] = 0
-                data['scroll_count_down'] = 0
-                data['scroll_y_amount'] = 0
-                data['scroll_y_amount_up'] = 0
-                data['scroll_y_amount_down'] = 0
-            
-            
-            try:
-                i = 0
-                firstLine = mouseLines[i]
-                while (int(processLine(firstLine)['time']) == 0):
-                    i += 1
-                    firstLine = mouseLines[i]
-                i = -1
-                lastLine = mouseLines[i]
-                while (int(processLine(lastLine)['time']) == 0):
-                    i -= 1
-                    lastLine = mouseLines[i]
-    
-                try:
-                    time1 = int(processLine(firstLine)['time'])
-                    time2 = int(processLine(lastLine)['time'])
-                    #print(time1, time2)
-                    time = (time2-time1) / 1000.0
-                except Exception as e:
-                    print("save_csv: Error2: ", e)
-                    time = "undefined"
-            except Exception as e:
-                print("save_csv: Error3: ", e)
-                time = "undefined"
-                    
-            if "{" in a.answer:
-                answer = json.loads(a.answer)
-                for k,v in answer.iteritems():
-                    if (a.question.slug+"-"+k) not in keys:
-                        keys.append(a.question.slug+"-"+k)
-                    data[a.question.slug+"-"+k] = v.encode('utf-8')
-                
-                # links
-                data[a.question.slug+"-heatmap"] = baseURL+reverse('heatmap', args=[a.id])
-                data[a.question.slug+"-static_mouse_paths"] = baseURL+reverse('static_mouse_paths', args=[a.id])
-                data[a.question.slug+"-animated_mouse_paths"] = baseURL+reverse('animated_mouse_paths', args=[a.id])
-                #also add time, clicks,
-                data[a.question.slug+"-clicks"] = clicks
-                data[a.question.slug+"-time"] = time
-                
-                if (a.question.slug+"-heatmap") not in keys:
-                        keys.append(a.question.slug+"-heatmap")
-                        keys.append(a.question.slug+"-static_mouse_paths")
-                        keys.append(a.question.slug+"-animated_mouse_paths")
-                        keys.append(a.question.slug+"-clicks")
-                        keys.append(a.question.slug+"-time")
-                
-                data['scroll_count'] = len(scroll_y)
-                if len(scroll_y) > 0:
-                    data['scroll_count_up'] = len(scroll_y_up)
-                    data['scroll_count_down'] = len(scroll_y_down)
-                    data['scroll_y_amount'] = sum(scroll_y_abs)
-                    data['scroll_y_amount_up'] = sum(scroll_y_up)
-                    data['scroll_y_amount_down'] = sum(scroll_y_down)
-                    #print("scroll: ", len(scroll_x), np.mean(scroll_x), np.std(scroll_x), np.mean(scroll_y),  np.std(scroll_y))
-                
-            elif " of " in a.answer and a.question.slug == "mammography-problem":  
-                numbers = a.answer.split(' of ', 2)
-                numerator   = float(numbers[0])
-                denominator = float(numbers[1])
-                data[a.question.slug+"-numerator"] = numerator
-                data[a.question.slug+"-denominator"] = denominator
-                if a.question.slug+"-numerator" not in keys:
-                    keys.append(a.question.slug+"-numerator")
-                if a.question.slug+"-denominator" not in keys:
-                    keys.append(a.question.slug+"-denominator")
-                data[a.question.slug] = a.answer
-                
-                 # links
-                data[a.question.slug+"-heatmap"] = baseURL+reverse('heatmap', args=[a.id])
-                data[a.question.slug+"-static_mouse_paths"] = baseURL+reverse('static_mouse_paths', args=[a.id])
-                data[a.question.slug+"-animated_mouse_paths"] = baseURL+reverse('animated_mouse_paths', args=[a.id])
-                #also add time, clicks,
-                data[a.question.slug+"-clicks"] = clicks
-                data[a.question.slug+"-time"] = time
-                
-                if (a.question.slug+"-heatmap") not in keys:
-                        keys.append(a.question.slug+"-heatmap")
-                        keys.append(a.question.slug+"-static_mouse_paths")
-                        keys.append(a.question.slug+"-animated_mouse_paths")
-                        keys.append(a.question.slug+"-clicks")
-                        keys.append(a.question.slug+"-time")
-                data['scroll_count'] = len(scroll_y)
-                if len(scroll_y) > 0:
-                    data['scroll_count_up'] = len(scroll_y_up)
-                    data['scroll_count_down'] = len(scroll_y_down)
-                    data['scroll_y_amount'] = sum(scroll_y_abs)
-                    data['scroll_y_amount_up'] = sum(scroll_y_up)
-                    data['scroll_y_amount_down'] = sum(scroll_y_down)
-            else:
-                if a.question.slug not in keys:
-                    keys.append(a.question.slug)
-                data[a.question.slug] = a.answer.encode('utf-8')
-            if a.confidence > 0:
-                data[a.question.slug+"-confidence"] = a.confidence
-                if a.question.slug+"-confidence" not in keys:
-                    keys.append(a.question.slug+"-confidence")
-        #print("scroll_count:", data['scroll_count'])
-        toCSV.append(data)
-    
-    fname = "%s\data_export_survey_with_scroll_%s.csv" %(settings.SITE_ROOT, survey_id)
-    with open(fname, 'wb') as f:
-        print("saving file "+fname)
-        dict_writer = csv.DictWriter(f, keys)
-        dict_writer.writer.writerow(keys)
-        dict_writer.writerows(toCSV)
-    
-    return HttpResponse('{"status":"done"}', mimetype="application/json")
-
-@staff_member_required
-def save_csv(request, survey_id):
-    survey = get_object_or_404(Survey, id=survey_id)
-    experments = Experiment.objects.filter(survey=survey, finished=True)
-    toCSV = []
-    keys = []
-    baseURL = "http://127.0.0.1:8000/"
-    for exp in experments:
-        #print(exp)
-        data = {
-            'turk_user_id': exp.user,
-            'user_id': exp.user.id,
-            'condition': VIS_TYPES[exp.survey_condition][1],
-            'ip': exp.remote_address,
-            'map': baseURL+reverse('expmap', args=[exp.id])
-        }
-        if 'user_id' not in keys:
-            keys.append('turk_user_id')
-            keys.append('user_id')
-            keys.append('condition')
-            keys.append('ip')
-            keys.append('map')
-            keys.append('screensize')
-        expAnswers = ExperimentAnswer.objects.filter(experiment=exp)
-        for a in expAnswers:
-            #print(a)
-           
-            
-            #get screen size:
-            mouseData = a.mouseData
-            mouseLines = mouseData.splitlines()
-            clicks = 0
-            time = "undefined"
-            screen = "0 x 0"
-            
-            for line in mouseLines:
-                pline = processLine(line)
-                if pline['action'] == "click":
-                    clicks += 1
-                if pline['action'] == "ready":
-                    w = pline['x']
-                    h = pline['y']
-                    screen = w+" x "+h
-            if 'screensize' not in data or data['screensize'] == "0 x 0":
-                data['screensize'] = screen
-            try:
-                i = 0
-                firstLine = mouseLines[i]
-                while (int(processLine(firstLine)['time']) == 0):
-                    i += 1
-                    firstLine = mouseLines[i]
-                i = -1
-                lastLine = mouseLines[i]
-                while (int(processLine(lastLine)['time']) == 0):
-                    i -= 1
-                    lastLine = mouseLines[i]
-    
-                try:
-                    time1 = int(processLine(firstLine)['time'])
-                    time2 = int(processLine(lastLine)['time'])
-                    #print(time1, time2)
-                    time = (time2-time1) / 1000.0
-                except Exception as e:
-                    print("save_csv: Error2: ", e)
-                    time = "undefined"
-            except Exception as e:
-                print("save_csv: Error3: ", e)
-                time = "undefined"
-                    
-            if "{" in a.answer:
-                answer = json.loads(a.answer)
-                for k,v in answer.iteritems():
-                    if (a.question.slug+"-"+k) not in keys:
-                        keys.append(a.question.slug+"-"+k)
-                    data[a.question.slug+"-"+k] = v.encode('utf-8')
-                
-                # links
-                data[a.question.slug+"-heatmap"] = baseURL+reverse('heatmap', args=[a.id])
-                data[a.question.slug+"-static_mouse_paths"] = baseURL+reverse('static_mouse_paths', args=[a.id])
-                data[a.question.slug+"-animated_mouse_paths"] = baseURL+reverse('animated_mouse_paths', args=[a.id])
-                #also add time, clicks,
-                data[a.question.slug+"-clicks"] = clicks
-                data[a.question.slug+"-time"] = time
-                
-                if (a.question.slug+"-heatmap") not in keys:
-                        keys.append(a.question.slug+"-heatmap")
-                        keys.append(a.question.slug+"-static_mouse_paths")
-                        keys.append(a.question.slug+"-animated_mouse_paths")
-                        keys.append(a.question.slug+"-clicks")
-                        keys.append(a.question.slug+"-time")
-            
-            elif " of " in a.answer and a.question.slug == "mammography-problem":  
-                numbers = a.answer.split(' of ', 2)
-                numerator   = float(numbers[0])
-                denominator = float(numbers[1])
-                data[a.question.slug+"-numerator"] = numerator
-                data[a.question.slug+"-denominator"] = denominator
-                if a.question.slug+"-numerator" not in keys:
-                    keys.append(a.question.slug+"-numerator")
-                if a.question.slug+"-denominator" not in keys:
-                    keys.append(a.question.slug+"-denominator")
-                data[a.question.slug] = a.answer
-                
-                 # links
-                data[a.question.slug+"-heatmap"] = baseURL+reverse('heatmap', args=[a.id])
-                data[a.question.slug+"-static_mouse_paths"] = baseURL+reverse('static_mouse_paths', args=[a.id])
-                data[a.question.slug+"-animated_mouse_paths"] = baseURL+reverse('animated_mouse_paths', args=[a.id])
-                #also add time, clicks,
-                data[a.question.slug+"-clicks"] = clicks
-                data[a.question.slug+"-time"] = time
-                
-                if (a.question.slug+"-heatmap") not in keys:
-                        keys.append(a.question.slug+"-heatmap")
-                        keys.append(a.question.slug+"-static_mouse_paths")
-                        keys.append(a.question.slug+"-animated_mouse_paths")
-                        keys.append(a.question.slug+"-clicks")
-                        keys.append(a.question.slug+"-time")
-            else:
-                if a.question.slug not in keys:
-                    keys.append(a.question.slug)
-                data[a.question.slug] = a.answer.encode('utf-8')
-            if a.confidence > 0:
-                data[a.question.slug+"-confidence"] = a.confidence
-                if a.question.slug+"-confidence" not in keys:
-                    keys.append(a.question.slug+"-confidence")
-        toCSV.append(data)
-    
-    fname = "%s\data_export_survey_%s.csv" %(settings.SITE_ROOT, survey_id)
-    with open(fname, 'wb') as f:
-        print("saving file "+fname)
-        dict_writer = csv.DictWriter(f, keys)
-        dict_writer.writer.writerow(keys)
-        dict_writer.writerows(toCSV)
-    
-    return HttpResponse('{"status":"done"}', mimetype="application/json")
 
 def getPrevMove(j, mouseLines):
     p = j-1;
@@ -1241,7 +456,7 @@ def json_answers(request, survey_id, question_id):
         confidenceClick = 0
         mouseClickDataRaw = a.mouse_click_event
         try:
-            clickEventData = zlib.decompress(mouseClickDataRaw.encode('latin1'))
+            clickEventData = zlib.decompress(b64decode(mouseClickDataRaw))
             clickEventDataJSON = json.loads(clickEventData.encode('utf-8'))
             for line in clickEventDataJSON:
                 if 'e' in line and 'target' in line['e'] and 'id' in line['e']['target'] and "confidence" in line['e']['target']['id']:
@@ -1341,6 +556,99 @@ def json_answers(request, survey_id, question_id):
     out.close()
     """
     return HttpResponse(json_answers, mimetype="application/json")
+
+@staff_member_required
+def json_analysis(request, survey_id, question_id):
+    survey = get_object_or_404(Survey, id=survey_id)
+    expAns = ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True, question__id = question_id)
+    answers = {'stats': {}, 'data': [] }
+    condition_count = 5
+    condition_data = []
+    for i in range(condition_count):
+        condition_data.append({})
+    
+    
+    #correct_p = 8.0
+    #correct_p = 103.0
+    
+    for a in expAns:
+        condition = a.experiment.survey_condition
+        
+        if "{" in a.answer and a.question.correct_answer and "{" in a.question.correct_answer:
+            answer = json.loads(a.answer.encode('utf-8'))
+            correct_answer = json.loads(a.question.correct_answer.encode('utf-8'))
+            for k,v in answer.iteritems():
+                if (k) not in condition_data[condition]:
+                    condition_data[condition][k] = {'bias':[], 'error':[], 'counts':{}}
+                v_f = float(v)
+                correct_v_f = float(correct_answer[k])
+                if v_f > 0:
+                    bias = math.log10(v_f/correct_v_f)
+                    error = math.fabs(bias)
+                else:
+                    bias = -1
+                    error = 1
+                if v not in condition_data[condition][k]['counts']:
+                    condition_data[condition][k]['counts'][v] = 1
+                else:
+                    condition_data[condition][k]['counts'][v] += 1
+                    
+                condition_data[condition][k]['bias'].append(bias)
+                condition_data[condition][k]['error'].append(error)
+        elif "of" in a.answer and a.question.correct_answer and "of" in a.question.correct_answer:
+            numbers = a.answer.split(' of ', 2)
+            correct_numbers = a.question.correct_answer.split(' of ', 2)
+            correct_p = float(correct_numbers[0])/ float(correct_numbers[1])
+            correct_n = float(correct_numbers[0])
+            correct_d = float(correct_numbers[1])
+            p = float(numbers[0])/ float(numbers[1])
+            n = float(numbers[0])
+            d = float(numbers[1])
+            #print(p)
+            if p > 0:
+                bias = math.log10(p/correct_p)
+                error = math.fabs(bias)
+            else:
+                bias = -1
+                error = 1
+            if n > 0:
+                bias_n = math.log10(n/correct_n)
+                error_n = math.fabs(bias_n)
+            else:
+                bias_n = -1
+                error_n = 1
+            
+            if d > 0:
+                bias_d = math.log10(d/correct_d)
+                error_d = math.fabs(bias_d)
+            else:
+                bias_d = -1
+                error_d = 1
+                
+            
+            if 'p' not in condition_data[condition]:
+                condition_data[condition]['p'] = {'bias':[], 'error':[]}
+            
+            if 'n' not in condition_data[condition]:
+                condition_data[condition]['n'] = {'bias':[], 'error':[]}
+            if 'd' not in condition_data[condition]:
+                condition_data[condition]['d'] = {'bias':[], 'error':[]}
+            
+                
+            condition_data[condition]['p']['bias'].append(bias)
+            condition_data[condition]['p']['error'].append(error)
+            condition_data[condition]['n']['bias'].append(bias_n)
+            condition_data[condition]['n']['error'].append(error_n)
+            condition_data[condition]['d']['bias'].append(bias_d)
+            condition_data[condition]['d']['error'].append(error_d)
+        
+    
+    json_data = json.dumps( condition_data ) #serializers.serialize("json", answers)
+    #json_data = json_data.replace("NaN", "0")
+
+   
+    print(json_data)
+    return HttpResponse(json_data, mimetype="application/json")
 
 @staff_member_required
 def json_answers22(request, survey_id, question_id):
@@ -1828,7 +1136,7 @@ def process_mouse_paths(request, answer_id):
     expAns = get_object_or_404(ExperimentAnswerProcessed, id=answer_id)
     version = expAns.experiment.version
     mouseDataRaw = expAns.misc_event
-    eventData = zlib.decompress(mouseDataRaw.encode('latin1'))
+    eventData = zlib.decompress(b64decode(mouseDataRaw))
     survey = expAns.experiment.survey
     current_question = expAns.question
 
@@ -1953,7 +1261,7 @@ def comp_heatmap (request, survey_id, question_id, condition, ids):
         mouseMoveDataRaw = expAns.mouse_move_event
         mouseClickDataRaw = expAns.mouse_click_event
         
-        mouseMovesJSON = zlib.decompress(mouseMoveDataRaw.encode('latin1'))
+        mouseMovesJSON = zlib.decompress(b64decode(mouseMoveDataRaw))
         mouseData = json.loads(mouseMovesJSON.encode('utf-8'))
         for m in mouseData:
             mouseMoves.append({'x': m['x'], 'y':m['y']})
@@ -2062,8 +1370,8 @@ def heatmap(request, answer_id):
     mouseMoveDataRaw = expAns.mouse_move_event
     mouseClickDataRaw = expAns.mouse_click_event
     
-    mouseMovesJSON = zlib.decompress(mouseMoveDataRaw.encode('latin1'))
-    mouseClicksJSON = zlib.decompress(mouseClickDataRaw.encode('latin1'))
+    mouseMovesJSON = zlib.decompress(b64decode(mouseMoveDataRaw))
+    mouseClicksJSON = zlib.decompress(b64decode(mouseClickDataRaw))
     
     return render_to_response('heatmap.html', {'survey':survey,
                                                'question':current_question,

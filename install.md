@@ -1,6 +1,10 @@
 mimic
 =====
 
+python manage.py syncdb
+python manage.py migrate
+python manage.py loaddata media\export_data\surveyData_micallef-replication.json
+
 django
 mysql
 gunicorn: http://gunicorn.org/
@@ -10,7 +14,7 @@ ubuntu
 # Add permissiong to mysql
 mysql -u root -p
 GRANT ALL ON mimic.* TO root@'23.96.32.128' IDENTIFIED BY 'password';
-
+GRANT ALL ON mimic.* TO root@'127.0.0.1' IDENTIFIED BY 'root';
 # nginx
 sudo /etc/init.d/nginx restart
 Logs

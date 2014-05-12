@@ -22,7 +22,7 @@
 //
 // http://opensource.org/licenses/MIT
 
-var logBuffer = [];
+var logBuffer = { 'version': "1.4.0", 'elements': {}, 'events': {} };;
 var answer_inputCount = 0;
 var tabindex = 1;
 
@@ -38,8 +38,6 @@ var debug = (window.location.href.indexOf("debug_question") > -1);
 if ((!Modernizr.canvas || !Modernizr.inlinesvg) && window.location.href.indexOf(nsURL) == -1) {
     window.location.href = nsURL;
 }
-//(bowser.safari && bowser.version >= 5) ||
-//(bowser.opera && bowser.version >= 11.0) ||
 
 if ((bowser.msie && bowser.version >= 9) ||
     (bowser.chrome && bowser.version >= 14) ||
@@ -115,230 +113,204 @@ function captureElementData2(id) {
 
     return elementData;
 }
-function captureElementData(e, eventRaw, idName) {
-    eventRaw[idName] = {};
+
+function addElementData(e, idName) {
+    var elementData = {};
     var identifier = "";
     if (isDefined(e[idName], 'id') && e[idName].id != "") {
-        //console.log("captureElementData: has id", e[idName].id, e, eventRaw, idName);
-        eventRaw[idName]['id'] = e[idName].id;
         identifier = "#" + e[idName].id;
-        eventRaw[idName]['width'] = $(identifier).width();
-        eventRaw[idName]['height'] = $(identifier).height();
-        eventRaw[idName]['innerWidth'] = $(identifier).innerWidth();
-        eventRaw[idName]['innerHeight'] = $(identifier).innerHeight();
-        eventRaw[idName]['outerWidth'] = $(identifier).outerWidth();
-        eventRaw[idName]['outerHeight'] = $(identifier).outerHeight();
-        eventRaw[idName]['outerWidthWithMargin'] = $(identifier).outerWidth(true);
-        eventRaw[idName]['outerHeightWithMargin'] = $(identifier).outerHeight(true);
-        eventRaw[idName]['offset'] = $(identifier).offset();
-        eventRaw[idName]['position'] = $(identifier).position();
-        eventRaw[idName]['class'] = $(identifier).attr('class');
-        eventRaw[idName]['nodeName'] = $(identifier)[0].nodeName;
-        eventRaw[idName]['tabindex'] = $(identifier).attr('tabindex');
+        if (!(identifier in logBuffer.elements)) {
+            elementData['id'] = e[idName].id;
+            elementData['width'] = $(identifier).width();
+            elementData['height'] = $(identifier).height();
+            elementData['innerWidth'] = $(identifier).innerWidth();
+            elementData['innerHeight'] = $(identifier).innerHeight();
+            elementData['outerWidth'] = $(identifier).outerWidth();
+            elementData['outerHeight'] = $(identifier).outerHeight();
+            elementData['outerWidthWithMargin'] = $(identifier).outerWidth(true);
+            elementData['outerHeightWithMargin'] = $(identifier).outerHeight(true);
+            elementData['offset'] = $(identifier).offset();
+            elementData['position'] = $(identifier).position();
+            elementData['class'] = $(identifier).attr('class');
+            elementData['nodeName'] = $(identifier)[0].nodeName;
+            elementData['tabindex'] = $(identifier).attr('tabindex');
 
-        if ($(identifier)[0].nodeName == "OPTION" || $(identifier)[0].nodeName == "SELECT") {
-            eventRaw[idName]['parent'] = captureElementData2($(identifier)[0].parentNode.id);
-            //console.log(e, eventRaw, idName);
+            if ($(identifier)[0].nodeName == "OPTION" || $(identifier)[0].nodeName == "SELECT") {
+                elementData['parent'] = captureElementData2($(identifier)[0].parentNode.id);
+                //console.log(e, eventRaw, idName);
+            }
+            logBuffer.elements[identifier] = elementData;
         }
     } else if (isDefined(e[idName], 'documentElement')) {
-        eventRaw[idName]['id'] = "document";
         identifier = "document";
-        eventRaw[idName]['width'] = $(document).width();
-        eventRaw[idName]['height'] = $(document).height();
-        eventRaw[idName]['clientWidth'] = document.documentElement.clientWidth;
-        eventRaw[idName]['clientHeight'] = document.documentElement.clientHeight;
-        eventRaw[idName]['offsetWidth'] = document.documentElement.offsetWidth;
-        eventRaw[idName]['offsetHeight'] = document.documentElement.offsetHeight;
-        eventRaw[idName]['nodeName'] = document.nodeName;
-        eventRaw[idName]['offset'] = { 'left': 0, 'top': 0 };;
-
-    } else if (isDefined(e[idName], 'document')) {
-        eventRaw[idName]['id'] = "window";
-        identifier = "window";
-        eventRaw[idName]['width'] = $(window).width();
-        eventRaw[idName]['height'] = $(window).height();
-        eventRaw[idName]['screenX'] = (window.screenX !== undefined) ? window.screenX : window.screenLeft;
-        eventRaw[idName]['screenY'] = (window.screenY !== undefined) ? window.screenY : window.screenTop;
-        eventRaw[idName]['innerWidth'] = window.innerWidth;
-        eventRaw[idName]['innerHeight'] = window.innerHeight;
-        eventRaw[idName]['outerWidth'] = window.outerWidth;
-        eventRaw[idName]['outerHeight'] = window.outerHeight;
-        eventRaw[idName]['nodeName'] = window.nodeName;
-        eventRaw[idName]['offset'] = { 'left': 0, 'top': 0 };;
-        if (isDefined(window, 'mozInnerScreenX')) {
-            eventRaw[idName]['offset'] = { 'left': window.mozInnerScreenX, 'top': window.mozInnerScreenY };
-        }
-        if (isDefined(window, 'innerScreenX')) {
-            eventRaw[idName]['offset'] = { 'left': window.innerScreenX, 'top': window.innerScreenY };
+        if (!(identifier in logBuffer.elements)) {
+            elementData['id'] = "document";
+            elementData['width'] = $(document).width();
+            elementData['height'] = $(document).height();
+            elementData['clientWidth'] = document.documentElement.clientWidth;
+            elementData['clientHeight'] = document.documentElement.clientHeight;
+            elementData['offsetWidth'] = document.documentElement.offsetWidth;
+            elementData['offsetHeight'] = document.documentElement.offsetHeight;
+            elementData['nodeName'] = document.nodeName;
+            logBuffer.elements[identifier] = elementData;
         }
 
-
-    } else {
-        //console.warn("didn't find the element", e, eventRaw, idName);
-    }
+    } 
+    return identifier;
 }
-function logFormatted(e, typeOverwrite) {
+
+function logFormatted(logBuffer, e, typeOverwrite) {
     var eventName = typeOverwrite || e.type;
-    var extraData = {};
+    var time_stamp = (new Date).getTime();
+    if (!(eventName in logBuffer.events)){
+        logBuffer.events[eventName] = [];
+    }
+    var eobj = {
+        timeStamp: time_stamp
+    }
     if (eventName == "init") {
-        extraData['version'] = 2.0;
-        extraData['navigator'] = {};
-        extraData['navigator']['appCodeName'] = navigator.appCodeName;
-        extraData['navigator']['appName'] = navigator.appName;
-        extraData['navigator']['appVersion'] = navigator.appVersion;
-        extraData['navigator']['cookieEnabled'] = navigator.cookieEnabled;
-        extraData['navigator']['language'] = navigator.language;
-        extraData['navigator']['platform'] = navigator.platform;
-        extraData['navigator']['product'] = navigator.product;
-        extraData['navigator']['userAgent'] = navigator.userAgent;
-
-        extraData['screen'] = {};
-        extraData['screen']['width'] = screen.width;
-        extraData['screen']['height'] = screen.height;
-        extraData['screen']['availWidth'] = screen.availWidth;
-        extraData['screen']['availHeight'] = screen.availHeight;
-        extraData['screen']['colorDepth'] = screen.colorDepth;
-        extraData['screen']['pixelDepth'] = screen.pixelDepth;
-    }
-    // Add Window and Document Dimentionss
-    if (eventName == "init" || eventName == "resize" || eventName == "focusin" || eventName == "focus") {
-        extraData['window'] = {};
-        extraData['window']['width'] = $(window).width();
-        extraData['window']['height'] = $(window).height();
-        extraData['window']['screenX'] = window.screenX;
-        extraData['window']['screenY'] = window.screenY;
-        extraData['window']['innerWidth'] = window.innerWidth;
-        extraData['window']['innerHeight'] = window.innerHeight;
-        extraData['window']['outerWidth'] = window.outerWidth;
-        extraData['window']['outerHeight'] = window.outerHeight;
-        extraData['window']['offset'] = { 'left': 0, 'top': 0 };
-        if (isDefined(window, 'mozInnerScreenX')) {
-            extraData['window']['offset'] = { 'left': window.mozInnerScreenX, 'top': window.mozInnerScreenY };
+        // Add all the elements we can
+        if (!("navigator" in logBuffer.elements)) {
+            logBuffer.elements['navigator'] = {};
+            logBuffer.elements['navigator']['appCodeName'] = navigator.appCodeName;
+            logBuffer.elements['navigator']['appName'] = navigator.appName;
+            logBuffer.elements['navigator']['appVersion'] = navigator.appVersion;
+            logBuffer.elements['navigator']['cookieEnabled'] = navigator.cookieEnabled;
+            logBuffer.elements['navigator']['language'] = navigator.language;
+            logBuffer.elements['navigator']['platform'] = navigator.platform;
+            logBuffer.elements['navigator']['product'] = navigator.product;
+            logBuffer.elements['navigator']['userAgent'] = navigator.userAgent;
         }
-
-        extraData['document'] = {};
-        extraData['document']['width'] = $(document).width();
-        extraData['document']['height'] = $(document).height();
-        extraData['document']['clientWidth'] = document.documentElement.clientWidth;
-        extraData['document']['clientHeight'] = document.documentElement.clientHeight;
-        extraData['document']['offsetWidth'] = document.documentElement.offsetWidth;
-        extraData['document']['offsetHeight'] = document.documentElement.offsetHeight;
-        extraData['document']['offset'] = { 'left': 0, 'top': 0 };
-
-        extraData['body'] = {};
-        extraData['body']['width'] = $("body").width();
-        extraData['body']['height'] = $("body").height();
-        extraData['body']['innerWidth'] = $("body").innerWidth();
-        extraData['body']['innerHeight'] = $("body").innerHeight();
-        extraData['body']['outerWidth'] = $("body").outerWidth();
-        extraData['body']['outerHeight'] = $("body").outerHeight();
-        extraData['body']['outerWidthWithMargin'] = $("body").outerWidth(true);
-        extraData['body']['outerHeightWithMargin'] = $("body").outerHeight(true);
-        extraData['body']['offset'] = $("body").offset();
-    }
-
-    // Add scroll Data
-    if (eventName == "init" || eventName == "scroll" || eventName == "resize" || eventName == "mousewheel") {
+        if (!("screen" in logBuffer.elements)) {
+            logBuffer.elements['screen'] = {};
+            logBuffer.elements['screen']['width'] = screen.width;
+            logBuffer.elements['screen']['height'] = screen.height;
+            logBuffer.elements['screen']['availWidth'] = screen.availWidth;
+            logBuffer.elements['screen']['availHeight'] = screen.availHeight;
+            logBuffer.elements['screen']['colorDepth'] = screen.colorDepth;
+            logBuffer.elements['screen']['pixelDepth'] = screen.pixelDepth;
+        }
+        if (!("window" in logBuffer.elements)) {
+            logBuffer.elements['window'] = [];
+            var offs = getScrollXY();
+            var wobj = {
+                timeStamp: time_stamp,
+                width: $(window).width(),
+                height: $(window).height(), 
+                screenX: window.screenX,
+                screenY: window.screenY,
+                innerWidth: window.innerWidth,
+                innerHeight: window.innerHeight,
+                outerWidth: window.outerWidth,
+                outerHeight: window.outerHeight,
+                scrollOffset: {'pageXOffset': offs[0], 'pageYOffset':  offs[1]}, 
+            }
+            if (isDefined(window, 'mozInnerScreenX')) {
+                wobj['offset'] = { 'left': window.mozInnerScreenX, 'top': window.mozInnerScreenY };
+            }
+            logBuffer.elements['window'].push(wobj);
+        }       
+    } else if (eventName == "resize") {
+        eobj['width'] = $(window).width();
+        eobj['height'] = $(window).height();
+    } else if (eventName == "init" || eventName == "scroll" || eventName == "resize" || eventName == "mousewheel") {
         var offs = getScrollXY();
-        extraData['scrollOffset'] = {};
-        extraData['scrollOffset']['pageXOffset'] = offs[0];
-        extraData['scrollOffset']['pageYOffset'] = offs[1];
-
-    }
-
-    // Add text selections
-    if (eventName == "mouseup" || eventName == "mousemove" || eventName == "click" || eventName == "dblclick" || eventName == "scroll" || eventName == "keyup") {
+        eobj['scrollOffset'] = { 'pageXOffset': offs[0], 'pageYOffset': offs[1] };
+    } else if (eventName == "mouseup" || eventName == "click" || eventName == "dblclick" || eventName == "keyup") {
         selectionData = getSelectionText();
-        extraData['selectedText'] = selectionData[1];
+        eobj['selectedText'] = selectionData[1];
     }
-    var eventRaw = {};
 
     if (isDefined(e, 'deltaX')) {
-        eventRaw['deltaX'] = e.deltaX;
+        eobj['deltaX'] = e.deltaX;
     }
     if (isDefined(e, 'deltaY')) {
-        eventRaw['deltaY'] = e.deltaY;
+        eobj['deltaY'] = e.deltaY;
     }
     if (isDefined(e, 'deltaFactor')) {
-        eventRaw['deltaFactor'] = e.deltaFactor;
+        eobj['deltaFactor'] = e.deltaFactor;
     }
 
     // Add dimentions of the target
     if (isDefined(e, 'target')) {
-        captureElementData(e, eventRaw, "target");
+        //captureElementData(e, eventRaw, "target");
+        var eid = addElementData(e, "target");
+        eobj['target'] = eid;
     }
 
     if (eventName == "init" || eventName == "scroll" || eventName == "resize" || eventName == "keyup") {
-        extraData['zoom'] = {}
         var zoom = detectZoom.zoom();
         var device = detectZoom.device();
-        extraData['zoom']['zoomLevel'] = zoom;
-        extraData['zoom']['devicePixelRatio'] = device;
+        eobj['zoom'] = { 'zoomLevel': zoom, 'devicePixelRatio': device };
         //console.log(zoom, device);
     }
     if (isDefined(e, 'altKey')) {
-        eventRaw['altKey'] = e.altKey;
+        eobj['altKey'] = e.altKey;
     }
     if (isDefined(e, 'button')) {
-        eventRaw['button'] = e.button;
+        eobj['button'] = e.button;
     }
     if (isDefined(e, 'buttons')) {
-        eventRaw['buttons'] = e.buttons;
+        eobj['buttons'] = e.buttons;
     }
     if (isDefined(e, 'clientX')) {
-        eventRaw['clientX'] = e.clientX;
+        eobj['clientX'] = e.clientX;
     }
     if (isDefined(e, 'clientY')) {
-        eventRaw['clientY'] = e.clientY;
+        eobj['clientY'] = e.clientY;
     }
     if (isDefined(e, 'ctrlKey')) {
-        eventRaw['ctrlKey'] = e.ctrlKey;
+        eobj['ctrlKey'] = e.ctrlKey;
     }
     if (isDefined(e, 'currentTarget')) {
-        captureElementData(e, eventRaw, "currentTarget");
+        var eid = addElementData(e, "currentTarget");
+        eobj['currentTarget'] = eid;
     }
     if (isDefined(e, 'delegateTarget')) {
-        captureElementData(e, eventRaw, "delegateTarget");
+        var eid = addElementData(e, "delegateTarget");
+        eobj['delegateTarget'] = eid;
     }
 
     if (isDefined(e, 'eventPhase')) {
-        eventRaw['eventPhase'] = e.eventPhase;
+        eobj['eventPhase'] = e.eventPhase;
     }
     if (isDefined(e, 'metaKey')) {
-        eventRaw['metaKey'] = e.metaKey;
+        eobj['metaKey'] = e.metaKey;
     }
     if (isDefined(e, 'offsetX')) {
-        eventRaw['offsetX'] = e.offsetX;
+        eobj['offsetX'] = e.offsetX;
     }
     if (isDefined(e, 'offsetY')) {
-        eventRaw['offsetY'] = e.offsetY;
+        eobj['offsetY'] = e.offsetY;
     }
     if (isDefined(e, 'pageX')) {
-        eventRaw['pageX'] = e.pageX;
+        eobj['pageX'] = e.pageX;
     }
     if (isDefined(e, 'pageY')) {
-        eventRaw['pageY'] = e.pageY;
+        eobj['pageY'] = e.pageY;
     }
     if (isDefined(e, 'relatedTarget')) {
-        captureElementData(e, eventRaw, "relatedTarget");
+        var eid = addElementData(e, "relatedTarget");
+        eobj['relatedTarget'] = eid;
     }
     if (isDefined(e, 'screenX')) {
-        eventRaw['screenX'] = e.screenX;
+        eobj['screenX'] = e.screenX;
     }
     if (isDefined(e, 'screenY')) {
-        eventRaw['screenY'] = e.screenY;
+        eobj['screenY'] = e.screenY;
     }
     if (isDefined(e, 'shiftKey')) {
-        eventRaw['shiftKey'] = e.shiftKey;
+        eobj['shiftKey'] = e.shiftKey;
     }
     if (isDefined(e, 'timeStamp')) {
-        eventRaw['timeStamp'] = (new Date).getTime(); //e.timeStamp;
+        eobj['timeStamp'] = (new Date).getTime(); //e.timeStamp;
     }
     if (isDefined(e, 'which')) {
-        eventRaw['which'] = e.which;
+        eobj['which'] = e.which;
     }
-    var eventObject = [eventName, eventRaw, extraData];
-    logBuffer.push(eventObject);
+
+    // Add event
+    logBuffer.events[eventName].push(eobj);
 }
 
 $(document).ready(function () {
@@ -347,120 +319,115 @@ $(document).ready(function () {
         $(document).mousemove(function (e) {
             // First mouse move lets add a ready event
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
 
         $(document).click(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
 
         $(document).dblclick(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
 
         $(document).mouseenter(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
 
         $(document).mouseleave(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
 
         $(document).mousedown(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
         $(document).mouseup(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
 
         // Keyboard Events
         $(document).keydown(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
         $(document).keyup(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
         $(document).keypress(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
         $(document).focusin(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
         $(document).focusout(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
         $(document).mousewheel(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
 
         // Window Events
         $(window).resize(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
         $(window).scroll(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
         $(window).focus(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
         $(window).blur(function (e) {
             if (logBuffer.length == 0) {
-                logFormatted(e, "init");
+                logFormatted(logBuffer, e, "init");
             }
-            logFormatted(e);
+            logFormatted(logBuffer, e);
         });
-        //$(document).on(screenfull.raw.fullscreenchange, function () {
-            //console.log('Fullscreen change');
-            //alert('Fullscreen change');
-        //});
-
     }
 }); //$(document).ready(function() {
 

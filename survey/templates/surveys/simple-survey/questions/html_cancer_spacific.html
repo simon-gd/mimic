@@ -1,0 +1,228 @@
+{% comment %}
+The MIT License (MIT)
+
+Copyright (c) 2014 Autodesk, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+{% endcomment %}
+{% load staticfiles %}
+<script type="text/javascript">
+    head.ready(function() {
+    $(document).ready(function() {
+        var questionData = {{ question|safe}};
+        var questionCondition = {{ condition|safe}};
+        //console.log("we are filling out stuff now: ", questionData, questionCondition);
+        function createQuestion(data, condition){
+            for (var i=0; i < data.length; i++){
+                if (data[i].p){
+                    $("#question").append("<p>"+data[i].p+"</p>")
+                 }else if (data[i].ul){
+                    var list = $("#question").append('<ul></ul>').find('ul');
+                    for (var j=0; j < data[i].ul.length; j++){
+                        list.append("<li>"+data[i].ul[j]+"</li>");
+                    }
+                }else if(data[i].image){
+                    //if(data[i].image.length > 1){}
+                    //else { $("#question").append("<>")
+                    var url = '{% static '999' %}';
+                     if (data[i].image.length > 1){
+                        url = url.replace('999', data[i].image[condition].url);
+                        $("#image").append("<img src='"+url+"'>"); 
+                     }else{
+                        url = url.replace('999', data[i].image.url);
+                        $("#image").append("<img src='"+url+"'>");
+                     }
+                }
+            }
+            $("#answer_units").text(questionData.units);
+        }
+       
+        createQuestion(questionData.question, questionCondition);
+        
+        $('#mainForm').submit(function() {
+            var a1 = $('input:text[name=answer1]').val();
+            var a2 = $('input:text[name=answer2]').val();
+            var a3 = $('input:text[name=answer3]').val();
+            var hascancer1 = $('input:radio[name=hascancer1]:checked').val();
+            var hascancer2 = $('input:radio[name=hascancer2]:checked').val();
+            var reliable1 = $('input:radio[name=reliable1]:checked').val();
+            var reliable2 = $('input:radio[name=reliable2]:checked').val();
+            var confidence = $('input:radio[name=confidence]:checked').val();
+            
+            //console.log(b);
+            if(!a1 || !a2 || !a3 || !hascancer1 || !hascancer2 || !reliable1 || !reliable2 || !confidence){
+                
+                $("#error").html("<div class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                return false;     
+            }
+            if(!a1.match(/^\d+$/) || !a2.match(/^\d+$/) || !a3.match(/^\d+$/)) {
+               $("#error").html("<div class='alert alert-error'>Error: Input fields must be all numbers.</div>");
+               return false;     
+            }
+            var concatAnswer = {'a1':a1, 'a2':a2,'a3':a3, 'hascancer1':hascancer1, 'hascancer2':hascancer2, 'reliable1': reliable1, 'reliable2': reliable2 };
+            var concatAnswerString = JSON.stringify(concatAnswer);
+            $("#answer").val(concatAnswerString);
+            $("#mouseData").val(logBuffer);
+            
+            logBuffer = "";
+            $(window).unbind('beforeunload');
+            return true;
+        });
+
+        $(".answer").keydown(function(event) {
+            var key = event.charCode || event.keyCode || 0;
+            // Allow: backspace, delete, tab, escape, and enter
+            if ( key == 46 ||key == 8 ||key == 9 || key == 27 || key == 13 || 
+                 // Allow: Ctrl+A
+                (key == 65 && key === true) || 
+                 // Allow: home, end, left, right
+                (key >= 35 && key <= 39)) {
+                     // let it happen, don't do anything
+                     return;
+            }
+            else {
+                // Ensure that it is a number and stop the keypress
+                if (event.shiftKey || (key < 48 || key > 57) && (key < 96 || key > 105 )) {
+                    event.preventDefault(); 
+                }   
+            }
+        });
+        
+         $(window).bind('beforeunload', function(){
+          // Save the questions
+          $.post("./survey/save_question/", { 'mouseData': logBuffer, 'csrfmiddlewaretoken': '{{ csrf_token }}'} );
+          return ''; //Are you sure you want to leave?';
+        });
+    });
+    });
+</script>
+
+<form id="mainForm" action="/?WorkerId={{worker_id}}" method="post">{% csrf_token %}
+    <input type="hidden" id="mouseData" name="mouseData" value="">
+    <input type="hidden" id="currentQ" name="currentQ" value="{{qnum}}">
+    <input type="hidden" id="answer" name="answer" value="">
+    <input type="hidden" name="WorkerID" value="{{worker_id}}">
+    
+    <p>Given information below, please <b>carefully</b> answer the questions below.</p>
+    
+    <div id="image"></div>
+    <div id="question"></div>
+   
+   
+   
+   
+    <p>A woman gets tested to see if she has breast cancer. The test results said that she <b><em>does</em></b> have breast cancer.
+    Unfortunately the test is sometimes wrong.
+    The woman that got tested might not have breast cancer even though the test said she does.
+    </p>
+    
+    <hr style="background-color: black; color: black; height: 1px;">
+    <p>Out of 1000 women, how many women get a test result that says she <b><em>has</em></b> cancer?</p>
+    <div class="input-append">
+     <input class="span2 input-mini answer" id="answer1" type="text" name="answer1">
+    <span class="add-on">Women</span>
+    </div>
+    <br>
+    <p>Out of the number of women who had a test result that said she <b><em>has</em></b> cancer, how many women actually <b><em>do not have</em></b> cancer?</p>
+    <div class="input-append">
+     <input class="span2 input-mini answer" id="answer2" type="text" name="answer2">
+    <span class="add-on">Women</span>
+    </div>
+    <br>
+    <p>Out of the number of women who had a test result that said she <b><em>has</em></b> cancer, how many women actually <b><em>do have</em></b> cancer? </p>
+    <div class="input-append">
+     <input class="span2 input-mini answer" id="answer3" type="text" name="answer3">
+    <span class="add-on">Women</span><br>
+    </div>
+    <hr style="background-color: black; color: black; height: 1px;">
+    <p>If a woman received a test result that said she <b><em>has</em></b> cancer, is it more likely that she <b><em>has</em></b> or <b><em>does not have</em></b> cancer?
+    </p>
+     <label class="radio">
+        <input type="radio"  name="hascancer1" id="hascancer1" value="1"> more likely she has cancer
+    </label>
+    <label class="radio">
+        <input type="radio"  name="hascancer1" id="hascancer1" value="2"> more likely she does not have cancer  
+    </label>
+    <hr style="background-color: black; color: black; height: 1px;">
+     <p>If a woman received a test result that said she <b><em>does not have</em></b> cancer, is it more likely that she <b><em>has</em></b> or <b><em>does not have</em></b> cancer?
+     </p>
+     <label class="radio">
+        <input type="radio"  name="hascancer2" id="hascancer2" value="1"> more likely she has cancer
+     </label>
+     <label class="radio">
+        <input type="radio"  name="hascancer2" id="hascancer2" value="2"> more likely she does not have cancer  
+     </label>
+    <hr style="background-color: black; color: black; height: 1px;">
+    <p>If a test is correct very often, we can say that the test is reliable. If a test is incorrect very often, we can say that the test is unreliable.</p>
+    <p>How reliable do you think this test for cancer is, if a woman received a test result that said she <b><em>does not have</em></b> cancer?</p>
+    
+    <label class="radio inline">
+        <input type="radio"  name="reliable1" id="reliableCheckbox1" value="1"> Very Reliable
+    </label>
+    <label class="radio inline">
+        <input type="radio"  name="reliable1" id="reliableCheckbox2" value="2"> Reliable
+    </label>
+    <label class="radio inline">
+        <input type="radio"  name="reliable1" id="reliableCheckbox3" value="3"> Neutral
+    </label>
+    <label class="radio inline">
+        <input type="radio"  name="reliable1" id="reliableCheckbox4" value="4"> Unreliable
+    </label>
+    <label class="radio inline">
+        <input type="radio"  name="reliable1" id="reliableCheckbox5" value="5"> Very Unreliable
+    </label>
+    <br>
+        <br>
+    <p>How reliable do you think this test for cancer is, if a woman received a test result that said she <b><em>does have</em></b> cancer?</p>
+    <label class="radio inline">
+        <input type="radio"  name="reliable2" id="reliableCheckbox6" value="1"> Very Reliable
+    </label>
+    <label class="radio inline">
+        <input type="radio"  name="reliable2" id="reliableCheckbox7" value="2"> Reliable
+    </label>
+    <label class="radio inline">
+        <input type="radio"  name="reliable2" id="reliableCheckbox8" value="3"> Neutral
+    </label>
+    <label class="radio inline">
+        <input type="radio"  name="reliable2" id="reliableCheckbox9" value="4"> Unreliable
+    </label>
+    <label class="radio inline">
+        <input type="radio"  name="reliable2" id="reliableCheckbox10" value="5"> Very Unreliable
+    </label>
+    <hr style="background-color: black; color: black; height: 1px;">
+    <p>How confident are you in your answers?</p>
+    <label class="radio inline">
+        <input type="radio"  name="confidence" id="confidentCheckbox1" value="1"> Highly Confident
+    </label>
+     <label class="radio inline">
+        <input type="radio"  name="confidence" id="confidentCheckbox2" value="2"> Confident
+    </label>
+      <label class="radio inline">
+        <input type="radio"  name="confidence" id="confidentCheckbox3" value="3"> Neutral
+    </label>
+       <label class="radio inline">
+        <input type="radio"  name="confidence" id="confidentCheckbox4" value="4"> Unsure
+    </label>
+        <label class="radio inline">
+        <input type="radio"  name="confidence" id="confidentCheckbox5" value="5"> Highly Unsure
+    </label>
+    <br><br>
+    <button type="submit" class="btn">Submit</button>
+    <div id="error"></div>
+</form>

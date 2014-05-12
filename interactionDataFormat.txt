@@ -1,0 +1,27 @@
+Interaction Data Format
+---------------------------
+{
+elements{
+	id: {}
+},
+events:{
+ init: [],
+ resize: [],
+ scroll: [],
+ mousewheel: [],
+ mousemove: [],
+ click: [],
+ dblclick: [],
+ mouse_enter: [],
+ mouse_leave: [],
+ mousedown: [],
+ mouseup: [],
+ keydown: [],
+ keyup: [],
+ keypress: [],
+ focusin: [],
+ focusout: [],
+ focus: [],
+ blur: [],
+}
+}

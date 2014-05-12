@@ -1,0 +1,95 @@
+{% comment %}
+The MIT License (MIT)
+
+Copyright (c) 2014 Autodesk, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+{% endcomment %}
+{% load staticfiles %}
+<script type="text/javascript">
+    head.ready(function() {
+    $(document).ready(function() {
+        var questionData = {{ question|safe}};
+        var questionCondition = {{ condition|safe}};
+        //console.log("we are filling out stuff now: ", questionData, questionCondition);
+        function createQuestion(data, condition){
+            for (var i=0; i < data.length; i++){
+                if (data[i].p){
+                    $("#question").append("<p>"+data[i].p+"</p>")
+                }else if(data[i].image){
+                    //if(data[i].image.length > 1){}
+                    //else { $("#question").append("<>")
+                     var url = '{% static '999' %}';
+                     url = url.replace('999', data[i].image.url);
+                     $("#image").append("<img src='"+url+"'>")
+                }
+            }
+        }
+        function createAnswer(data){
+            
+            if (jQuery.type(data) === "array"){
+                for (var i=0; i < data.length; i++){
+                    $("#answers").append("<label class='radio'><input type='radio' name='answer' value='"+data[i]+"'>"+data[i]+"</label>")
+                }
+                
+            }else {
+            
+               for (var k in data) {
+                    for (var i=0; i < data[k].length; i++){
+                        var name = k+", "+ data[k][i];
+                        $("#answers").append("<label class='radio'><input type='radio' name='answer' value='"+name+"'>"+name+"</label>")
+                    }
+                }
+            }
+        }
+        createQuestion(questionData.question, questionCondition);
+        createAnswer(questionData.answers);
+        $('#mainForm').submit(function() {
+            var b = $('input:radio[name=answer]:checked').val();
+            if(!b){
+                $("#error").html("<div class='alert alert-error'>Please privide an answer to this question to proceed.</div>");
+                return false;     
+            }
+            $("#mouseData").val(logBuffer);
+            logBuffer = "";
+            $(window).unbind('beforeunload');
+            return true;
+        });
+        
+        
+        $(window).bind('beforeunload', function(){
+          // Save the questions
+          $.post("./survey/save_question/", { 'mouseData': logBuffer, 'csrfmiddlewaretoken': '{{ csrf_token }}'} );
+          return ''; //Are you sure you want to leave?';
+        });
+    });
+    });
+</script>
+
+<form id="mainForm" action="/?WorkerId={{worker_id}}" method="post">{% csrf_token %}
+    <input type="hidden" id="mouseData" name="mouseData" value="">
+    <input type="hidden" id="currentQ" name="currentQ" value="{{qnum}}">
+    <input type="hidden" name="WorkerId" value="{{worker_id}}">
+    <div id="question"></div>
+    <div id="image"></div>
+    <div id="answers"></div>
+    <br/>
+    <button type="submit" class="btn">Submit</button>
+    <div id="error"></div>
+</form>

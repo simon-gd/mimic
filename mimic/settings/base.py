@@ -274,3 +274,6 @@ LOGGING = {
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = '%s.wsgi.application' % SITE_NAME
 ########## END WSGI CONFIGURATION
+
+########## AZURE CONFIGURATION
+MIMIC_USE_AZURE_BLOB = True

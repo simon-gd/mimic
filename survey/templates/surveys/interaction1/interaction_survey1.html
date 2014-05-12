@@ -125,7 +125,7 @@
       <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-    <script type="text/javascript" src="static/js/mimic.js"></script>
+    <script type="text/javascript" src="{% static 'js/mimic.js' %}"></script>
 
 
     <script type="text/javascript">
@@ -333,7 +333,7 @@
             if(!debug){
                 $('.submit').click(function(e) {
 
-                    logFormatted(e);
+                    logFormatted(logBuffer, e);
 
                     $(".error").html("");
                     if(current_question == 0){
@@ -356,7 +356,7 @@
                             $(".error").html("<div id='myerror2' class='alert alert-error'>Error: Answer must be a number.</div>");
                             return;
                         }
-                        answer = {'a1':a1, 'a2':a2};
+                        answer = {'a1':a1, 'a2':a2, 'confidence': confidence};
 
                     }else if(current_question == 2){
                         var gender = $('input:radio[name=gender]:checked').val();
@@ -380,7 +380,6 @@
 
                     $.post("./survey/save_question/", { 'currentQ': current_question,
                         'answer': JSON.stringify(answer),
-                        'confidence':confidence,
                         'worker_id':worker_id,
                         'condition':condition,
                         'csrfmiddlewaretoken': '{{ csrf_token }}'} ).done(function() {
@@ -402,7 +401,7 @@
 
                             });
 
-                            logBuffer = [];
+                            
 
 
                             if(total_pages == (current_question+1)){

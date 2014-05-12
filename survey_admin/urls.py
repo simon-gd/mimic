@@ -29,9 +29,9 @@ from django.views.generic import TemplateView
 urlpatterns = patterns('',
     # survey
     url(r'^$', 'survey_admin.views.survey_admin', name='survey_admin'),
-    url(r'^save_csv_scroll/(?P<survey_id>\d+)/$', 'survey_admin.views.save_csv_scroll', name='save_csv_scroll'),
-    url(r'^save_csv/(?P<survey_id>\d+)/$', 'survey_admin.views.save_csv', name='save_csv'),
-    url(r'^analysis/$', 'survey_admin.views.survey_analysis', name='survey_analysis'),
+    #url(r'^save_csv_scroll/(?P<survey_id>\d+)/$', 'survey_admin.views.save_csv_scroll', name='save_csv_scroll'),
+    #url(r'^save_csv/(?P<survey_id>\d+)/$', 'survey_admin.views.save_csv', name='save_csv'),
+    #url(r'^analysis/$', 'survey_admin.views.survey_analysis', name='survey_analysis'),
     url(r'^debug_question/(?P<question_id>\d+)/$', 'survey_admin.views.debug_question', name='debug_question'),
     url(r'^debug_question/$', 'survey_admin.views.debug_question2', name='debug_question2'),
     url(r'^viz_debug/$', 'survey_admin.views.viz_debug', name='viz_debug'),

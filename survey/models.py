@@ -50,46 +50,93 @@ EXP_STATE_TYPES = (
     (3, 'UserFlag'),
 )
 
+class QuestionManager(models.Manager):
+    def get_by_natural_key(self, slug_key):
+        return self.get(slug=slug_key)
 
 class Question(models.Model):
+    objects = QuestionManager()
+
     slug = models.SlugField(_('Slug'), max_length=255, unique=True)
     base_template = models.CharField(max_length=255, default="question_v2.html")
     template = models.CharField(max_length=255)
     correct_answer = models.TextField(blank=True, null=True)
     data = models.TextField()
+    
+    def natural_key(self):
+        return (self.slug,)
+
     def __unicode__(self):
         return self.slug
 
+class SurveyManager(models.Manager):
+    def get_by_natural_key(self, slug):
+        return self.get(slug=slug)
+
 class Survey(models.Model):
+    objects = SurveyManager()
+
     slug = models.SlugField(_('Slug'), max_length=255, unique=True)
     pub_date = models.DateTimeField(_('Date published'))
     questions = models.ManyToManyField(Question, blank=True, null=True, through='SurveyMembership')
     active = models.BooleanField(_('Survey is active'), default=False)
     survey_code = models.CharField(max_length=255,default="2lMGut4I4h")
     condition_count = models.IntegerField(default=4)
-     
+    user_data_version = models.CharField(max_length=255, default="1.4.0")
+    
+    def natural_key(self):
+        return (self.slug,)
+
     def __unicode__(self):
         return self.slug
     
     @models.permalink
     def get_absolute_url(self):
         return ('survey-detail', (), {'survey_slug': self.slug })
-    
+
+class SurveyMembershipManager(models.Manager):
+    def get_by_natural_key(self, survey_key, question_key):
+        return self.get(survey=Survey.objects.get_by_natural_key(survey_key), question=Question.objects.get_by_natural_key(question_key))
+        
 class SurveyMembership(models.Model):
+    objects = SurveyMembershipManager()
+
     survey = models.ForeignKey(Survey)
     question = models.ForeignKey(Question)
     order = models.IntegerField()
     desired_answers = models.IntegerField(default=1)
+
+    def natural_key(self):
+        return self.survey.natural_key() + self.question.natural_key()
     
+    natural_key.dependencies = ['survey.Survey', 'survey.Question']
+
     def __unicode__(self):
         return self.survey.slug + " " + self.question.slug
-    
+
+    class Meta:
+        unique_together = (('survey', 'question'),)
+
+class ExperimentUserManager(models.Manager):
+    def get_by_natural_key(self, worker_id):
+        return self.get(worker_id=worker_id)
+
 class ExperimentUser(models.Model):
-    worker_id = models.CharField(max_length=255)
+    objects = ExperimentUserManager()
+    worker_id = models.CharField(max_length=255, unique=True)
+    
+    def natural_key(self):
+        return (self.worker_id,)
+
     def __unicode__(self):
         return self.worker_id
-    
+
+class ExperimentManager(models.Manager):
+    def get_by_natural_key(self, user_key, survey_key):
+        return self.get(user=ExperimentUser.objects.get_by_natural_key(user_key), survey=Survey.objects.get_by_natural_key(survey_key))    
+
 class Experiment(models.Model):
+    objects = ExperimentManager()
     user = models.ForeignKey(ExperimentUser)
     survey = models.ForeignKey(Survey)
     survey_condition = models.IntegerField(default=0)
@@ -103,26 +150,46 @@ class Experiment(models.Model):
     state = models.IntegerField(default=0, choices=EXP_STATE_TYPES)
     version = models.IntegerField(default=0)
     
+    def natural_key(self):
+        return self.user.natural_key() + self.survey.natural_key()
+    natural_key.dependencies = ['survey.ExperimentUser', 'survey.Survey']
+
     def __unicode__(self):
-        return self.user.worker_id+ " "+self.survey.slug
+        return str(self.pk)+ " "+self.survey.slug
+
+    class Meta:
+        unique_together = (('user', 'survey'),)
+
+class ExperimentAnswerManager(models.Manager):
+    def get_by_natural_key(self, experiment_key, question_key, user_key):
+        return self.get(experiment=Experiment.objects.get_by_natural_key(experiment_key), question=Question.objects.get_by_natural_key(question_key), user=ExperimentUser.objects.get_by_natural_key(user_key))    
 
 class ExperimentAnswer(models.Model):
+    objects = ExperimentAnswerManager()
+
     experiment = models.ForeignKey(Experiment)
     question = models.ForeignKey(Question)
     answer = models.TextField(blank=True, null=True)
-    confidence = models.IntegerField(default=0, choices=CONFIDENCE_TYPES)
+    confidence = models.IntegerField(default=0, choices=CONFIDENCE_TYPES, blank=True, null=True)
     user = models.ForeignKey(ExperimentUser)
     submitted_at = models.DateTimeField(default=datetime.datetime.now)
     mouseData = models.TextField()
     finished = models.BooleanField(_('question is finished'), default=False)
     #version = models.IntegerField(default=0)
     
+    def natural_key(self):
+        return self.experiment.natural_key() + self.question.natural_key() + self.user.natural_key()
+    natural_key.dependencies = ['survey.Experiment', 'survey.Question', 'survey.ExperimentUser']
+
     def question_id(self):
         return self.question.pk
     def user_id(self):
         return self.user.pk
     def __unicode__(self):
         return str(self.question.pk)+" "+self.user.worker_id
+
+    class Meta:
+        unique_together = (('experiment', 'question', 'user'),)
 
 class ExperimentAnswerProcessed(models.Model):
     source_answer = models.ForeignKey(ExperimentAnswer)

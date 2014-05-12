@@ -1,0 +1,396 @@
+{% extends "base_v2.html" %}
+{% load staticfiles %}
+
+{% block extra_css %}
+
+
+<style type="text/css">
+    /* Customize font sizes based on media queries */
+    @media(max-width:767px){   /* Smaller than 800 wide... */
+      div, p {
+        font-size: 8px;
+      }
+    }
+    @media(min-width:768px){   /* 800w + */
+      div, p {
+        font-size: 10px;
+      }
+    }
+    @media(min-width:992px){   /* 1024w + */
+      div, p {
+        font-size: 11px;
+      }
+    }
+    @media(min-width:1200px){  /* 1280w + */
+      div, p {
+        font-size: 14px;
+      }
+    }
+
+    .size-16-9 {
+      /*width: 95vw;  Let Bootstrap sizes handle */
+      height: 56vw; /* rounded from 9/16 = 56.25 */
+      /*overflow: hidden;*/
+      /*margin: 8vw auto 0 auto;*/
+      border: 0px solid black;
+    }
+
+    .lead {
+      font-size: 1.1em;
+      margin-top: 1.2em;
+      margin-bottom: 0.8em;
+    }
+
+    .answer {
+      width: 5em;
+    }
+
+    .likert {
+      text-indent: 10px;
+    }
+
+    img {
+      border: 0px solid black;
+    }
+/*
+#wrapper_div2 {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    display: block;
+}
+.width100{
+    width: 100%;
+}
+.height100{
+    height: 100%;
+}
+
+.height_em{
+    width: 1em;
+    height: 1em;
+}
+
+.scaled_text{
+    font-size: 16px;
+    font-size: 1.2vh;
+}
+
+h3{
+    font-size: 18px;
+    font-size: 3vw; 
+}*/
+</style>
+{% endblock extra_css %}
+
+{% block extra_head %}
+<script type="text/javascript">
+    var logBuffer = [];
+    
+    var answer_inputCount = 0;
+    
+    //$(":input").each(function (i) { $(this).attr('tabindex', i + 1); });
+   
+    var tabindex = 1;
+    $('#mainForm').find(':input').each(function() {
+        if (this.type != "hidden") {
+            var $input = $(this);
+            $input.attr("tabindex", tabindex);
+            tabindex++;
+        }
+    });
+    
+    function getSelectionText() {
+    
+        var startNode, startOffset, endNode, endOffset;
+        var text = "";
+        var sel = rangy.getSelection();
+        text = sel.toString();
+        if(text.length > 0){
+            var selectionData = rangy.serializeSelection(sel, true, $("#mainForm")[0]);
+            return [text, selectionData];
+        }else{
+            return ["",""];
+        }
+    }
+    function getScrollXY() {
+        var scrOfX = 0, scrOfY = 0;
+        if( typeof( window.pageYOffset ) == 'number' ) {
+          //Netscape compliant
+          scrOfY = window.pageYOffset;
+          scrOfX = window.pageXOffset;
+        } else if( document.body && ( document.body.scrollLeft || document.body.scrollTop ) ) {
+          //DOM compliant
+          scrOfY = document.body.scrollTop;
+          scrOfX = document.body.scrollLeft;
+        } else if( document.documentElement && ( document.documentElement.scrollLeft || document.documentElement.scrollTop ) ) {
+          //IE6 standards compliant mode
+          scrOfY = document.documentElement.scrollTop;
+          scrOfX = document.documentElement.scrollLeft;
+        }
+        //var scrOfX = (window.pageXOffset !== undefined) ? window.pageXOffset : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+        //var scrOfY = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+        return [ scrOfX, scrOfY ];
+    }
+    
+    function isDefined(e, prop){
+        return (prop in e) && typeof e[prop] !== 'undefined' && e[prop] != undefined && e[prop] != 'undefined';
+    }
+    
+    function captureElementData2(id){
+        var elementData = {};
+        var element = $("#"+id);
+        elementData['id'] = id;
+        elementData['width'] = element.width();
+        elementData['height'] = element.height();
+        elementData['innerWidth'] = element.innerWidth();
+        elementData['innerHeight'] =element.innerHeight();
+        elementData['outerWidth'] = element.outerWidth();
+        elementData['outerHeight'] = element.outerHeight();
+        elementData['outerWidthWithMargin'] = element.outerWidth(true);
+        elementData['outerHeightWithMargin'] = element.outerHeight(true);
+        elementData['offset'] = element.offset();
+        elementData['position'] = element.position();
+        elementData['class'] = element.attr('class');
+        elementData['tabindex'] = element.attr('tabindex');
+        elementData['nodeName'] = element[0].nodeName;
+        
+        return elementData;
+    }
+    function captureElementData(e, eventRaw, idName){
+        eventRaw[idName] = {};
+        var identifier = "";
+        if(isDefined(e[idName],'id') && e[idName].id != ""){
+            //console.log("captureElementData: has id", e[idName].id, e, eventRaw, idName);
+            eventRaw[idName]['id'] = e[idName].id;
+            identifier = "#"+e[idName].id;
+            eventRaw[idName]['width'] = $(identifier).width();
+            eventRaw[idName]['height'] = $(identifier).height();
+            eventRaw[idName]['innerWidth'] = $(identifier).innerWidth();
+            eventRaw[idName]['innerHeight'] =$(identifier).innerHeight();
+            eventRaw[idName]['outerWidth'] = $(identifier).outerWidth();
+            eventRaw[idName]['outerHeight'] = $(identifier).outerHeight();
+            eventRaw[idName]['outerWidthWithMargin'] = $(identifier).outerWidth(true);
+            eventRaw[idName]['outerHeightWithMargin'] = $(identifier).outerHeight(true);
+            eventRaw[idName]['offset'] = $(identifier).offset();
+            eventRaw[idName]['position'] = $(identifier).position();
+            eventRaw[idName]['class'] = $(identifier).attr('class');
+            eventRaw[idName]['nodeName'] = $(identifier)[0].nodeName;
+            eventRaw[idName]['tabindex'] = $(identifier).attr('tabindex');
+            
+            if($(identifier)[0].nodeName == "OPTION" || $(identifier)[0].nodeName == "SELECT"){
+                eventRaw[idName]['parent'] = captureElementData2($(identifier)[0].parentNode.id);
+                //console.log(e, eventRaw, idName);
+            }
+        } else if(isDefined(e[idName],'documentElement')){
+            eventRaw[idName]['id'] = "document";
+            identifier = "document";
+            eventRaw[idName]['width'] = $(document).width();
+            eventRaw[idName]['height'] = $(document).height();
+            eventRaw[idName]['clientWidth'] = document.documentElement.clientWidth;
+            eventRaw[idName]['clientHeight'] = document.documentElement.clientHeight;
+            eventRaw[idName]['offsetWidth'] = document.documentElement.offsetWidth;
+            eventRaw[idName]['offsetHeight'] = document.documentElement.offsetHeight;
+            eventRaw[idName]['nodeName'] = document.nodeName;
+            eventRaw[idName]['offset'] = {'left': 0, 'top': 0};;
+            
+        }else if(isDefined(e[idName],'document')){
+            eventRaw[idName]['id'] = "window";
+            identifier = "window";
+            eventRaw[idName]['width'] = $(window).width();
+            eventRaw[idName]['height'] = $(window).height();
+            eventRaw[idName]['screenX'] = (window.screenX !== undefined) ? window.screenX : window.screenLeft;
+            eventRaw[idName]['screenY'] = (window.screenY !== undefined) ? window.screenY : window.screenTop;
+            eventRaw[idName]['innerWidth'] = window.innerWidth;
+            eventRaw[idName]['innerHeight'] = window.innerHeight;
+            eventRaw[idName]['outerWidth'] = window.outerWidth;
+            eventRaw[idName]['outerHeight'] = window.outerHeight;
+            eventRaw[idName]['nodeName'] = window.nodeName;
+            eventRaw[idName]['offset'] = {'left': 0, 'top': 0};;
+            if (isDefined(window,'mozInnerScreenX')){
+                eventRaw[idName]['offset'] = {'left': window.mozInnerScreenX, 'top': window.mozInnerScreenY};
+            }
+            if (isDefined(window,'innerScreenX')){
+                eventRaw[idName]['offset'] = {'left': window.innerScreenX, 'top': window.innerScreenY};
+            }
+           
+            
+        }else{
+            console.error("didn't find the element", e, eventRaw, idName);
+        }
+    }
+    function logFormatted(e, typeOverwrite) {
+        var eventName = typeOverwrite || e.type;
+        var extraData = {};
+        if(eventName == "init"){
+            extraData['version'] = 2.0;
+            extraData['navigator'] = {};
+            extraData['navigator']['appCodeName'] = navigator.appCodeName;
+            extraData['navigator']['appName'] = navigator.appName;
+            extraData['navigator']['appVersion'] = navigator.appVersion;
+            extraData['navigator']['cookieEnabled'] = navigator.cookieEnabled;
+            extraData['navigator']['language'] = navigator.language;
+            extraData['navigator']['platform'] = navigator.platform;
+            extraData['navigator']['product'] = navigator.product;
+            extraData['navigator']['userAgent'] = navigator.userAgent;
+
+            extraData['screen'] = {};
+            extraData['screen']['width'] = screen.width;
+            extraData['screen']['height'] = screen.height;
+            extraData['screen']['availWidth'] = screen.availWidth;
+            extraData['screen']['availHeight'] = screen.availHeight;
+            extraData['screen']['colorDepth'] = screen.colorDepth;
+            extraData['screen']['pixelDepth'] = screen.pixelDepth;
+        }
+        // Add Window and Document Dimentionss
+        if (eventName == "init" || eventName == "resize" || eventName=="focusin" || eventName=="focus"){
+            extraData['window'] = {};
+            extraData['window']['width'] = $(window).width();
+            extraData['window']['height'] = $(window).height();
+            extraData['window']['screenX'] = window.screenX;
+            extraData['window']['screenY'] = window.screenY;
+            extraData['window']['innerWidth'] = window.innerWidth;
+            extraData['window']['innerHeight'] = window.innerHeight;
+            extraData['window']['outerWidth'] = window.outerWidth;
+            extraData['window']['outerHeight'] = window.outerHeight;
+            extraData['window']['offset'] = {'left': 0, 'top': 0};
+            if (isDefined(window,'mozInnerScreenX')){
+                extraData['window']['offset'] = {'left': window.mozInnerScreenX, 'top': window.mozInnerScreenY};
+            }
+            
+            extraData['document'] = {};
+            extraData['document']['width'] = $(document).width();
+            extraData['document']['height'] = $(document).height();
+            extraData['document']['clientWidth'] = document.documentElement.clientWidth;
+            extraData['document']['clientHeight'] = document.documentElement.clientHeight;
+            extraData['document']['offsetWidth'] = document.documentElement.offsetWidth;
+            extraData['document']['offsetHeight'] = document.documentElement.offsetHeight;
+            extraData['document']['offset'] = {'left': 0, 'top': 0};
+
+            extraData['body'] = {};
+            extraData['body']['width'] = $("body").width();
+            extraData['body']['height'] = $("body").height();
+            extraData['body']['innerWidth'] = $("body").innerWidth();
+            extraData['body']['innerHeight'] =$("body").innerHeight();
+            extraData['body']['outerWidth'] = $("body").outerWidth();
+            extraData['body']['outerHeight'] = $("body").outerHeight();
+            extraData['body']['outerWidthWithMargin'] = $("body").outerWidth(true);
+            extraData['body']['outerHeightWithMargin'] = $("body").outerHeight(true);
+            extraData['body']['offset'] = $("body").offset();
+        }
+        
+        // Add scroll Data
+        if (eventName == "init" || eventName == "scroll" || eventName == "resize" || eventName == "mousewheel"){
+            var offs = getScrollXY();
+            extraData['scrollOffset'] = {};
+            extraData['scrollOffset']['pageXOffset'] = offs[0];
+            extraData['scrollOffset']['pageYOffset'] = offs[1];
+
+        }
+        
+        // Add text selections
+        if (eventName == "mouseup" || eventName == "mousemove" || eventName == "click" || eventName == "dblclick" || eventName == "scroll" || eventName == "keyup"){
+            selectionData = getSelectionText();
+            extraData['selectedText'] = selectionData[1];
+        }
+        var eventRaw = {};
+        
+        if (isDefined(e,'deltaX')){
+            eventRaw['deltaX'] = e.deltaX;
+        }
+        if (isDefined(e,'deltaY')){
+            eventRaw['deltaY'] = e.deltaY;
+        }
+        if (isDefined(e,'deltaFactor')){
+            eventRaw['deltaFactor'] = e.deltaFactor;
+        }
+        
+        // Add dimentions of the target
+        if (isDefined(e,'target')){
+            captureElementData(e, eventRaw, "target");
+        }
+        
+        if(eventName == "init" || eventName == "scroll" || eventName == "resize" || eventName == "keyup"){
+            extraData['zoom'] = {}
+            var zoom = detectZoom.zoom();
+            var device = detectZoom.device();
+            extraData['zoom']['zoomLevel'] = zoom;
+            extraData['zoom']['devicePixelRatio'] = device;
+            //console.log(zoom, device);
+        }
+        if (isDefined(e,'altKey')){
+            eventRaw['altKey'] = e.altKey;
+        }
+        if (isDefined(e,'button')){
+            eventRaw['button'] = e.button;
+        }
+        if (isDefined(e,'buttons')){
+            eventRaw['buttons'] = e.buttons;
+        }
+        if (isDefined(e,'clientX')){
+            eventRaw['clientX'] = e.clientX;
+        }
+        if (isDefined(e,'clientY')){
+            eventRaw['clientY'] = e.clientY;
+        }
+        if (isDefined(e,'ctrlKey')){
+            eventRaw['ctrlKey'] = e.ctrlKey;
+        }
+        if (isDefined(e,'currentTarget')){
+            captureElementData(e, eventRaw, "currentTarget");
+        }
+        if (isDefined(e,'delegateTarget')){
+            captureElementData(e, eventRaw, "delegateTarget");
+        }
+        
+        if (isDefined(e,'eventPhase')){
+            eventRaw['eventPhase'] = e.eventPhase;
+        }
+        if (isDefined(e,'metaKey')){
+            eventRaw['metaKey'] = e.metaKey;
+        }
+        if (isDefined(e,'offsetX')){
+            eventRaw['offsetX'] = e.offsetX;
+        }
+        if (isDefined(e,'offsetY')){
+            eventRaw['offsetY'] = e.offsetY;
+        }
+        if (isDefined(e,'pageX')){
+            eventRaw['pageX'] = e.pageX;
+        }
+        if (isDefined(e,'pageY')){
+            eventRaw['pageY'] = e.pageY;
+        }
+        if (isDefined(e,'relatedTarget')){
+            captureElementData(e, eventRaw, "relatedTarget");
+        }
+        if (isDefined(e,'screenX')){
+            eventRaw['screenX'] =e.screenX;
+        }
+        if (isDefined(e,'screenY')){
+            eventRaw['screenY'] =e.screenY;
+        }
+        if (isDefined(e,'shiftKey')){
+            eventRaw['shiftKey'] =e.shiftKey;
+        }
+        if (isDefined(e,'timeStamp')){
+            eventRaw['timeStamp'] =  (new Date).getTime(); //e.timeStamp;
+        }
+        if (isDefined(e,'which')){
+            eventRaw['which'] =e.which;
+        }
+        var eventObject = [eventName, eventRaw, extraData];
+        logBuffer.push(eventObject);    
+    }
+
+   
+    
+</script>
+{% endblock extra_head %}
+
+{% block content %}
+ <div id="wrapper_div2">
+        {% include question_template %}
+</div>
+{% endblock content %}
+

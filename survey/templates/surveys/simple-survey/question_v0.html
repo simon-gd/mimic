@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% comment %}
+The MIT License (MIT)
+
+Copyright (c) 2014 Autodesk, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+http://opensource.org/licenses/MIT   
+{% endcomment %}
+{% block extra_head %}
+<script type="text/javascript">
+    head.js("{% static 'js/lib/d3.v3.js' %}",
+            "{% static 'js/lib/easeljs-0.6.0.min.js' %}",
+            "{% static 'js/lib/tweenjs-0.4.0.min.js' %}",
+            "{% static 'js/lib/colorbrewer/colorbrewer.js' %}",
+            "{% static 'js/lib/numeric-1.2.6.min.js' %}",
+            "{% static 'js/lib/d3-plugins/venn/venn.js' %}",
+            "{% static 'js/lib/d3-plugins/sankey/sankey.js' %}",
+            "{% static 'js/app/arEasel/style.js' %}",
+            "{% static 'js/app/arEasel/RadioButton.js' %}",
+            "{% static 'js/app/arEasel/RadioContainer.js' %}",
+            "{% static 'js/app/arEasel/PushButton.js' %}",
+            "{% static 'js/app/arEasel/QuestionLink.js' %}",
+            "{% static 'js/app/arEasel/checkBrowserClose.js' %}",
+            "{% static 'js/app/arEasel/layout.js' %}",
+            "{% static 'js/app/arEasel/TreeDiagram.js' %}",
+            "{% static 'js/app/arEasel/VennDiagram.js' %}",
+            "{% static 'js/app/arEasel/PartitionDiagram.js' %}",
+            "{% static 'js/app/arEasel/SankeyDiagram.js' %}",
+            "{% static 'js/app/arEasel/StatisticsLegend.js' %}",
+            "{% static 'js/app/arEasel/SankeyDiagram.js' %}",
+            "{% static 'js/app/arEasel/layoutEquation.js' %}",
+            "{% static 'js/app/arEasel/BezierMotionGuidePlugin.js' %}",
+            "{% static 'js/app/arEasel/Tooltip.js' %}",
+            "{% static 'js/app/questions.js' %}");
+</script>
+
+<script type="text/javascript">
+    head.ready(function() {
+        createjs.MotionGuidePlugin.install();
+	createjs.BezierMotionGuidePlugin.install();
+    var logBuffer = ""
+	var answer_inputCount = 0;
+    function logFormatted(e, msg, delta, deltaX, deltaY) {
+        var eventName = e.type;
+        var eventData = "";
+        if (eventName != "scroll") {
+            eventData += e.pageX + "\t" + e.pageY + "\t" + e.which;
+        }
+        if (eventName == "mousewheel") {
+            eventData += "\t" + delta + "\t" + deltaX + "\t" + deltaY;
+        }
+        var docPos = $(document).scrollTop();
+        var logLine = e.timeStamp + "\t" + eventName + "\t" + docPos + "\t" + msg + "\t" + eventData + "\n";
+        logBuffer += logLine
+    }
+	function handlePickAnswer(e)
+	{
+		selectedAnswer = e.target.value;
+	}
+	
+	function handleSubmitClick(e)
+	{
+		if(answer_inputCount===0 && selectedAnswer == 0){
+                //errorText.show();
+                alert("Missing choice");
+		}else{
+			createjs.Ticker.setPaused(true );
+			//validNavigation = true;
+			
+			$(window).unbind('unload');
+			$(window).unbind('beforeunload');
+			
+			logFormatted( e, "MouseClick");
+		   
+			$("#mouseData").val(logBuffer);
+			logBuffer = "";
+		
+			if(answer_inputCount > 0){
+				var vals = "";
+				for (var i=1; i <= answer_inputCount; i++){
+					vals += $("#answer_input"+i.toString()).val()+",";
+				}
+				alert("GOT: "+vals)
+				$("#answer").val(vals);
+			}else{
+				$("#answer").val(selectedAnswer);
+			}
+			$("#mainForm").submit();
+		}
+	}
+	function createQuestion(parentGroup, data, diagram){
+	 for (var i=0; i < data.length; i++){
+        if (data[i].p && data[i].link){
+            var text = new arEasel.QuestionLink(data[i].p, data[i].link, diagram, arEasel.style.QuestionLinkSyle);
+			parentGroup.addChild(text);
+		}else if (data[i].p){
+            var text = new createjs.Text(data[i].p, "16px Arial", "#000");
+			parentGroup.addChild(text);
+        }else if(data[i].image){
+			var bitmap = new createjs.Bitmap("{{ STATIC_URL }}"+data[i].image.url);
+			bitmap.width = data[i].image.width;
+			bitmap.height = data[i].image.height;
+			parentGroup.addChild(bitmap);
+		}
+     }
+	}
+    function tick() {
+        stage.update();
+    
+    }
+	var canvas;
+	var stage;
+	  
+$(document).ready(function() {
+	  
+	  var questionObject = {{ question|safe}}
+
+	  arEasel.wireUpBrowserCloseEvents();
+	  
+	  canvas = document.getElementById("myCanvas");
+	  stage = new createjs.Stage(canvas);
+	  stage.enableMouseOver(20);
+	  
+	  var outerGroup = new createjs.Container();
+	  stage.addChild(outerGroup);
+	  
+	  
+	  var tooltip = new arEasel.Tooltip();
+	  tooltip.visible = true;
+	  stage.addEventListener("stagemousemove",tooltip); 
+	  stage.addChild(tooltip);
+	  stage.tooltip = tooltip;
+	  
+	  var mainGroup = new createjs.Container();
+	  outerGroup.addChild(mainGroup);
+	  
+	  var diagram = null;
+	  var diagramGroup = null;
+	  if(questionObject.diagram){
+	    diagramGroup = new createjs.Container();
+		diagram = createDaigram(questionObject.diagram);
+		var stats = createStatisticsLegend(diagram);
+		
+		diagramGroup.addChild(stats);
+		diagramGroup.addChild(diagram);
+		arEasel.gridLayout(diagramGroup, {vSpace: 10, hSpace: 0});
+		if(diagram.handleTick){
+			createjs.Ticker.addEventListener("tick", diagram.handleTick());
+	    }
+	  }
+	  
+	  outerGroup.addChild(mainGroup);
+	  if(diagram){
+		outerGroup.addChild(diagramGroup);
+	  }
+	  var questionCount = new createjs.Text('Question {{qnum}} of {{qtotal}}', "16px Arial", "#000");
+	  mainGroup.addChild(questionCount);
+	  
+	 
+	  var questionGroup = new createjs.Container();
+	  
+	  
+      createQuestion(questionGroup, questionObject.question, diagram); 
+      mainGroup.addChild(questionGroup);
+	  arEasel.gridLayout(questionGroup, {vSpace: 10});
+
+	  var answerGroup = new arEasel.RadioContainer();
+	  answer_inputCount = createAnswers(answerGroup, questionObject.answers, handlePickAnswer); 
+	  mainGroup.addChild(answerGroup);
+	  arEasel.gridLayout(answerGroup);
+
+	  
+	  var errorText = "Please pick an answer before submiting.";
+	  var submitGroup = new createjs.Container();
+	  var button = new arEasel.PushButton("Submit", arEasel.style.PushButtonStyle);
+	  button.addEventListener("click", handleSubmitClick);
+	  submitGroup.addChild(button);
+	  mainGroup.addChild(submitGroup);
+	  
+	  if(diagram){
+		var eqnGroup = new createjs.Container();
+		var eqn = createStatisticsEquations(diagram);
+		eqnGroup.addChild(eqn);
+		mainGroup.addChild(eqnGroup);
+	  }
+	  
+	  arEasel.gridLayout(mainGroup, {vSpace: 10});
+	  
+	  
+	 
+      
+	  arEasel.gridLayout(outerGroup, {hLayout: true, Space: 10});
+	  
+	  createjs.Ticker.addEventListener("tick", tick);
+	  
+      $(document).mousemove( function( e ) {
+        logFormatted(e, "MouseMove");
+      });
+      $(document).click( function( e ) {
+        logFormatted(e, "MouseClick");
+      });
+
+      $(document).dblclick( function( e ) {
+        logFormatted(e, "DoubleClick");
+      });
+
+      $(document).mouseenter( function( e ) {
+        logFormatted(e, "MouseEnter");
+      });
+
+      $(document).mouseleave( function( e ) {
+        logFormatted(e, "MouseLeave");
+      });
+
+      $(window).resize(function( e ) {
+        logFormatted(e, "WindowResize");
+      });
+      $(window).scroll(function( e ) {
+        logFormatted(e, "WindowScroll");
+      });
+      $(window).focus(function(e) {
+         logFormatted(e, "WindowFocus");
+      });
+      $(window).blur(function(e) {
+         logFormatted(e, "WindowBlur");
+      });
+      
+      $(window).bind('beforeunload', function(){
+        return 'Are you sure you want to leave?';
+      });
+	  
+	  
+     
+    });
+    
+    });
+</script>
+{% endblock extra_head %}
+
+{% block content %}
+        {% include question_template %}
+{% endblock content %}
+
