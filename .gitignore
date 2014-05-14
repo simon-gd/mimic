@@ -212,6 +212,7 @@ docs/_build/
 *.pot
 *.pyc
 templates_survey
+mimic/settings/base.py
 mimic/settings/local.py
 mimic/settings/production.py
 manage.py
