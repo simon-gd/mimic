@@ -7,8 +7,8 @@ An input capture and visual analytics system that records online user behavior t
 
 ## Requirements
 
-* Python 2.7 (may work with other versions) 
-* MySQL
+* [Python 2.7](https://www.python.org/download/releases/2.7.6) (may work with other versions) 
+* [MySQL](http://dev.mysql.com/downloads/mysql/)
 * Lots of python libraries (see [stable-req.txt](https://github.com/sbreslav/mimic/blob/master/stable-req.txt))
 
 ## More Info
@@ -35,6 +35,7 @@ If you want to reference this code in an academic paper, please use this referen
 [The MIT Licence](https://github.com/sbreslav/mimic/blob/master/LICENSE)
 
 ## Installation
+**Warning**: These instructions need quite a bit of clarification.
 
 These are rough instructions for setting up Mimic, assuming your have all the pre-requisits installed:
 - using command line navigate to the mimic folder that contains manage.py
@@ -42,7 +43,9 @@ These are rough instructions for setting up Mimic, assuming your have all the pr
 - ``python manage.py migrate``
 - ``python manage.py loaddata media\export_data\surveyData_micallef-replication.json``
 - ``python manage.py runserver``
-- open a browser and navigate to http://localhost:8000/survey/admin
-- defaults: username: admin, password: admin
+- open a browser and navigate to [http://localhost:8000/survey/admin](http://localhost:8000/survey/admin)
+- defaults: username: admin, password: admin (can be chaned if you go to [http://localhost:8000/admin](http://localhost:8000/admin))
+- The first time you run mimic you and select dataset, you have to click a link to process user interactions, this may take a while, but does not have to be repeated.
+
 
 For more detailed information See [install.md](https://github.com/sbreslav/mimic/blob/master/install.md)

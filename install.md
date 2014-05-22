@@ -1,7 +1,8 @@
 # Installation & Deployment Guide
----
 
 ## Local Setup (Windows)
+**Warning**: These instructions need quite a bit of clarification.
+
 These are rough instructions for setting up Mimic, assuming your have all the pre-requisits installed:
 
 - using command line navigate to the mimic folder that contains manage.py
@@ -10,11 +11,12 @@ These are rough instructions for setting up Mimic, assuming your have all the pr
 - python manage.py loaddata media\export_data\surveyData_micallef-replication.json
 - python manage.py runserver
 - open browsers and navigate to http://localhost:8000/survey/admin
-- defaults: username: admin, password: admin
+- defaults: username: admin, password: admin (can be chaned if you go to http://localhost:8000/admin)
+- The first time you run mimic you and select dataset, you have to click a link to process user interactions, this may take a while, but does not have to be repeated.
 
 ## Deplyment Setup (ubuntu)
 
-**TODO**:
+**TODO**: These instructions need quite a bit of clarification
 
 Currently a working version of the system is deployed on Azure unix server, while the development is done on Windows.
 
