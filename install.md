@@ -1,47 +1,50 @@
-mimic
-=====
+# Installation & Deployment Guide
+---
 
-python manage.py syncdb
-python manage.py migrate
-python manage.py loaddata media\export_data\surveyData_micallef-replication.json
+## Local Setup (Windows)
+These are rough instructions for setting up Mimic, assuming your have all the pre-requisits installed:
 
-django
-mysql
-gunicorn: http://gunicorn.org/
-nginx: http://wiki.nginx.org/Main
-ubuntu
+- using command line navigate to the mimic folder that contains manage.py
+- python manage.py syncdb
+- python manage.py migrate
+- python manage.py loaddata media\export_data\surveyData_micallef-replication.json
+- python manage.py runserver
+- open browsers and navigate to http://localhost:8000/survey/admin
+- defaults: username: admin, password: admin
 
-# Add permissiong to mysql
-mysql -u root -p
-GRANT ALL ON mimic.* TO root@'23.96.32.128' IDENTIFIED BY 'password';
-GRANT ALL ON mimic.* TO root@'127.0.0.1' IDENTIFIED BY 'root';
-# nginx
-sudo /etc/init.d/nginx restart
-Logs
-nano /var/log/nginx/error.log
-Configs
-/etc/nginx/sites-enabled
+## Deplyment Setup (ubuntu)
 
-# Gunicorn
-upstart:
-/etc/init/mimic.conf
-"""
-description "myapp"
+**TODO**:
 
-start on (filesystem)
-stop on runlevel [016]
+Currently a working version of the system is deployed on Azure unix server, while the development is done on Windows.
 
-respawn
-console log
-setuid nobody
-setgid nogroup
-chdir /home/simon/mimic/mimic
+gunicorn: 
+nginx: 
 
-exec gunicorn wsgi:application
-"""
+### MySQL
+Add permissiong to mysql (not sure if this is needed)
+	
+	mysql -u root -p
+	GRANT ALL ON mimic.* TO root@'127.0.0.1' IDENTIFIED BY 'password';
 
-sudo start mimic
-sudo status mimic
-sudo stop mimic
 
-/var/log/upstart/mimic.log
+### nginx
+[http://wiki.nginx.org/Main](http://wiki.nginx.org/Main)
+
+- Start: ``sudo /etc/init.d/nginx restart``
+- Stop: ``sudo /etc/init.d/nginx stop``
+- Restart: ``sudo /etc/init.d/nginx restart``
+- View Logs: ``nano /var/log/nginx/error.log``
+- Config location: ``/etc/nginx/sites-enabled``
+
+
+### Gunicorn
+[http://gunicorn.org/](http://gunicorn.org/)
+Setup upstart process to make it easy to start and stop Gunicorn
+
+- ``cp scripts/gunicorn_mimic_upstart.conf /etc/init/mimic.conf``
+- replace ``<mimic folder that has wsgi.py file>`` with path e.g. ``/home/simon/mimic/mimic``
+- Start: ``sudo start mimic``
+- Check Status: ``sudo status mimic``
+- Stop: ``sudo stop mimic``
+- Log location: /var/log/upstart/mimic.log
