@@ -60,37 +60,60 @@ def export_survey(survey_id):
     #experiments = Experiment.objects.filter(survey=survey[0], finished=True, state=0)
     #experimentUsers = ExperimentUser.objects.filter(id__in=[elem.user.id for elem in experiments]) #experiments.user_set.all()
     #experimentAnswers = ExperimentAnswer.objects.filter(experiment__survey = survey[0])
-    
+    doFiltering = False
     ids = []
-    path = os.path.join(settings.MEDIA_ROOT,"info_viz_2014_3.csv")
-    with open(path) as f:
-        reader = csv.reader(f)
-        next(reader, None)  # skip the headers
-        for row in reader:
-            ids.append(row[15])
-   
-    experimentUsers = ExperimentUser.objects.filter(id__in=ids) #experiments.user_set.all()
-    experiments = Experiment.objects.filter(survey=survey[0], user__id__in=ids, finished=True, state=0)
-    experimentAnswers = ExperimentAnswer.objects.filter(experiment__survey = survey[0], experiment__user__id__in=ids, experiment__finished=True, experiment__state=0)
+    if doFiltering:
+        path = os.path.join(settings.MEDIA_ROOT,"info_viz_2014_3.csv")
+        with open(path) as f:
+            reader = csv.reader(f)
+            next(reader, None)  # skip the headers
+            for row in reader:
+                ids.append(row[15])
+        experimentUsers = ExperimentUser.objects.filter(id__in=ids) #experiments.user_set.all()
+        experiments = Experiment.objects.filter(survey=survey[0], user__id__in=ids, finished=True, state=0)
+        experimentAnswers = ExperimentAnswer.objects.filter(experiment__survey = survey[0], experiment__user__id__in=ids, experiment__finished=True, experiment__state=0)
+    else:
+        experimentUsers = ExperimentUser.objects.filter(experiment__survey = survey[0], experiment__finished=True,experiment__state__in=[0,1])
+        filteredUsers = []
+        experimentAnswers = []
+        experiments = []
+        for u in experimentUsers:
+            answeredQuestions = ExperimentAnswer.objects.filter(user__pk=u.pk)
+            experimentsQ = Experiment.objects.filter(user__pk=u.pk)
+            #print(answeredQuestions, len(questions))
+            if(len(answeredQuestions) == len(questions) and len(experimentsQ) == 1):
+                for aQ in answeredQuestions:
+                    if aQ.experiment != experimentsQ[0].pk:
+                        continue
+
+                ids.append(u.pk)
+                for aQ in answeredQuestions:
+                    experimentAnswers.append(aQ)
+                experiments.append(experimentsQ[0])
+                filteredUsers.append(u)
+            else:
+                print(len(answeredQuestions), len(experimentsQ))
+        experimentUsers = filteredUsers
+        #experiments = Experiment.objects.filter(user__pk__in=ids, survey=survey[0], finished=True, state__in=[0,1])
+        #experimentAnswers = ExperimentAnswer.objects.filter(user__pk__in=ids, experiment__survey = survey[0],  experiment__finished=True,experiment__state__in=[0,1])
     print("experimentUsers", len(experimentUsers))
     print("experiments", len(experiments))
-   
     print("experimentAnswers", len(experimentAnswers))
 
     combined = list(chain(survey, questions, surveyMemberships, experimentUsers, experiments, experimentAnswers))
 
-    json_string = serializers.serialize('json', combined, indent=2, use_natural_keys=True)
+    json_string = serializers.serialize('json', combined, indent=2, use_natural_keys=False)
     data = json.loads(json_string)
 
-    for d in data:
-        del d['pk']
+    #for d in data:
+    #    del d['pk']
 
     json_string = json.dumps(data, indent=2)
 
     directory = os.path.join(settings.MEDIA_ROOT,"export_data")
     if not os.path.exists(directory):
         os.makedirs(directory)
-    url = os.path.join(directory, "surveyData_"+str(survey[0].slug)+".json")
+    url = os.path.join(directory, "surveyData_all_"+str(survey[0].slug)+".json")
     with open(url, "w") as out:
         out.write(json_string)
     
@@ -571,7 +594,7 @@ def json_preprocess_answers_v2(request, survey_id):
     for e_test in expTest:
         actual_answers = ExperimentAnswer.objects.filter(experiment=e_test).count()
         if actual_answers != expected_answers:
-            e_test.state = 1
+            #e_test.state = 1
             e_test.save()
             experiments_disabled += 1
 

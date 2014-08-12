@@ -53,7 +53,7 @@ from scipy import stats
 
 from mimic.settings import local as settings
 
-#from migrate_data import *
+from migrate_data import *
 
 # Survey Admin Views
 
@@ -278,9 +278,9 @@ def json_preprocess_answers_130(request, survey_id):
                     miscEvents.append({'time':line[1]['timeStamp']-start_time, 'type': line[0], 'e':line[1], 'extra': line[2]})
 
         except Exception as e:
-            #error = "json_preprocess_answers: time Error: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
+            #error = "json_preprocess_answers:  Error: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
             #errors.append(error)
-            print(error, e)
+            print(e)
             continue
         
         if p_a != None:
@@ -308,7 +308,10 @@ def json_preprocess_answers_130(request, survey_id):
 
 @staff_member_required
 def json_preprocess_answers(request, survey_id):
-    return json_preprocess_answers_130(request, survey_id)
+    #export_survey(survey_id)
+    #return HttpResponse('{"status":"done"}', mimetype="application/json")
+    return createItemHoverHistograms(request, survey_id);
+    #return json_preprocess_answers_130(request, survey_id)
 
 
 @staff_member_required
@@ -1003,3 +1006,43 @@ def expmap(request, experiment_id):
         ips += "\"" + ip[0] + "\","
     ips += "]"
     return render_to_response('ip_map.html', {'ips':ips}, context_instance=RequestContext(request))
+
+
+@staff_member_required
+def createItemHoverHistograms(request, survey_id):
+    #survey = get_object_or_404(Survey, id=survey_id)
+    expAns = ExperimentAnswerProcessed.objects.filter(question_id=19, experiment__finished=True) #experiment__survey=survey, experiment__finished=True,
+    allMoves = {}
+    fieldnames = ["user_id", "condition"]
+    for a in expAns:
+        allMoves[a.user.id] = {"user_id":a.user.id, "condition": a.experiment.survey_condition}
+        #print("got",a.id)
+        try:
+            mouseDataJSON = json.loads(zlib.decompress(b64decode(a.mouse_move_event)))
+            for line in mouseDataJSON:
+                #if "extra" in line:
+                #    print("extra", line["extra"])
+                if "e" in line and "target" in line["e"] and "id" in line["e"]["target"]:
+                    if line["e"]["target"]["id"] not in fieldnames:
+                         fieldnames.append(line["e"]["target"]["id"])
+
+                    if line["e"]["target"]["id"] in allMoves[a.user.id]:
+                        allMoves[a.user.id][line["e"]["target"]["id"]] = allMoves[a.user.id][line["e"]["target"]["id"]] + 1
+                    else:
+                        allMoves[a.user.id][line["e"]["target"]["id"]] = 1
+                    #print("e", line["e"]["target"]["nodeName"], line["e"]["target"]["id"])
+                    
+                    #if "screen" in line["extra"]:
+                    #    sizeis = {"w":line["extra"]["screen"]["width"], "h":line["extra"]["screen"]["height"]}
+                    #    screenSizes.append([line["extra"]["screen"]["width"], line["extra"]["screen"]["height"]])
+                    #    #writer.writerow([line["extra"]["screen"]["width"], line["extra"]["screen"]["height"]])
+                    #    #print(sizeis)
+
+        except Exception as e:    
+            print("error: failed to decompress", e)
+    writer = csv.DictWriter(open("itemHoverData.csv", 'w'), fieldnames=fieldnames, dialect='excel')
+    writer.writeheader()
+    for key, value in allMoves.iteritems():
+        writer.writerow(value)
+    
+    return HttpResponse('{"status":"done"}', mimetype="application/json")

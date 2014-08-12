@@ -1,0 +1,638 @@
+{% comment %}
+The MIT License (MIT)
+
+Copyright (c) 2014 Autodesk, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+{% endcomment %}
+{% load staticfiles %}
+<script type="text/javascript">
+     function showPage(elementID) {
+                // try to find the requested page and alert if it's not found
+                $(".page").hide();
+                $(elementID).show();
+              
+    }
+
+    function getHTMLforScenarioText(text)
+    {
+       var s = "";
+       //s+= '<hr id="hr_scenario">';
+       textHTML = text;
+       s+= '<table id="scenarioTable" border="0" cellpadding="0" cellspacing="10" width="100%"><tr id="scenarioTable_tr1" valign="top"> \
+            <td id="scenarioTable_td2"><div id="scenarioTable_div1" style="background: #F5F5F5; padding: 1em; border: #D0D0D0 solid 1px;">' + textHTML + '</div></td></tr></table>';
+       return s;
+    }
+
+    function getHTMLforQuestion( question)
+    {
+       var s = "";
+       s += '<br id="br1"><strong id="description_paragraph6">Please answer the following question:</strong>';
+       //s += '<br id="br1"><strong id="description_paragraph6">Please answer the following question given information below:</strong>'; 
+       s += '<p id="question1"><div id="question1_div" style="background: #F5F5F5; padding: 1em; border: #D0D0D0 solid 1px;">' + question + '</div></p>';
+       //s += '</table>';
+       return s;
+    }
+
+    function getHTMLforDiagram(c1_image_path, condition)
+    {
+        var s = "";
+        if (condition > 0) {
+                    s += '<br id="brdiagram"><strong id="description_paragraph4">This is illustrated by the following diagram:</strong>';
+                    //s += '<br id="brdiagram"><strong id="description_paragraph4">Given infromation is further illustrated by the following diagram:</strong>';
+                    s += '<p id="description_paragraph5"><img id="diagram1" style="width: 50%;"alt="" src ="'+ c1_image_path + condition+'.png"/></p>';
+        }else{
+             s += '<br id="brdiagram"><strong id="description_paragraph4">This is further illustrated by the following data:</strong>';
+                    //s += '<br id="brdiagram"><strong id="description_paragraph4">Given infromation is further illustrated by the following diagram:</strong>';
+             s += '<p id="description_paragraph5"><img id="diagram1" style="width: 50%;"alt="" src ="'+ c1_image_path + condition+'.png"/></p>';
+        }
+        return s;
+    }
+
+    function checkResolution(width,height){
+        if(screen.width < width || screen.height < height){
+            window.location.replace("./survey/not_supported/");
+        }
+
+    }
+
+    function assignIDs(){
+        var items = document.getElementsByTagName("*");
+        for (var i = items.length; i--;) {
+            var item = items[i];
+            if(item.id){}
+            else{
+                var newID = item.nodeName.replace("#","") + "_" + i;
+                console.log(newID);
+                item.id = newID;
+            }
+        }
+    }
+
+    function assignImages(condition){
+        var image_size = (screen.width < 1200) ? "1024" : "1280"; //992
+        var image_path = "img/infoViz2014_exp1/__diagram" + condition + "_"+ image_size + ".png";
+        var filename = ("{% static '111' %}").replace('111', image_path);
+        $('#page1_diagram').attr("src", filename);
+    }
+
+    $(document).ready(function() {
+        
+        if( bowser.msie && bowser.version < 11){
+            $("#button_for_fullscreen_ie").html("");
+            $("#or_press_button").html("");
+            $("#modal-footer").html("");
+            
+        }
+
+        assignIDs();
+
+        var questionData = {{ question|safe}};
+        var questionCondition = {{ condition|safe}};
+        var total_pages =  3;
+        var current_question =  parseInt({{qnum|safe}});
+        var answer = "";
+        var confidence = 0;
+        var worker_id = "{{worker_id|safe}}";
+        var condition = "{{condition|safe}}";
+        var debug = parseInt({{debug|safe}});
+
+        //console.log("current_question", current_question);
+
+        assignImages(condition);
+        
+        //var scenario_text = "10 out of every 1,000 women at age forty who participate in routine screening have breast cancer. <br id='br2'>8 of every 10 women with breast cancer will get a positive mammography. <br id='br3'>95 out of every 990 women without breast cancer will also get a positive mammography. <br id='br5'>";
+        //var question = "There is a new representative sample of women at age forty who got a positive mammography in routine screening. <br id='br4'>How many of these women do you expect to actually have breast cancer?";
+        //var c1_image_path = "{% static 'img/infoViz2014_exp1/diagram_' %}";
+
+        //$('#scenario').html(getHTMLforScenarioText(scenario_text));
+        //$('#scenario_question').html(getHTMLforQuestion(question));
+        //$('#scenario_diagram').html(getHTMLforDiagram(c1_image_path, condition));
+
+        //checkResolution(1024,768);
+        checkResolution(1000, 560);
+       
+        if(condition == "0"){
+            $('#illustration_div').hide();
+        }
+        
+        // Question submits
+        if(!debug){
+        $('.submit').click(function(e) {
+           
+            logFormatted(e);
+
+            $(".error").html("");
+            if(current_question == 0){
+          
+            }else if(current_question == 1){
+                var a1 = $('input:text[name=answer1]').val();
+                var a2 = $('input:text[name=answer2]').val();
+                confidence = $('input:radio[name=confidence]:checked').val();
+                //console.log(b);
+                if(!a1 || !a2){
+                
+                    $(".error").html("<div id='myerror4' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                    return;     
+                }
+                if(!confidence){
+                     $(".error").html("<div id='myerror3' class='alert alert-error'>Error: Please indicate your level of confidence to proceed.</div>");
+                     return;
+                }
+                if(!a1.match(/^\d+$/) || !a2.match(/^\d+$/)) {
+                   $(".error").html("<div id='myerror2' class='alert alert-error'>Error: Answer must be a number.</div>");
+                   return;     
+                }
+                answer = {'a1':a1, 'a2':a2};
+                
+            }else if(current_question == 2){
+                var gender = $('input:radio[name=gender]:checked').val();
+                var occupation = $('#occupation option:selected').val();
+                var education = $('#education option:selected').val();
+                var color_blind = $('input:radio[name=color_blind]:checked').val();
+                var training = $('input:radio[name=training]:checked').val();
+                var calculation_question = $('input:radio[name=calculation_question]:checked').val();
+                var comments = $('#comments').val();
+
+                if(!gender || !occupation || !education || !color_blind || !training || !calculation_question){
+                
+                    $(".error").html("<div id='myerror4' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                    return;     
+                }
+
+                answer = {'gender':gender, 'occupation':occupation, 'education':education, 'color_blind':color_blind, 'training':training, 'calculation_question': calculation_question,'comments':comments};
+            }
+            
+            $('.submit').prop('disabled', true);
+            
+            $.post("./survey/save_question/", { 'currentQ': current_question,
+                                                'answer': JSON.stringify(answer),
+                                                'confidence':confidence,
+                                                'worker_id':worker_id,
+                                                'condition':condition,
+                                                'csrfmiddlewaretoken': '{{ csrf_token }}'} ).done(function() {
+                
+                var concatLogBuffer = JSON.stringify(logBuffer);
+
+                $.ajax({type: "POST",
+                       url: "./survey/save_question/",
+                       data: {'mouseData': concatLogBuffer,
+                              'currentQ': current_question,
+                              'worker_id':worker_id,
+                              'condition':condition,
+                              'csrfmiddlewaretoken': '{{ csrf_token }}'}
+                      }).done(function() {
+                             if(total_pages == current_question){
+                                 //$('.submit').prop('disabled', false);
+                                 $('#mainForm').submit();
+                             }
+                        
+                      });
+
+                logBuffer = [];
+               
+
+                if(total_pages == (current_question+1)){
+                    //$('#mainForm').submit();
+                    //$(window).unbind('beforeunload');
+                    current_question++;
+                    $("#currentQ").val(current_question);   
+                    $(".error").html("<div id='calculating_message' class='alert alert-error'>Proccessing... Please Wait</div>");
+                }else{
+                    // Go to next question
+                    current_question++;
+                    $("#currentQ").val(current_question);        
+                    showPage("#page"+current_question.toString());
+                    $('.submit').prop('disabled', false);
+                }
+                
+            }).fail(function() {
+                $('.submit').prop('disabled', false);
+                $(".error").html("<div id='myerror1' class='alert alert-error'>Error: Submission didn't work, please try again.</div>");
+            });
+
+           
+            
+        });
+        } // not debug condition
+
+        $('.enter_full_screen').click(function () {
+            if (screenfull.enabled) {
+                screenfull.request();
+            }
+            if (window.ActiveXObject){
+                var wscript = new ActiveXObject("Wscript.shell");
+                wscript.SendKeys("{F11}");
+            }
+
+        });
+    
+        var fullscreen = debug || screenfull.isFullscreen || ( (screen.availHeight || screen.height-30) <= window.innerHeight);
+        if(fullscreen){
+               
+                $('.submit').prop('disabled', false);
+                $('.submit_button_div').show("slow");
+                $('#myModal').modal('hide');
+                
+            }else{
+                $('.submit').prop('disabled', true);
+                $('.submit_button_div').hide();
+                if(current_question > 0){
+                    $('#myModal').modal('show');
+                }
+       }
+       if (screenfull.enabled) {
+           document.addEventListener(screenfull.raw.fullscreenchange, function () {
+                var fullscreen = debug || screenfull.isFullscreen || ( (screen.availHeight || screen.height-30) <= window.innerHeight);
+                if(fullscreen){
+               
+                        $('.submit').prop('disabled', false);
+                        $('.submit_button_div').show("slow");
+                        $('#myModal').modal('hide');
+                
+                    }else{
+                        $('.submit').prop('disabled', true);
+                        $('.submit_button_div').hide();
+                        if(current_question > 0){
+                            $('#myModal').modal('show');
+                        }
+               }
+            }); 
+        }
+
+        $(window).resize(function( e ) {
+            var fullscreen = debug || screenfull.isFullscreen || ( (screen.availHeight || screen.height-30) <= window.innerHeight);
+            if(fullscreen){
+                $('.submit').prop('disabled', false);
+                $('.submit_button_div').show("slow");
+                $('#myModal').modal('hide');
+                
+            }else{
+                $('.submit').prop('disabled', true);
+                $('.submit_button_div').hide();
+                if(current_question > 0){
+                    $('#myModal').modal('show');
+                }
+                
+            }
+
+        });
+        
+        showPage("#page"+current_question);
+
+    });
+
+</script>
+
+<!-- PAGE 0 - GENERAL INSTRUCTIONS -->
+
+<div id="page0" class="page container size-16-9">
+  <div class="row">
+    <div id="" class="col-xs-12">
+      <em>Page 1/3</em>
+    </div>
+  </div>
+  <div class="row">
+    <div id="" class="col-xs-12">
+       <h3 id="page_title">Scientific Study on Judgment and Visualization</h3>
+    </div>
+  </div>
+   
+  <div class="row">
+    <div class="col-xs-7">
+      <p class="lead"><strong>Important:</strong></p>
+
+      <div class="well well-sm">
+        <ul>
+        <li class="scaled_text" id="description_paragraph1">You can participate in this series of experiments <b id="bold1">only once</b>. If you have already completed a HIT with the same title (even a while ago), you <b id="bold2">cannot</b> complete this one and we would have to reject your HIT.</li>
+        <li class="scaled_text" id="description_paragraph2">This HIT takes about 5 minutes to complete.</li>
+        <li class="scaled_text" id="description_paragraph3">Read the instructions carefully and answer all questions before proceeding to the next page. HITs that are not completed carefully will be <b id="bold3">rejected</b> and the worker will not be paid.</li>
+        <li class="scaled_text" id="description_paragraph4">You should remain focused, and once you start the HIT, you must not stop unless you have completed all the pages. Special attention must be given to the next page.</li>
+        <li class="scaled_text" id="question1">To maximize your concentration on this HIT, we ask you to take it in <b id="bold4">Full Screen Mode.</b></li>   
+        </ul>
+       </div>
+    </div>
+
+    <div class="col-xs-5">
+      <p class="lead"><strong>Please Enter Full Screen Mode to proceed:</strong></p>
+
+      <div class="well well-sm">
+        <p class="scaled_text" id="question1">To enter <b id="bold6">Full Screen Mode</b>, please press <b id="bold8">F11</b> on your keyboard <span id="button_for_fullscreen_ie">or click this button: <button id="enter_full_screen1" type="button" class="btn btn-default enter_full_screen">Enter Full Screen Mode</button> <br/>(Your browser may ask you to "Allow" access for this)</span> </p>
+
+      </div>
+      <div id="submit_button_div1" class="submit_button_div">
+      <p class="text-success" id="question1"><b id="bold7">Full Screen Mode</b> entered successfully, please proceed to take the survey.</p>
+      <button type="submit" id="submitButton1"  name="submit" class="btn btn-default submit">Next Page</button>
+      <div id="error1" class="error text-danger"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--
+<div id="page0" class="page">
+<p id="page_count">Page 1/4</p><hr id="hr1">
+
+<center class="scaled_text" id="center1"><h3 id="page_title">Scientific Study on Judgment and Visualization</h3></center>
+
+<h5 class="scaled_text" id="description_title1">Important:</h5>
+
+
+<p class="scaled_text" id="description_paragraph1">You can participate in this series of experiments <b id="bold1">only once</b>. If you have already completed a HIT with the same title (even a while ago), you <b id="bold2">cannot</b> complete this one and we would have to reject your HIT.</p>
+<p class="scaled_text" id="description_paragraph2">This HIT takes about 5 minutes to complete.</p>
+<p class="scaled_text" id="description_paragraph3">Read the instructions carefully and answer all questions before proceeding to the next page. HITs that are not completed carefully will be <b id="bold3">rejected</b> and the worker will not be paid.</p>
+<p class="scaled_text" id="description_paragraph4">You should remain focused, and once you start the HIT, you must not stop unless you have completed all the pages. Special attention must be given to the next page.</p>
+<p class="scaled_text" id="question1">To maximize your concentration on this HIT, we ask you to take it in <b id="bold4">Full Screen Mode.</b></p>
+<p class="scaled_text" id="description_paragraph1"> </p>    
+<p class="scaled_text" id="question1">To enter <b id="bold6">Full Screen Mode</b>, please press <b id="bold8">F11</b> on your keyboard or click this button: <button id="enter_full_screen1" type="button" class="btn btn-default enter_full_screen">Enter Full Screen Mode</button></p> (Your browser may ask you to "Allow" access for this)
+<div id="submit_button_div1" class="submit_button_div">
+<hr id="hr2">
+<p class="scaled_text" id="question1"><b id="bold7">Full Screen Mode</b> entered successfully, please proceed to take the survey.</p>
+<input class="btn btn-default" id="submitButton1" type="submit" name="submit" value="Next page">
+<font id="font1" color="#999999"><div id="firstbuttonmessage">(you cannot return to this page afterwards)</div></font>
+<div id="error" class="error text-danger"></div>
+</div>
+</div>
+-->
+<!-- PAGE 1 - QUESTION -->
+<div id="page1" class="page container size-16-9">
+  <div class="row">
+    <div id="" class="col-xs-12">
+      <em>Page 2/3</em>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-7">
+      <p class="lead"><strong>Read the text below carefully and answer the question as best as you can.</strong></p>
+
+      <div class="well well-sm">
+        <p>At age forty, when women participate in routine screening for breast cancer, 10 out of 1000 will have breast cancer. However, 8 of every 10 women with breast cancer will get a positive mammography, and 95 out of every 990 women without breast cancer will also get a positive mammography.</p>
+      </div>
+      <div id="illustration_div">
+      <p class="lead"><strong>This is illustrated by the following diagram:</strong></p>
+
+      <div class="text-center">
+        <img id="page1_diagram" src="" alt="Diagram"/>
+      </div>
+      </div>  
+    </div>
+
+    <div class="col-xs-5">
+      <p class="lead"><strong>Please answer the following question:</strong></p>
+
+      <div class="well well-sm">
+        <p>Given a new group of women at age forty who got a positive mammography in routine screening, how many of these women do you expect to actually have breast cancer?</p>
+      </div>
+
+      <div class="lead">
+        <strong >Answer:</strong>
+        <input id="input_a1" class="answer" name="answer1" type="text"/>&nbsp;<strong>of</strong>&nbsp;<input id="input_a2" class="answer" name="answer2" type="text"/>&nbsp;<strong>Women</strong>
+      </div>
+
+      <br/>
+
+      <p class="lead"><strong>How confident are you in your answer?</strong></p>
+
+      <ul class="list-inline pull-down text-center">
+        <li style="width:19%">
+          No Confidence<br/>
+          <input type="radio" id="confidence-1" name="confidence" value="1" /><label id="confidence-1-label" for="confidence-1">&nbsp;1</label>
+        </li>
+        <li style="width:19%">
+          <input type="radio" id="confidence-2" name="confidence" value="2" /><label id="confidence-2-label" for="confidence-2">&nbsp;2</label>
+        </li>
+        <li style="width:19%">
+          Reasonable<br/>Confidence<br/>
+          <input type="radio" id="confidence-3" name="confidence" value="3" /><label id="confidence-3-label" for="confidence-3">&nbsp;3</label>
+        </li>
+        <li style="width:19%">
+          <input type="radio" id="confidence-4" name="confidence" value="4" /><label id="confidence-4-label" for="confidence-4">&nbsp;4</label>
+        </li>
+        <li style="width:19%">
+          Very High<br/>Confidence<br/>
+          <input type="radio" id="confidence-5" name="confidence" value="5" /><label id="confidence-5-label" for="confidence-5">&nbsp;5</label>
+        </li>
+      </ul>
+
+      <br/>
+      <br/>
+      <button type="submit" class="btn btn-default submit">Next Page</button>
+      <div id="error2" class="error text-danger"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2 - QUESTION -->
+<div id="page2" class="page container size-16-9">
+  <div class="row">
+    <div id="" class="col-xs-12">
+      <em>Page 3/3</em>
+    </div>
+  </div>
+  <div class="row">
+    <p class="col-xs-10">
+      <p class="lead"><strong>What is your Gender?</strong></p>
+      <ul class="list-inline pull-down text-left">
+        <li>
+          <input type="radio" id="gender-1" name="gender" value="Male" /><label for="gender-1">&nbsp;Male</label>
+        </li>
+        <li>
+          <input type="radio" id="gender-2" name="gender" value="Female" /><label for="gender-2">&nbsp;Female</label>
+        </li>
+      </ul>  
+    
+      <p class="lead"><strong>What is the highest level of education that you have completed?</strong></p>
+      <div class="col-xs-4">
+      <select id="education" name="education" class="form-control">
+          <option value="">---</option>
+          <option value="Elementary School">Elementary School</option>
+          <option value="High School">High School</option>
+          <option value="Undergraduate Degree">Undergraduate Degree</option>
+          <option value="Professional School">Professional School</option>
+          <option value="Graduate Degree">Graduate Degree</option>
+      </select>
+      </div></br></br>
+
+      <p class="lead"><strong>What category of occupation do you belong to?</strong></p>
+      <div class="col-xs-4">
+      <select id="occupation" name="occupation" class="form-control">
+        <option value="">---</option>
+        <option value="Unemployed, Retired, Homemaker">Unemployed, Retired, Homemaker</option>
+        <option value="Management Occupations">Management Occupations</option>
+        <option value="Business and Financial Operations Occupations">Business and Financial Operations Occupations</option>
+        <option value="Computer and Mathematical Occupations">Computer and Mathematical Occupations</option>
+        <option value="Architecture and Engineering Occupations">Architecture and Engineering Occupations</option>
+        <option value="Life, Physical, and Social Science Occupations">Life, Physical, and Social Science Occupations</option>
+        <option value="Community and Social Services Occupations">Community and Social Services Occupations</option>
+        <option value="Legal Occupations">Legal Occupations</option>
+        <option value="Education, Training, and Library Occupations">Education, Training, and Library Occupations</option>
+        <option value="Student, Trainee">Student, Trainee</option>
+        <option value="Arts, Design, Entertainment, Sports, and Media Occupations">Arts, Design, Entertainment, Sports, and Media Occupations</option>
+        <option value="Healthcare Practitioners and Technical Occupations">Healthcare Practitioners and Technical Occupations</option>
+        <option value="Healthcare Support Occupations">Healthcare Support Occupations</option>
+        <option value="Protective Service Occupations">Protective Service Occupations</option>
+        <option value="Food Preparation and Serving Related Occupations">Food Preparation and Serving Related Occupations</option>
+        <option value="Building and Grounds Cleaning and Maintenance Occupations">Building and Grounds Cleaning and Maintenance Occupations</option>
+        <option value="Personal Care and Service Occupations">Personal Care and Service Occupations</option>
+        <option value="Sales and Related Occupations">Sales and Related Occupations</option>
+        <option value="Office and Administrative Support Occupations">Office and Administrative Support Occupations</option>
+        <option value="Farming, Fishing, and Forestry Occupations">Farming, Fishing, and Forestry Occupations</option>
+        <option value="Construction and Extraction Occupations">Construction and Extraction Occupations</option>
+        <option value="Installation, Maintenance, and Repair Occupations">Installation, Maintenance, and Repair Occupations</option>
+        <option value="Production Occupations">Production Occupations</option>
+        <option value="Transportation and Material Moving Occupations">Transportation and Material Moving Occupations</option>
+        <option value="Military Specific Occupations">Military Specific Occupations</option>
+        <option value="Other">Other</option>
+      </select>
+      </div></br></br>
+      <p class="lead"><strong>Are you color blind?</strong></p>
+      <ul class="list-inline pull-down text-left">
+        <li>
+          <input type="radio" id="color_blind-1" name="color_blind" value="Yes" /><label for="color_blind-1">&nbsp;Yes</label>
+        </li>
+        <li>
+          <input type="radio" id="color_blind-2" name="color_blind" value="No" /><label for="color_blind-2">&nbsp;No</label>
+        </li>
+        <li>
+          <input type="radio" id="color_blind-3" name="color_blind" value="Dont know" /><label for="color_blind-3">&nbsp;Don't know</label>
+        </li>
+      </ul>
+
+      <p class="lead"><strong>Have you had any training or education in how to calculate conditional probabilities (tasks such as this experiment)?</strong></p>
+      <ul class="list-inline pull-down text-left">
+        <li style="width:19%">
+          Very little or None<br/>
+          <input type="radio" id="training-1" name="training" value="1" /><label for="training-1">&nbsp;1</label>
+        </li>
+        <li style="width:19%">
+          A little<br/> 
+          <input type="radio" id="training-2" name="training" value="2" /><label for="training-2">&nbsp;2</label>
+        </li>
+        <li style="width:19%">
+          Moderate<br/>
+          <input type="radio" id="training-3" name="training" value="3" /><label for="training-3">&nbsp;3</label>
+        </li>
+        <li style="width:19%">
+          Quite a bit <br/>
+          <input type="radio" id="training-4" name="training" value="4" /><label for="training-4">&nbsp;4</label>
+        </li>
+        <li style="width:19%">
+          A lot<br/>
+          <input type="radio" id="training-5" name="training" value="5" /><label for="training-5">&nbsp;5</label>
+        </li>
+      </ul>
+      
+        <p id="p3" class="lead"><strong>Did you try to compute an exact answer to the mammography problem? (as opposed to just estimating the answer)</strong></p>
+        <ul class="list-inline pull-down text-left">
+        <li>
+          <input type="radio" id="calculation_question-1" name="calculation_question" value="Yes" /><label for="calculation_question-1">&nbsp;Yes</label>
+        </li>
+        <li>
+          <input type="radio" id="calculation_question-2" name="calculation_question" value="No" /><label for="calculation_question-2">&nbsp;No</label>
+        </li>
+        <li>
+          <input type="radio" id="calculation_question-3" name="calculation_question" value="Unsure" /><label for="calculation_question-3">&nbsp;Unsure</label>
+        </li>
+      </ul>
+        
+   
+
+      <p class="lead">Please provide any comments or concerns:</p>
+      <textarea id="comments" name="comments" class="form-control" rows="5"></textarea>
+     
+
+      <br/>
+      <div class="row">
+          
+         <div class="col-md-1"><button type="submit" class="btn btn-default submit">Submit</button></div> 
+         <div class="col-md-9"><span id="error3" class="error text-danger"></span><span id="calculating" class="calculating"></span></div> 
+         
+      </div>
+      
+     
+
+    </div>
+  </div>
+</div>
+
+
+<!--
+<div id="page1" class="page">
+
+  <div id="im_description_row" class="row">
+    <div id="im_description_col" class="scaled_text width100 col-xs-10 col-sm-10 col-md-10">
+        <p id="page_count">Page 2/4</p>
+        <strong id="description_paragraph1">Read the text below carefully and answer the question as best as you can.</strong>
+       
+        <div id='scenario'></div>    
+        <div id='scenario_diagram'></div>  
+        <div id='scenario_question'></div> 
+        <div id='scenario_answer'>
+            <strong id="answer_label_strong">Answer:</strong>
+            <div id="a_row" class="row scaled_text">
+                <div id="a_col" class="scaled_text col-xs-10 col-sm-10 col-md-10">
+                <input id="intput_a1" class="answer" name="answer1" type="text" placeholder="">&nbsp;<strong id="stron_a">of</strong>&nbsp;
+                <input id="intput_a2" class="answer" name="answer2" type="text" placeholder=""> <strong id="stron_a">Women</strong>
+                </div>
+            </div>
+        </div>   
+          
+    </div>
+ </div>
+    <br id="br3dd15"> 
+<div id="conf_row" class="row">
+    <div id="conf_col" class="scaled_text col-xs-10 col-sm-10 col-md-10">
+    <p id="conf_p">How confident are you in your answer?</p>
+    </div>
+</div>
+   
+    <script type="text/javascript">
+        createLikertScale('confidence', 400, ['No Confidence', '', 'Reasonable Confidence', '', 'Very High Confidence']); 
+    </script>
+
+    
+    <br id="br314"><br id="br315">
+    <div id="submit_button_div2" class="submit_button_div">
+    <button id="submitButton2" type="submit" class="btn btn-default submit">Submit</button>
+    <div id="error" class="error text-danger"></div>
+    </div>
+</div>
+-->
+<!-- FORM - QUESTION -->
+<form id="mainForm" action="/?worker_id={{worker_id}}&condition={{condition}}" method="post">{% csrf_token %}
+    <input type="hidden" id="currentQ" name="currentQ" value="{{qnum}}">
+    <input type="hidden" name="worker_id" value="{{worker_id}}">
+    <input type="hidden" name="condition" value="{{condition}}">
+</form>
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div id="modal-dialog" class="modal-dialog">
+    <div id="modal-content" class="modal-content">
+      <div id="modal-header" class="modal-header">
+        <h4 class="modal-title" id="myModalLabel">Full Screen Mode</h4>
+      </div>
+      <div id="modal-body" class="modal-body">
+        Please stay in Full Screen Mode. Press <strong>F11</strong> <span id="or_press_button"> or press the button bellow.</span>
+      </div>
+      <div id="modal-footer" class="modal-footer">
+        <button id="enter_full_screen2" type="button" class="btn btn-primary enter_full_screen">Enter Full Screen Mode</button></p>
+      </div>
+    </div>
+  </div>
+</div>
