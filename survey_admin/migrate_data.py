@@ -8,6 +8,8 @@ import zlib
 import re
 import ast
 import base64
+from base64 import b64decode, b64encode
+
 from itertools import chain
 
 from django.core import serializers
@@ -51,6 +53,150 @@ def queryset_iterator(queryset, chunksize=1000):
             yield row
         gc.collect()
 
+def maptest(obj):
+    k = obj[u'fields']
+    k['id'] = obj[u'pk']
+    if "experiment" in k:
+        k["experiment"] = maptest(k["experiment"])
+    if "question" in k:
+        k["question"] = maptest(k["question"])
+    if "answer" in k:
+        k["answer"] = json.loads(k["answer"])
+    if "correct_answer" in k:
+        k["correct_answer"] = json.loads(k["correct_answer"])
+    if "cursor_y" in k:
+        k["cursor_y"] = json.loads(k["cursor_y"])
+    return k
+#from zipfile_infolist import print_info
+import zipfile
+
+def export_survey_all(survey_id):
+    directory = os.path.join(settings.MEDIA_ROOT,"export_json_data")
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    interaction_directory = os.path.join(directory,"interaction")
+    if not os.path.exists(interaction_directory):
+        os.makedirs(interaction_directory)
+
+    survey = Survey.objects.filter(id=survey_id)
+    surveyMemberships = SurveyMembership.objects.filter(survey=survey[0])
+    questions = Question.objects.all()
+    questions_json_string = serializers.serialize('json', questions, indent=2)
+    questions_data = map(maptest, json.loads(questions_json_string))
+    questions_json_string = json.dumps(questions_data, indent=2)
+
+    experiments = Experiment.objects.filter(survey=survey[0], finished=True)
+    experiments_json_string = serializers.serialize('json', experiments, indent=2)
+    experiments_data = map(maptest, json.loads(experiments_json_string))
+    experiments_json_string = json.dumps(experiments_data, indent=2)
+
+    experimentAnswers = ExperimentAnswer.objects.filter(experiment__survey = survey[0])
+    experimentAnswers_json_string = serializers.serialize('json', experimentAnswers, indent=2,  relations={'experiment':{'fields':('survey_condition','remote_address', 'http_user_agent')}, 'question':{'fields':('correct_answer')}})
+    experimentAnswers_data = map(maptest, json.loads(experimentAnswers_json_string))
+    experimentAnswers_json_string = json.dumps(experimentAnswers_data, indent=2)
+
+    #queryset_iterator(ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True), chunksize=500)
+    experimentAnswerProcessed = queryset_iterator(ExperimentAnswerProcessed.objects.filter(experiment__survey = survey[0]), chunksize=20)
+    experimentAnswerProcessed_json_string = serializers.serialize('json', experimentAnswerProcessed, indent=2,  
+        fields=('source_answer','experiment', 'question', 'answer', 'confidence', 'user', 'processed_at', 'time', 'clicks_count', 'keys_count'
+            'scroll_count', 'cursor_y', 'window_h', 'window_w','bias', 'error'), relations={'experiment':{'fields':('survey_condition','remote_address', 'http_user_agent')}, 'question':{'fields':('correct_answer')}})
+    experimentAnswerProcessed_data = map(maptest, json.loads(experimentAnswerProcessed_json_string))
+    
+    for eap in experimentAnswerProcessed_data:
+        i_url = os.path.join("data", "interaction", "experimentAnswersProcessedMousedata_"+str(eap['id'])+".zip")
+        eap['user_events'] = i_url
+
+    experimentAnswerProcessed = queryset_iterator(ExperimentAnswerProcessed.objects.filter(experiment__survey = survey[0]), chunksize=20)
+    for eap in experimentAnswerProcessed:
+        # compressed data
+        mouseData = {}
+        init_eventJSON = zlib.decompress(b64decode(eap.init_event))
+        mouse_move_eventJSON = zlib.decompress(b64decode(eap.mouse_move_event))
+        mouse_click_eventJSON = zlib.decompress(b64decode(eap.mouse_click_event))
+        keydown_eventJSON = zlib.decompress(b64decode(eap.keydown_event))
+        scroll_eventJSON = zlib.decompress(b64decode(eap.scroll_event))
+        misc_eventJSON = zlib.decompress(b64decode(eap.misc_event))
+
+        mouseData['init_event'] = json.loads(init_eventJSON)
+        mouseData['mouse_move_event'] = json.loads(mouse_move_eventJSON)
+        mouseData['mouse_click_event'] = json.loads(mouse_click_eventJSON)
+        mouseData['keydown_event'] = json.loads(keydown_eventJSON)
+        mouseData['scroll_event'] = json.loads(scroll_eventJSON)
+        mouseData['misc_event'] = json.loads(misc_eventJSON)
+        
+        i_url = os.path.join(interaction_directory, "experimentAnswersProcessedMousedata_"+str(eap.pk)+".zip")
+        zf = zipfile.ZipFile(i_url, 
+                     mode='w',
+                     compression=zipfile.ZIP_DEFLATED, 
+                     )
+        try:
+            zf.writestr("experimentAnswersProcessedMousedata_"+str(eap.pk)+".json", json.dumps(mouseData))
+        finally:
+            zf.close()
+    
+    experimentAnswerProcessed_json_string = json.dumps(experimentAnswerProcessed_data, indent=2) 
+   
+    
+    url1 = os.path.join(directory, "surveyData_questions_"+str(survey[0].slug)+".json")
+    url2 = os.path.join(directory, "surveyData_experiments_"+str(survey[0].slug)+".json")
+    url3 = os.path.join(directory, "surveyData_experimentAnswers_"+str(survey[0].slug)+".json")
+    url4 = os.path.join(directory, "surveyData_experimentAnswersProcessed_"+str(survey[0].slug)+".json")
+
+    with open(url1, "w") as out:
+        out.write(questions_json_string)
+    with open(url2, "w") as out:
+        out.write(experiments_json_string)
+    with open(url3, "w") as out:
+        out.write(experimentAnswers_json_string)
+    with open(url4, "w") as out:
+        out.write(experimentAnswerProcessed_json_string)
+
+    """
+  
+        experimentUsers = ExperimentUser.objects.filter(experiment__survey = survey[0], experiment__finished=True,experiment__state__in=[0,1])
+        filteredUsers = []
+        experimentAnswers = []
+        experiments = []
+        for u in experimentUsers:
+            answeredQuestions = ExperimentAnswer.objects.filter(user__pk=u.pk)
+            experimentsQ = Experiment.objects.filter(user__pk=u.pk)
+            #print(answeredQuestions, len(questions))
+            if(len(answeredQuestions) == len(questions) and len(experimentsQ) == 1):
+                for aQ in answeredQuestions:
+                    if aQ.experiment != experimentsQ[0].pk:
+                        continue
+
+                ids.append(u.pk)
+                for aQ in answeredQuestions:
+                    experimentAnswers.append(aQ)
+                experiments.append(experimentsQ[0])
+                filteredUsers.append(u)
+            else:
+                print(len(answeredQuestions), len(experimentsQ))
+        experimentUsers = filteredUsers
+        #experiments = Experiment.objects.filter(user__pk__in=ids, survey=survey[0], finished=True, state__in=[0,1])
+        #experimentAnswers = ExperimentAnswer.objects.filter(user__pk__in=ids, experiment__survey = survey[0],  experiment__finished=True,experiment__state__in=[0,1])
+    print("experimentUsers", len(experimentUsers))
+    print("experiments", len(experiments))
+    print("experimentAnswers", len(experimentAnswers))
+
+    combined = list(chain(survey, questions, surveyMemberships, experimentUsers, experiments, experimentAnswers))
+
+    json_string = serializers.serialize('json', combined, indent=2, use_natural_keys=False)
+    data = json.loads(json_string)
+
+    #for d in data:
+    #    del d['pk']
+
+    json_string = json.dumps(data, indent=2)
+
+    directory = os.path.join(settings.MEDIA_ROOT,"export_data")
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    url = os.path.join(directory, "surveyData_all_"+str(survey[0].slug)+".json")
+    with open(url, "w") as out:
+        out.write(json_string)
+    """
 
 def export_survey(survey_id):
     survey = Survey.objects.filter(id=survey_id)

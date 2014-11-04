@@ -308,9 +308,9 @@ def json_preprocess_answers_130(request, survey_id):
 
 @staff_member_required
 def json_preprocess_answers(request, survey_id):
-    #export_survey(survey_id)
-    #return HttpResponse('{"status":"done"}', mimetype="application/json")
-    return createItemHoverHistograms(request, survey_id);
+    export_survey_all(survey_id)
+    return HttpResponse('{"status":"done"}', mimetype="application/json")
+    #return createItemHoverHistograms(request, survey_id);
     #return json_preprocess_answers_130(request, survey_id)
 
 

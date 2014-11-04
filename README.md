@@ -1,20 +1,8 @@
 # Mimic
 
-
 An input capture and visual analytics system that records online user behavior to facilitate the discovery of micro-interactions that may affect problem understanding and decision making.
 
-**Warning**: This is "research code", and requires some configuration and tweaking to get working.
-
-## Requirements
-
-* [Python 2.7](https://www.python.org/download/releases/2.7.6) (may work with other versions) 
-* [MySQL](http://dev.mysql.com/downloads/mysql/)
-* Lots of python libraries (see [stable-req.txt](https://github.com/sbreslav/mimic/blob/master/stable-req.txt))
-
-## More Info
-
-This code was used in experiments done for this paper:
-http://autodeskresearch.com/publications/mimic
+This code was used in experiments done for this paper: [Project Page](http://autodeskresearch.com/publications/mimic)
 
 ## Reference
 
@@ -36,6 +24,13 @@ If you want to reference this code in an academic paper, please use this referen
 
 ## Installation
 **Warning**: These instructions need quite a bit of clarification.
+**Warning**: This is "research code", and requires some configuration and tweaking to get working.
+
+### Requirements
+
+* [Python 2.7](https://www.python.org/download/releases/2.7.6) (may work with other versions) 
+* [MySQL](http://dev.mysql.com/downloads/mysql/)
+* Lots of python libraries (see [stable-req.txt](https://github.com/sbreslav/mimic/blob/master/stable-req.txt))
 
 These are rough instructions for setting up Mimic, assuming your have all the pre-requisits installed:
 - using command line navigate to the mimic folder that contains manage.py
