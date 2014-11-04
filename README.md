@@ -4,6 +4,9 @@ An input capture and visual analytics system that records online user behavior t
 
 This code was used in experiments done for this paper: [Project Page](http://autodeskresearch.com/publications/mimic)
 
+![screenshot](https://github.com/sbreslav/mimic/raw/master/docs/screenshot.png)
+![screenshot2](https://github.com/sbreslav/mimic/raw/master/docs/screenshot2.png)
+
 ## Reference
 
 If you want to reference this code in an academic paper, please use this reference:
