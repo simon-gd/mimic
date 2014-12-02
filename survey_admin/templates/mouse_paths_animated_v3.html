@@ -317,20 +317,31 @@ $(document).ready(function() {
     var y_mapping;
     function getIndex(target)
     {
+        if (typeof target == 'string' || target instanceof String){
+                return target;
+        }else{
             if(target && 'tabindex' in target){
-                        return target.tabindex;
+                return target.tabindex;
             }else{
-                        return "";
+                return "";
             }
+        }
+           
             
     }
     function getId(target)
     {
-            if(target && 'id' in target){
-                        return target.id;
+            if (typeof target == 'string' || target instanceof String){
+                return target;
             }else{
-                        return "";
+                if(target && 'id' in target){
+                    return target.id;
+                }else{
+                    return "";
+                }
             }
+
+            
             
     }
     function displayGraphExample(id, w, h, timeSeconds, clickPts, keyPts, movePts, focusinPts, focusoutPts, wheelPts, scrollPts) {

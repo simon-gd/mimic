@@ -208,6 +208,7 @@ class ExperimentAnswerProcessed(models.Model):
     keydown_event = models.TextField()
     scroll_event = models.TextField()
     misc_event = models.TextField()
+    elements = models.TextField(null=True)
     
     #version = models.IntegerField(default=0)
     

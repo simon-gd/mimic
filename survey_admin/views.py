@@ -215,6 +215,7 @@ def json_preprocess_answers_140(request, survey_id):
         keydownEvents = []
         scrollEvents = []
         miscEvents = []
+        elements = {}
         try:
             eventDataURL = a.mouseData
             if settings.MIMIC_USE_AZURE_BLOB:
@@ -230,6 +231,7 @@ def json_preprocess_answers_140(request, survey_id):
                 mouseDataJSON = json.load(data_file)
                 #mouseDataJSON = json.loads(response)
             events = mouseDataJSON["events"];
+            elements = mouseDataJSON["elements"];
             #print(mouseDataJSON)
             start_time = int(round(time.time() * 1000))
             end_time = 0
@@ -296,7 +298,7 @@ def json_preprocess_answers_140(request, survey_id):
             p_a.keydown_event =  b64encode(zlib.compress(json.dumps(keydownEvents), 9))
             p_a.scroll_event =  b64encode(zlib.compress(json.dumps(scrollEvents), 9))
             p_a.misc_event =  b64encode(zlib.compress(json.dumps( miscEvents ), 9))
-            
+            p_a.elements =  b64encode(zlib.compress(json.dumps( elements ), 9))
             # analitic data
             p_a.window_h = window_h
             p_a.window_w = window_w

@@ -1,0 +1,137 @@
+# -*- coding: utf-8 -*-
+from south.utils import datetime_utils as datetime
+from south.db import db
+from south.v2 import SchemaMigration
+from django.db import models
+
+
+class Migration(SchemaMigration):
+
+    def forwards(self, orm):
+        # Adding unique constraint on 'Experiment', fields ['user', 'survey']
+        db.create_unique(u'survey_experiment', ['user_id', 'survey_id'])
+
+        # Adding unique constraint on 'ExperimentAnswer', fields ['experiment', 'question', 'user']
+        db.create_unique(u'survey_experimentanswer', ['experiment_id', 'question_id', 'user_id'])
+
+        # Adding unique constraint on 'SurveyMembership', fields ['survey', 'question']
+        db.create_unique(u'survey_surveymembership', ['survey_id', 'question_id'])
+
+        # Adding unique constraint on 'ExperimentUser', fields ['worker_id']
+        db.create_unique(u'survey_experimentuser', ['worker_id'])
+
+        # Adding field 'ExperimentAnswerProcessed.elements'
+        db.add_column(u'survey_experimentanswerprocessed', 'elements',
+                      self.gf('django.db.models.fields.TextField')(null=True),
+                      keep_default=False)
+
+
+    def backwards(self, orm):
+        # Removing unique constraint on 'ExperimentUser', fields ['worker_id']
+        db.delete_unique(u'survey_experimentuser', ['worker_id'])
+
+        # Removing unique constraint on 'SurveyMembership', fields ['survey', 'question']
+        db.delete_unique(u'survey_surveymembership', ['survey_id', 'question_id'])
+
+        # Removing unique constraint on 'ExperimentAnswer', fields ['experiment', 'question', 'user']
+        db.delete_unique(u'survey_experimentanswer', ['experiment_id', 'question_id', 'user_id'])
+
+        # Removing unique constraint on 'Experiment', fields ['user', 'survey']
+        db.delete_unique(u'survey_experiment', ['user_id', 'survey_id'])
+
+        # Deleting field 'ExperimentAnswerProcessed.elements'
+        db.delete_column(u'survey_experimentanswerprocessed', 'elements')
+
+
+    models = {
+        u'survey.experiment': {
+            'Meta': {'unique_together': "(('user', 'survey'),)", 'object_name': 'Experiment'},
+            'allMetaData': ('django.db.models.fields.TextField', [], {}),
+            'finished': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'http_referer': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'http_user_agent': ('django.db.models.fields.TextField', [], {}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'remote_address': ('django.db.models.fields.IPAddressField', [], {'max_length': '15'}),
+            'remote_host': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'session_key': ('django.db.models.fields.CharField', [], {'max_length': '40', 'blank': 'True'}),
+            'state': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'survey': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['survey.Survey']"}),
+            'survey_condition': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['survey.ExperimentUser']"}),
+            'version': ('django.db.models.fields.IntegerField', [], {'default': '0'})
+        },
+        u'survey.experimentanswer': {
+            'Meta': {'unique_together': "(('experiment', 'question', 'user'),)", 'object_name': 'ExperimentAnswer'},
+            'answer': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'confidence': ('django.db.models.fields.IntegerField', [], {'default': '0', 'null': 'True', 'blank': 'True'}),
+            'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['survey.Experiment']"}),
+            'finished': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'mouseData': ('django.db.models.fields.TextField', [], {}),
+            'question': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['survey.Question']"}),
+            'submitted_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['survey.ExperimentUser']"})
+        },
+        u'survey.experimentanswerprocessed': {
+            'Meta': {'object_name': 'ExperimentAnswerProcessed'},
+            'answer': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'bias': ('django.db.models.fields.DecimalField', [], {'default': '0.0', 'max_digits': '19', 'decimal_places': '10'}),
+            'clicks_count': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'confidence': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'cursor_y': ('django.db.models.fields.TextField', [], {}),
+            'elements': ('django.db.models.fields.TextField', [], {'null': 'True'}),
+            'error': ('django.db.models.fields.DecimalField', [], {'default': '0.0', 'max_digits': '19', 'decimal_places': '10'}),
+            'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['survey.Experiment']"}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'init_event': ('django.db.models.fields.TextField', [], {}),
+            'keydown_event': ('django.db.models.fields.TextField', [], {}),
+            'keys_count': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'misc_event': ('django.db.models.fields.TextField', [], {}),
+            'mouse_click_event': ('django.db.models.fields.TextField', [], {}),
+            'mouse_move_event': ('django.db.models.fields.TextField', [], {}),
+            'processed_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'question': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['survey.Question']"}),
+            'scroll_count': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'scroll_event': ('django.db.models.fields.TextField', [], {}),
+            'source_answer': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['survey.ExperimentAnswer']"}),
+            'time': ('django.db.models.fields.DecimalField', [], {'default': '0.0', 'max_digits': '19', 'decimal_places': '10'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['survey.ExperimentUser']"}),
+            'window_h': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'window_w': ('django.db.models.fields.IntegerField', [], {'default': '0'})
+        },
+        u'survey.experimentuser': {
+            'Meta': {'object_name': 'ExperimentUser'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'worker_id': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
+        },
+        u'survey.question': {
+            'Meta': {'object_name': 'Question'},
+            'base_template': ('django.db.models.fields.CharField', [], {'default': "'question_v2.html'", 'max_length': '255'}),
+            'correct_answer': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'data': ('django.db.models.fields.TextField', [], {}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'slug': ('django.db.models.fields.SlugField', [], {'unique': 'True', 'max_length': '255'}),
+            'template': ('django.db.models.fields.CharField', [], {'max_length': '255'})
+        },
+        u'survey.survey': {
+            'Meta': {'object_name': 'Survey'},
+            'active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'condition_count': ('django.db.models.fields.IntegerField', [], {'default': '4'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'pub_date': ('django.db.models.fields.DateTimeField', [], {}),
+            'questions': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': u"orm['survey.Question']", 'null': 'True', 'through': u"orm['survey.SurveyMembership']", 'blank': 'True'}),
+            'slug': ('django.db.models.fields.SlugField', [], {'unique': 'True', 'max_length': '255'}),
+            'survey_code': ('django.db.models.fields.CharField', [], {'default': "'2lMGut4I4h'", 'max_length': '255'}),
+            'user_data_version': ('django.db.models.fields.CharField', [], {'default': "'1.4.0'", 'max_length': '255'})
+        },
+        u'survey.surveymembership': {
+            'Meta': {'unique_together': "(('survey', 'question'),)", 'object_name': 'SurveyMembership'},
+            'desired_answers': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'order': ('django.db.models.fields.IntegerField', [], {}),
+            'question': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['survey.Question']"}),
+            'survey': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['survey.Survey']"})
+        }
+    }
+
+    complete_apps = ['survey']

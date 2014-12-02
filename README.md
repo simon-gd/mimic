@@ -47,3 +47,6 @@ These are rough instructions for setting up Mimic, assuming your have all the pr
 
 
 For more detailed information See [install.md](https://github.com/sbreslav/mimic/blob/master/install.md)
+
+to create a db migration: do
+- ``python .\manage.py schemamigration survey --auto``
