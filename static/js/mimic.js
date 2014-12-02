@@ -318,48 +318,48 @@ $(document).ready(function () {
     if (!debug) {
         $(document).mousemove(function (e) {
             // First mouse move lets add a ready event
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
 
         $(document).click(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
 
         $(document).dblclick(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
 
         $(document).mouseenter(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
 
         $(document).mouseleave(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
 
         $(document).mousedown(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
         $(document).mouseup(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
@@ -367,37 +367,37 @@ $(document).ready(function () {
 
         // Keyboard Events
         $(document).keydown(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
         $(document).keyup(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
         $(document).keypress(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
         $(document).focusin(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
         $(document).focusout(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
         $(document).mousewheel(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
@@ -405,25 +405,25 @@ $(document).ready(function () {
 
         // Window Events
         $(window).resize(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
         $(window).scroll(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
         $(window).focus(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);
         });
         $(window).blur(function (e) {
-            if (logBuffer.length == 0) {
+            if (!logBuffer.events.init) {
                 logFormatted(logBuffer, e, "init");
             }
             logFormatted(logBuffer, e);

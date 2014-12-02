@@ -29,6 +29,8 @@ import pickle
 import os.path
 import numpy as np
 import zlib
+import time
+from datetime import datetime
 import re
 import ast
 from base64 import b64decode, b64encode
@@ -143,6 +145,170 @@ def processLine(line):
         return {"time": vals[0], "action": vals[1], "x": vals[2], "y": vals[3] }
 
 import requests
+
+
+def json_preprocess_answers_140(request, survey_id):
+
+    survey = get_object_or_404(Survey, id=survey_id)
+    api_version = StrictVersion(survey.user_data_version)
+
+    if api_version != StrictVersion("1.4.0"):
+        return HttpResponse('{"error":"Api version not supported in json_preprocess_answers function('+str(api_version)+')"}', mimetype="application/json")
+
+
+    expected_answers = SurveyMembership.objects.filter(survey=survey).count()
+                
+    expAns = ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True)
+    create_count = 0
+    updated_count = 0
+    skipped_count = 0
+    errors = []
+    force_reprocess = True
+    if "force_reprocess" in request.GET:
+        force_reprocess = request.GET["force_reprocess"]
+
+    for a in expAns:
+        p_a = None
+        try:
+            p_a = ExperimentAnswerProcessed.objects.get(source_answer=a)
+            if not force_reprocess:
+                continue
+            updated_count += 1
+        except MultipleObjectsReturned:
+            ExperimentAnswerProcessed.objects.filter(source_answer=a).delete()
+            p_a = ExperimentAnswerProcessed.objects.create(source_answer=a, experiment=a.experiment, question=a.question, answer=str(a.answer), confidence=a.confidence, user=a.user)
+            create_count += 1
+        except ExperimentAnswerProcessed.DoesNotExist:
+            # create a new
+            p_a = ExperimentAnswerProcessed.objects.create(source_answer=a, experiment=a.experiment, question=a.question, answer=str(a.answer), confidence=a.confidence, user=a.user)
+            create_count += 1
+        
+        if len(a.answer) > 0:
+            p_a.answer = a.answer
+            #validate answer
+        
+            correct_answer = json.loads(a.question.correct_answer.encode('utf-8'))
+            answer = json.loads(p_a.answer.encode('utf-8'))
+            if len(answer) > 0:
+                for k,v in answer.iteritems():
+                    answer[k] = str(v)
+
+                #for k,v in correct_answer.iteritems():
+                #    val = str(v)
+                #    if val.isdigit():
+                #        prev_a = answer[k]
+                #        answer[k] = re.sub("[^\d\.]", "", answer[k])
+                #        if answer[k] != prev_a:
+                #            print("changed ", answer[k], prev_a)
+                p_a.answer = json.dumps(answer)
+
+        clicks = 0
+        scrolls = 0
+        ttime = 0
+        keydown = 0
+        cursor_y = []
+        window_w = 0
+        window_h = 0
+        mouseMoveEvents = []
+        initEvents = []
+        clickEvents = []
+        keydownEvents = []
+        scrollEvents = []
+        miscEvents = []
+        try:
+            eventDataURL = a.mouseData
+            if settings.MIMIC_USE_AZURE_BLOB:
+                response = requests.get(eventDataURL, timeout=10.0) # urllib2.urlopen(eventDataURL)
+                if response.status_code != 200:
+                    print("failded to get the file!!! ", eventDataURL)
+                mouseDataJSON = response.json() #json.loads(jsonEventData.encode('utf-8'))
+
+            else:
+                #txt = open(eventDataURL)
+                #response = txt.read()
+                data_file = open(eventDataURL, 'r')   
+                mouseDataJSON = json.load(data_file)
+                #mouseDataJSON = json.loads(response)
+            events = mouseDataJSON["events"];
+            #print(mouseDataJSON)
+            start_time = int(round(time.time() * 1000))
+            end_time = 0
+            for e in events:
+                first_timestamp = events[e][0]['timeStamp']
+                last_timestamp = events[e][-1]['timeStamp']
+                if first_timestamp > 0 and first_timestamp < start_time:
+                    start_time = first_timestamp
+                if last_timestamp > end_time:
+                    end_time = last_timestamp
+            
+            start = datetime.fromtimestamp(start_time/1000)
+            then = datetime.fromtimestamp(end_time/1000)
+            tdelta = then - start
+            
+            ttime = tdelta.total_seconds() #float(end_time-start_time) / 1000.0
+            
+            print("times:", ttime)
+
+            for e in events:
+                for dataPt in events[e]:
+                    if e == "click":
+                        clicks += 1
+                        xPos = dataPt['pageX']
+                        yPos = dataPt['pageY']
+                        clickEvents.append({'time':dataPt['timeStamp']-start_time, 'x':xPos, 'y':yPos, 'type':"click", 'e':dataPt})
+                        miscEvents.append({'time':dataPt['timeStamp']-start_time, 'x':xPos, 'y':yPos, 'type':"click", 'e':dataPt})
+                    elif e == "scroll":
+                        scrolls += 1
+                        dx = dataPt['scrollOffset']['pageXOffset']
+                        dy = dataPt['scrollOffset']['pageYOffset']
+                        scrollEvents.append({'time':dataPt['timeStamp']-start_time, 'dx':dx, 'dy':dy, 'type':"scroll", 'e':dataPt})
+                        miscEvents.append({'time':dataPt['timeStamp']-start_time, 'dx':dx, 'dy':dy, 'type':"scroll", 'e':dataPt})
+                    elif e == "keydown":
+                        keydown += 1
+                        keydownEvents.append({'time':dataPt['timeStamp']-start_time, 'key':dataPt['which'], 'type':"keydown", 'e':dataPt})
+                        miscEvents.append({'time':dataPt['timeStamp']-start_time, 'key':dataPt['which'], 'type':"keydown", 'e':dataPt})
+                    elif e == "mousemove":
+                        cursor_y.append(float(dataPt['pageY']))
+                        mouseMoveEvents.append({'time':dataPt['timeStamp']-start_time, 'x':dataPt['pageX'], 'y':dataPt['pageY'], 'type':"mousemove", 'e':dataPt})
+                        miscEvents.append({'time':dataPt['timeStamp']-start_time, 'x':dataPt['pageX'], 'y':dataPt['pageY'], 'type':"mousemove", 'e':dataPt})
+                    elif e == "init":
+                        initEvents.append({'time':dataPt['timeStamp']-start_time, 'type':"init", 'e':dataPt})
+                        miscEvents.append({'time':dataPt['timeStamp']-start_time, 'type':"init", 'e':dataPt})
+                        window_w = mouseDataJSON['elements']['window'][0]['width']
+                        window_h = mouseDataJSON['elements']['window'][0]['height']
+                    elif e == "resize":
+                        rw = dataPt['width']
+                        rh = dataPt['height']
+                        miscEvents.append({'time':dataPt['timeStamp']-start_time, 'x':rw, 'y':rh, 'type':"resize", 'e':dataPt}) 
+                    else:
+                        miscEvents.append({'time':dataPt['timeStamp']-start_time, 'type': e, 'e':dataPt, 'extra': dataPt})
+          
+        except Exception as e:
+            #error = "json_preprocess_answers:  Error: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
+            #errors.append(error)
+            print("Exeption:", e)
+            continue
+        print(p_a.id)
+        if p_a != None:
+            p_a.init_event = b64encode(zlib.compress(json.dumps(initEvents), 9)) 
+            p_a.mouse_move_event =  b64encode(zlib.compress(json.dumps(mouseMoveEvents), 9))
+            p_a.mouse_click_event =  b64encode(zlib.compress(json.dumps(clickEvents), 9))
+            p_a.keydown_event =  b64encode(zlib.compress(json.dumps(keydownEvents), 9))
+            p_a.scroll_event =  b64encode(zlib.compress(json.dumps(scrollEvents), 9))
+            p_a.misc_event =  b64encode(zlib.compress(json.dumps( miscEvents ), 9))
+            
+            # analitic data
+            p_a.window_h = window_h
+            p_a.window_w = window_w
+            p_a.time = ttime
+            p_a.clicks_count = clicks
+            p_a.keys_count = keydown
+            p_a.scroll_count = scrolls
+            p_a.cursor_y =  json.dumps( cursor_y )
+            print("processed Answer ", start_time, end_time, ttime, clicks, keydown)
+            p_a.save()
+            print("saving ", p_a.id)
+    return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+',"skipped":'+str(skipped_count)+'}', mimetype="application/json")
 
 def json_preprocess_answers_130(request, survey_id):
     survey = get_object_or_404(Survey, id=survey_id)
@@ -308,10 +474,10 @@ def json_preprocess_answers_130(request, survey_id):
 
 @staff_member_required
 def json_preprocess_answers(request, survey_id):
-    export_survey_all(survey_id)
-    return HttpResponse('{"status":"done"}', mimetype="application/json")
+    #export_survey_all(survey_id)
+    #return HttpResponse('{"status":"done"}', mimetype="application/json")
     #return createItemHoverHistograms(request, survey_id);
-    #return json_preprocess_answers_130(request, survey_id)
+    return json_preprocess_answers_140(request, survey_id)
 
 
 @staff_member_required

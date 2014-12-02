@@ -230,7 +230,7 @@ def saveMouseData(survey, worker_id, question_id, rawEventData):
             os.makedirs(directory)
         url = os.path.join(directory, blob_name)
         with open(url, 'w') as outfile:
-            json.dump(rawEventData, outfile)
+            outfile.write(rawEventData)
     return url
 
 # Used to save questions via json

@@ -1,0 +1,127 @@
+﻿{% load staticfiles %}
+{% comment %}
+The MIT License (MIT)
+
+Copyright (c) 2014 Autodesk, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <!--
+    The MIT License (MIT)
+    Copyright (c) 2014 Autodesk, Inc.
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+    -->   
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>experiscope</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+
+    <style>
+    html, body {
+        height: 100%;
+    }
+
+    .fill { 
+        min-height: 100%;
+        height: 100%;
+    }
+
+    </style>
+    {% block extra_css %}{% endblock extra_css %}
+
+      <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.0.min.js"></script>     
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+  
+    
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.7.1/modernizr.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/headjs/1.0.3/head.core.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/screenfull.js/1.0.4/screenfull.min.js"></script>
+     
+    <script type="text/javascript" src="{% static 'js/lib/bowser.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/rangy-core.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/rangy-serializer.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/jquery.mousewheel.js' %}"></script>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+
+    <script>
+        if (!window.console) {var console = {};}
+        if (!console.log) {console.log = function() {};}
+        if (!console.error) {console.error = function() {};}
+        var nsURL = "{% url 'survey.views.not_supported' %}";
+        if ((!Modernizr.canvas || !Modernizr.inlinesvg) && window.location.href.indexOf(nsURL) == -1) {
+          window.location.href = nsURL;
+        }
+        //(bowser.safari && bowser.version >= 5) ||
+        //(bowser.opera && bowser.version >= 11.0) ||
+
+        if( (bowser.msie && bowser.version >= 9) ||
+            (bowser.chrome && bowser.version >= 14) ||
+            (bowser.firefox && bowser.version >= 4.0) ||
+            window.location.href.indexOf(nsURL) != -1) {
+          // We are good
+        }else{
+          window.location.href = nsURL;
+        }
+        //window.location.href = "{% url 'survey.views.not_supported' %}";
+    </script>
+    {% block head %}{% endblock head %}
+  </head>
+  <body id="body">
+    {% block extra_head %}{% endblock extra_head %}
+    <script type="text/javascript" src="{% static 'js/lib/detect-zoom.js' %}"></script>
+    <div id="wrapper_div"class="container-fluid fill">
+      {% block content %}
+        <p>Use this document as a way to quick start any new project.</p>
+      {% endblock content %}
+
+    </div> <!-- /container -->
+  </body>
+</html>
