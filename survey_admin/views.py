@@ -991,27 +991,31 @@ def process_mouse_paths(request, answer_id):
     version = expAns.experiment.version
     mouseDataRaw = expAns.misc_event
     eventData = zlib.decompress(b64decode(mouseDataRaw))
+    #mouseClicks = zlib.decompress(b64decode(expAns.mouse_click_event))
+    #scrolls = zlib.decompress(b64decode(expAns.scroll_event))
+    elements = zlib.decompress(b64decode(expAns.elements))
     survey = expAns.experiment.survey
     current_question = expAns.question
 
-    return version, expAns, survey, current_question,  eventData, "", "", int(expAns.window_w), int(expAns.window_h)
+    return version, expAns, survey, current_question,  eventData, elements, "", "", int(expAns.window_w), int(expAns.window_h)
 
 
 @staff_member_required
 def static_mouse_paths(request, answer_id):
-    expAns, survey, current_question,  mouseMoves, mouseClicks, scrolls, w, h = process_mouse_paths(request, answer_id)
+    expAns, survey, current_question,  mouseMoves, elements, mouseClicks, scrolls, w, h = process_mouse_paths(request, answer_id)
     return render_to_response('mouse_paths.html', {'show_numbers':True,
                                                    'survey':survey,
                                                    'question':current_question.data,
                                                    'condition': expAns.experiment.survey_condition,
                                                    'question_template': current_question.template,
                                                    'mouseMoves':mouseMoves,
+                                                   'elements':elements,
                                                    'mouseClicks':mouseClicks,
                                                    'scrolls':scrolls}, context_instance=RequestContext(request))
 
 @staff_member_required
 def animated_mouse_paths(request, answer_id):
-    version, expAns, survey, current_question, mouseMoves, mouseClicks, scrolls, w, h = process_mouse_paths(request, answer_id)
+    version, expAns, survey, current_question, mouseMoves, elements, mouseClicks, scrolls, w, h = process_mouse_paths(request, answer_id)
     #if version == 1:
     #    template = 'mouse_paths_animated.html'
     #else:
@@ -1023,8 +1027,9 @@ def animated_mouse_paths(request, answer_id):
                                                             'condition': expAns.experiment.survey_condition,
                                                             'question_template': current_question.template,
                                                             'mouseMoves':mouseMoves,
-                                                            'version': version,
+                                                            'version': 1.4,
                                                             'mouseClicks':mouseClicks,
+                                                            'elements':elements,
                                                             'window_w':w,
                                                             'window_h':h,
                                                             'scrolls':scrolls}, context_instance=RequestContext(request))

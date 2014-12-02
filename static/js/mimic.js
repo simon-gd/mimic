@@ -213,6 +213,25 @@ function logFormatted(logBuffer, e, typeOverwrite) {
     } else if (eventName == "resize") {
         eobj['width'] = $(window).width();
         eobj['height'] = $(window).height();
+
+        var offs = getScrollXY();
+        var wobj = {
+            timeStamp: time_stamp,
+            width: $(window).width(),
+            height: $(window).height(), 
+            screenX: window.screenX,
+            screenY: window.screenY,
+            innerWidth: window.innerWidth,
+            innerHeight: window.innerHeight,
+            outerWidth: window.outerWidth,
+            outerHeight: window.outerHeight,
+            scrollOffset: {'pageXOffset': offs[0], 'pageYOffset':  offs[1]}, 
+        }
+        if (isDefined(window, 'mozInnerScreenX')) {
+            wobj['offset'] = { 'left': window.mozInnerScreenX, 'top': window.mozInnerScreenY };
+        }
+        logBuffer.elements['window'].push(wobj);
+
     } else if (eventName == "init" || eventName == "scroll" || eventName == "resize" || eventName == "mousewheel") {
         var offs = getScrollXY();
         eobj['scrollOffset'] = { 'pageXOffset': offs[0], 'pageYOffset': offs[1] };

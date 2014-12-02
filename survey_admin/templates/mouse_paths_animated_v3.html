@@ -258,11 +258,18 @@ $(document).ready(function() {
     var currentClick = 0;
     var totalPts = mouseMoves.length;
     //console.log(totalPts);
-    var maxTime = mouseMoves[mouseMoves.length-1].time;
+
+    var maxTime = 0; 
+    for(var i=0; i < mouseMoves.length; i++){
+        if(maxTime <  mouseMoves[i].time){
+            maxTime =  mouseMoves[i].time;
+        }
+    }
+    //mouseMoves[mouseMoves.length-1].time;
     if(version > 1){
             maxTime -= startTime;
     }
-    console.log("maxTime", mouseMoves[mouseMoves.length-1].time, maxTime);
+    console.log("maxTime", maxTime);
     
     //alert(maxTime)
     var currentTime = 0;
@@ -285,6 +292,8 @@ $(document).ready(function() {
     var window_infocus = true;
     var window_outer_w = {{window_w|safe}};
     var window_outer_h = {{window_h|safe}};
+    var elements = {{elements|safe}};
+
     var toolbarH = 0;
     var toolbarW = 0;
     
@@ -487,12 +496,12 @@ $(document).ready(function() {
                     .style("stroke-opacity", 1.0);
                 clickNode.append("title")
                         .text(function(d) { return getId(d.target);});
-                clickNode.append("text")
-                        .attr("dy", ".4em")
-                        .attr("dx", "-.1em")
-                        .attr("font-size", "6pt")
-                        .style("text-anchor", "middle")
-                        .text(function(d) { return getIndex(d.target); });
+                //clickNode.append("text")
+                //        .attr("dy", ".4em")
+                //        .attr("dx", "-.1em")
+                //        .attr("font-size", "6pt")
+                //        .style("text-anchor", "middle")
+                //        .text(function(d) { return getIndex(d.target); });
                     
                 var keyNode = graph.selectAll(".dotKey")
                     .data(keyPts)
@@ -542,12 +551,12 @@ $(document).ready(function() {
                  focusNode.append("title")
                         .text(function(d) { return getId(d.target);});
                         
-                 focusNode.append("text")
-                        .attr("dy", ".4em")
-                        .attr("dx", "-.1em")
-                        .attr("font-size", "6pt")
-                        .style("text-anchor", "middle")
-                        .text(function(d) { return getIndex(d.target); });
+                 //focusNode.append("text")
+                 //       .attr("dy", ".4em")
+                 //       .attr("dx", "-.1em")
+                 //       .attr("font-size", "6pt")
+                 //       .style("text-anchor", "middle")
+                 //       .text(function(d) { return getIndex(d.target); });
                  
                  var focusNode2 = graph.selectAll(".dotFocus2")
                     .data(focusoutPts)
@@ -567,14 +576,14 @@ $(document).ready(function() {
                     .style("fill-opacity", 1.0)
                     .style("stroke-opacity", 1.0);
                  focusNode2.append("title")
-                        .text(function(d) { return d.target.id;});
+                        .text(function(d) { return getId(d.target);});
                         
-                 focusNode2.append("text")
-                        .attr("dy", ".4em")
-                        .attr("dx", "-.1em")
-                        .attr("font-size", "6pt")
-                        .style("text-anchor", "middle")
-                        .text(function(d) { return d.target.tabindex; });
+                 //focusNode2.append("text")
+                 //       .attr("dy", ".4em")
+                 //       .attr("dx", "-.1em")
+                 //       .attr("font-size", "6pt")
+                 //       .style("text-anchor", "middle")
+                 //       .text(function(d) { return d.target.tabindex; });
                
                  var scrollNode = graph.selectAll(".dotScroll")
                     .data(scrollPts)
@@ -978,165 +987,294 @@ $(document).ready(function() {
     }
     
     function drawWindow(currentPt){
-          if(!mouseMoves[0]['extra']){
-            return;
-          }
-          var c=document.getElementById("windowBox");
-          var ctx=c.getContext("2d");
-          for (var j=0; j <= currentPt; j++)
-          {
-            if(mouseMoves[j]['extra'] && mouseMoves[j]['extra']['zoom']){
-                pixelRatio = mouseMoves[j]['extra']['zoom']['devicePixelRatio'];
-            }
-            if (mouseMoves[j].type == "init"){
-              //console.log("window init", mouseMoves[j]);
-              userAgent = mouseMoves[j]['extra']['navigator']['userAgent']; 
-              x_offset = 0;
-              y_offset = 0;
-              scroll_offset_x = 0;
-              scroll_offset_y = 0;
-              
-              screen_h =  mouseMoves[j]['extra']['screen']['height']; 
-              screen_w =  mouseMoves[j]['extra']['screen']['width']; 
-              
-              screen_pos_x = mouseMoves[j]['extra']['window']['screenX'];
-              screen_pos_y = mouseMoves[j]['extra']['window']['screenY'];
-              
-              window_w = mouseMoves[j]['extra']['window']['width'];
-              window_h = mouseMoves[j]['extra']['window']['height'];
-              
-              window_outer_w = mouseMoves[j]['extra']['window']['outerWidth'];
-              window_outer_h = mouseMoves[j]['extra']['window']['outerHeight'];
-              
-              window_w = window_w;
-              window_h = window_h;
-                
-              if (userAgent.indexOf("Chrome") == -1 && userAgent.indexOf("Windows") == -1){
-                // Chrome for some reason does not handle outerWidth/Height the same as Firefox
-                window_outer_w = window_outer_w;
-                window_outer_h = window_outer_h;   
-              }
+          if(elements){
+            // window stuff is in a separate place
+            userAgent = elements['navigator']['userAgent']; 
+            x_offset = 0;
+            y_offset = 0;
+            scroll_offset_x = 0;
+            scroll_offset_y = 0;
+            var numWindows = elements['window'].length-1;
 
-              toolbarH = window_outer_h-window_h;
+            screen_h =  elements['screen']['height']; 
+            screen_w =  elements['screen']['width']; 
+
+            screen_pos_x = elements['window'][numWindows]['screenX'];
+            screen_pos_y = elements['window'][numWindows]['screenY'];
+
+            window_w = elements['window'][numWindows]['width'];
+            window_h = elements['window'][numWindows]['height'];
+
+            window_outer_w =  elements['window'][numWindows]['outerWidth'];
+            window_outer_h =  elements['window'][numWindows]['outerHeight'];
+
+
+             toolbarH = window_outer_h-window_h;
               toolbarW = window_outer_w-window_w;
               
-              if (mouseMoves[j]['extra']['window']['offset'] && mouseMoves[j]['extra']['window']['offset']['left']){
-                window_offset_x = mouseMoves[j]['extra']['window']['offset']['left'];
-                window_offset_y = mouseMoves[j]['extra']['window']['offset']['top'];
-              }else{
+              //if (mouseMoves[j]['extra']['window']['offset'] && mouseMoves[j]['extra']['window']['offset']['left']){
+              //  window_offset_x = mouseMoves[j]['extra']['window']['offset']['left'];
+              //  window_offset_y = mouseMoves[j]['extra']['window']['offset']['top'];
+              //}else{
                 window_offset_x = screen_pos_x;
                 window_offset_y = screen_pos_y+toolbarH;
-              }
-              
-              //console.log(userAgent, pixelRatio);
-              
-            }if (mouseMoves[j].type == "scroll"){
-               
-               scroll_offset_x = mouseMoves[j].dx;
-               scroll_offset_y = mouseMoves[j].dy;
-              
-            } else if (mouseMoves[j].type == "resize"){
-               
-              //console.log("resize", mouseMoves[j], pixelRatio);
-              
-              screen_pos_x = mouseMoves[j]['extra']['window']['screenX'];
-              screen_pos_y = mouseMoves[j]['extra']['window']['screenY'];
-              
-              if (mouseMoves[j]['extra']['window']['offset'] && mouseMoves[j]['extra']['window']['offset']['left']){
-                window_offset_x = mouseMoves[j]['extra']['window']['offset']['left'];
-                window_offset_y = mouseMoves[j]['extra']['window']['offset']['top'];
-              }else{
-                window_offset_x = screen_pos_x;
-                window_offset_y = screen_pos_y+toolbarH;
-              }
-              
-              
-              window_w = mouseMoves[j]['extra']['window']['width'];
-              window_h = mouseMoves[j]['extra']['window']['height'];
-              
-              window_outer_w = mouseMoves[j]['extra']['window']['outerWidth'];
-              window_outer_h = mouseMoves[j]['extra']['window']['outerHeight'];
-              
-              window_w = window_w;
-              window_h = window_h;
-                
-              if (userAgent.indexOf("Chrome") == -1 && userAgent.indexOf("Windows") == -1){
-                
-                window_outer_w = window_outer_w;
-                window_outer_h = window_outer_h;   
-              }
-              
-              toolbarH = window_outer_h-window_h;
-              toolbarW = window_outer_w-window_w;
-              
+            var c=document.getElementById("windowBox");
+            var ctx=c.getContext("2d");
+            for (var j=0; j <= currentPt; j++)
+            { 
+                if (mouseMoves[j].type == "scroll"){
+                   
+                   scroll_offset_x = mouseMoves[j]['scrollOffset']['pageXOffset'];
+                   scroll_offset_y = mouseMoves[j]['scrollOffset']['pageYOffset'];;
+                  
+                } else if (mouseMoves[j].type == "resize"){
+                   
+                  //console.log("resize", mouseMoves[j], pixelRatio);
+                  
+                  //screen_pos_x = mouseMoves[j]['extra']['window']['screenX'];
+                  //screen_pos_y = mouseMoves[j]['extra']['window']['screenY'];
+                  
+                  //if (mouseMoves[j]['extra']['window']['offset'] && mouseMoves[j]['extra']['window']['offset']['left']){
+                  //  window_offset_x = mouseMoves[j]['extra']['window']['offset']['left'];
+                  //  window_offset_y = mouseMoves[j]['extra']['window']['offset']['top'];
+                  //}else{
+                  //  window_offset_x = screen_pos_x;
+                  //  window_offset_y = screen_pos_y+toolbarH;
+                  // }
+                  
+                  
+                  window_w = mouseMoves[j]['width'];
+                  window_h = mouseMoves[j]['height'];
+                }
             }
+            
+            document_pos_x = window_offset_x;
+            document_pos_y = window_offset_y;
+             $("#userCanvas").width(window_w);
+              
+              $("#userCanvas").css('top', document_pos_y + "px");
+              $("#userCanvas").css('left', document_pos_x + "px");
+              
+              //$('iframe').contents().find('#outerDiv').css('zoom', (pixelRatio*100) + "%");
+              //$('iframe').contents().find('#outerDiv').css('MozTransform','scale(' + pixelRatio + ')');
+              
+              $("#heatmapArea").css('top', document_pos_y + "px");
+              $("#heatmapArea").css('left', document_pos_x + "px");
+              
+              $("#heatmapArea2").css('top', document_pos_y + "px");
+              $("#heatmapArea2").css('left', document_pos_x + "px");
+              
+              $("#mouseMovementPath").css('top', document_pos_y + "px");
+              $("#mouseMovementPath").css('left', document_pos_x + "px");
+              
+              $("#mouseClicks").css('top', document_pos_y + "px");
+              $("#mouseClicks").css('left', document_pos_x + "px");
+              
+              $("#mouseSpeedline").css('top', document_pos_y + "px");
+              $("#mouseSpeedline").css('left', document_pos_x + "px");
+              
+              $("#highlightSelection").css('top', document_pos_y + "px");
+              $("#highlightSelection").css('left', document_pos_x + "px");
+
+              //console.log("scroll", x_offset, y_offset, window_w, window_h);
+              
+              ctx.clearRect ( 0 , 0 , screen_h, c.height);
+              c.width = c.width;
+              
+              // Screen
+              ctx.beginPath();
+              ctx.globalAlpha=0.2;
+              ctx.fillStyle="gray"; 
+              ctx.fillRect ( scroll_offset_x , scroll_offset_y , screen_w, screen_h);
+              
+              ctx.beginPath();
+              ctx.globalAlpha=0.5;
+              ctx.fillStyle = "gray";
+              ctx.font = "bold 16px Arial";
+              ctx.fillText("Screen: " + screen_w + " x " + screen_h, scroll_offset_x+4 , scroll_offset_y+16);
+      
+              // Browser
+              ctx.beginPath();
+              ctx.globalAlpha=0.4;
+              ctx.fillStyle="gray"; 
+              ctx.rect(screen_pos_x+scroll_offset_x,screen_pos_y+scroll_offset_y,window_outer_w,window_outer_h);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.globalAlpha=0.5;
+              ctx.fillStyle = "#333";
+              ctx.font = "bold 12px Arial";
+              ctx.fillText("Browser: "+ window_outer_w + " x " + window_outer_h +" "+userAgent, screen_pos_x+scroll_offset_x+4,screen_pos_y+scroll_offset_y+16);
+
+              // Document
+              ctx.beginPath();
+              ctx.globalAlpha=1.0;
+              ctx.clearRect (screen_pos_x+scroll_offset_x , document_pos_y+scroll_offset_y , window_w,window_h);
+              ctx.strokeStyle="red"; 
+              ctx.rect(screen_pos_x+scroll_offset_x, document_pos_y+scroll_offset_y,window_w,window_h);
+              ctx.stroke();
+
+          }else{
+
+              if(!mouseMoves[0]['extra']){
+                return;
+              }
+              var c=document.getElementById("windowBox");
+              var ctx=c.getContext("2d");
+              for (var j=0; j <= currentPt; j++)
+              {
+                if(mouseMoves[j]['extra'] && mouseMoves[j]['extra']['zoom']){
+                    pixelRatio = mouseMoves[j]['extra']['zoom']['devicePixelRatio'];
+                }
+                if (mouseMoves[j].type == "init"){
+                  //console.log("window init", mouseMoves[j]);
+                  userAgent = mouseMoves[j]['extra']['navigator']['userAgent']; 
+                  x_offset = 0;
+                  y_offset = 0;
+                  scroll_offset_x = 0;
+                  scroll_offset_y = 0;
+                  
+                  screen_h =  mouseMoves[j]['extra']['screen']['height']; 
+                  screen_w =  mouseMoves[j]['extra']['screen']['width']; 
+                  
+                  screen_pos_x = mouseMoves[j]['extra']['window']['screenX'];
+                  screen_pos_y = mouseMoves[j]['extra']['window']['screenY'];
+                  
+                  window_w = mouseMoves[j]['extra']['window']['width'];
+                  window_h = mouseMoves[j]['extra']['window']['height'];
+                  
+                  window_outer_w = mouseMoves[j]['extra']['window']['outerWidth'];
+                  window_outer_h = mouseMoves[j]['extra']['window']['outerHeight'];
+                  
+                  window_w = window_w;
+                  window_h = window_h;
+                    
+                  if (userAgent.indexOf("Chrome") == -1 && userAgent.indexOf("Windows") == -1){
+                    // Chrome for some reason does not handle outerWidth/Height the same as Firefox
+                    window_outer_w = window_outer_w;
+                    window_outer_h = window_outer_h;   
+                  }
+
+                  toolbarH = window_outer_h-window_h;
+                  toolbarW = window_outer_w-window_w;
+                  
+                  //if (mouseMoves[j]['extra']['window']['offset'] && mouseMoves[j]['extra']['window']['offset']['left']){
+                  //  window_offset_x = mouseMoves[j]['extra']['window']['offset']['left'];
+                  //  window_offset_y = mouseMoves[j]['extra']['window']['offset']['top'];
+                  //}else{
+                    window_offset_x = screen_pos_x;
+                    window_offset_y = screen_pos_y+toolbarH;
+                  //}
+                  
+                  //console.log(userAgent, pixelRatio);
+                  
+                }if (mouseMoves[j].type == "scroll"){
+                   
+                   scroll_offset_x = mouseMoves[j].dx;
+                   scroll_offset_y = mouseMoves[j].dy;
+                  
+                } else if (mouseMoves[j].type == "resize"){
+                   
+                  //console.log("resize", mouseMoves[j], pixelRatio);
+                  
+                  screen_pos_x = mouseMoves[j]['extra']['window']['screenX'];
+                  screen_pos_y = mouseMoves[j]['extra']['window']['screenY'];
+                  
+                  if (mouseMoves[j]['extra']['window']['offset'] && mouseMoves[j]['extra']['window']['offset']['left']){
+                    window_offset_x = mouseMoves[j]['extra']['window']['offset']['left'];
+                    window_offset_y = mouseMoves[j]['extra']['window']['offset']['top'];
+                  }else{
+                    window_offset_x = screen_pos_x;
+                    window_offset_y = screen_pos_y+toolbarH;
+                  }
+                  
+                  
+                  window_w = mouseMoves[j]['extra']['window']['width'];
+                  window_h = mouseMoves[j]['extra']['window']['height'];
+                  
+                  window_outer_w = mouseMoves[j]['extra']['window']['outerWidth'];
+                  window_outer_h = mouseMoves[j]['extra']['window']['outerHeight'];
+                  
+                  window_w = window_w;
+                  window_h = window_h;
+                    
+                  if (userAgent.indexOf("Chrome") == -1 && userAgent.indexOf("Windows") == -1){
+                    
+                    window_outer_w = window_outer_w;
+                    window_outer_h = window_outer_h;   
+                  }
+                  
+                  toolbarH = window_outer_h-window_h;
+                  toolbarW = window_outer_w-window_w;
+                  
+                }
+              }
+              
+              document_pos_x = window_offset_x;
+              document_pos_y = window_offset_y;
+              
+              $("#userCanvas").width(window_w);
+              
+              $("#userCanvas").css('top', document_pos_y + "px");
+              $("#userCanvas").css('left', document_pos_x + "px");
+              
+              //$('iframe').contents().find('#outerDiv').css('zoom', (pixelRatio*100) + "%");
+              //$('iframe').contents().find('#outerDiv').css('MozTransform','scale(' + pixelRatio + ')');
+              
+              $("#heatmapArea").css('top', document_pos_y + "px");
+              $("#heatmapArea").css('left', document_pos_x + "px");
+              
+              $("#heatmapArea2").css('top', document_pos_y + "px");
+              $("#heatmapArea2").css('left', document_pos_x + "px");
+              
+              $("#mouseMovementPath").css('top', document_pos_y + "px");
+              $("#mouseMovementPath").css('left', document_pos_x + "px");
+              
+              $("#mouseClicks").css('top', document_pos_y + "px");
+              $("#mouseClicks").css('left', document_pos_x + "px");
+              
+              $("#mouseSpeedline").css('top', document_pos_y + "px");
+              $("#mouseSpeedline").css('left', document_pos_x + "px");
+              
+              $("#highlightSelection").css('top', document_pos_y + "px");
+              $("#highlightSelection").css('left', document_pos_x + "px");
+
+              //console.log("scroll", x_offset, y_offset, window_w, window_h);
+              
+              ctx.clearRect ( 0 , 0 , screen_h, c.height);
+              c.width = c.width;
+              
+              // Screen
+              ctx.beginPath();
+              ctx.globalAlpha=0.2;
+              ctx.fillStyle="gray"; 
+              ctx.fillRect ( scroll_offset_x , scroll_offset_y , screen_w, screen_h);
+              
+              ctx.beginPath();
+              ctx.globalAlpha=0.5;
+              ctx.fillStyle = "gray";
+              ctx.font = "bold 16px Arial";
+              ctx.fillText("Screen: " + screen_w + " x " + screen_h, scroll_offset_x+4 , scroll_offset_y+16);
+      
+              // Browser
+              ctx.beginPath();
+              ctx.globalAlpha=0.4;
+              ctx.fillStyle="gray"; 
+              ctx.rect(screen_pos_x+scroll_offset_x,screen_pos_y+scroll_offset_y,window_outer_w,window_outer_h);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.globalAlpha=0.5;
+              ctx.fillStyle = "#333";
+              ctx.font = "bold 12px Arial";
+              ctx.fillText("Browser: "+ window_outer_w + " x " + window_outer_h +" "+userAgent, screen_pos_x+scroll_offset_x+4,screen_pos_y+scroll_offset_y+16);
+
+              // Document
+              ctx.beginPath();
+              ctx.globalAlpha=1.0;
+              ctx.clearRect (screen_pos_x+scroll_offset_x , document_pos_y+scroll_offset_y , window_w,window_h);
+              ctx.strokeStyle="red"; 
+              ctx.rect(screen_pos_x+scroll_offset_x, document_pos_y+scroll_offset_y,window_w,window_h);
+              ctx.stroke();
           }
-          
-          document_pos_x = window_offset_x;
-          document_pos_y = window_offset_y;
-          
-          $("#userCanvas").width(window_w);
-          
-          $("#userCanvas").css('top', document_pos_y + "px");
-          $("#userCanvas").css('left', document_pos_x + "px");
-          
-          //$('iframe').contents().find('#outerDiv').css('zoom', (pixelRatio*100) + "%");
-          //$('iframe').contents().find('#outerDiv').css('MozTransform','scale(' + pixelRatio + ')');
-          
-          $("#heatmapArea").css('top', document_pos_y + "px");
-          $("#heatmapArea").css('left', document_pos_x + "px");
-          
-          $("#heatmapArea2").css('top', document_pos_y + "px");
-          $("#heatmapArea2").css('left', document_pos_x + "px");
-          
-          $("#mouseMovementPath").css('top', document_pos_y + "px");
-          $("#mouseMovementPath").css('left', document_pos_x + "px");
-          
-          $("#mouseClicks").css('top', document_pos_y + "px");
-          $("#mouseClicks").css('left', document_pos_x + "px");
-          
-          $("#mouseSpeedline").css('top', document_pos_y + "px");
-          $("#mouseSpeedline").css('left', document_pos_x + "px");
-          
-          $("#highlightSelection").css('top', document_pos_y + "px");
-          $("#highlightSelection").css('left', document_pos_x + "px");
-
-          //console.log("scroll", x_offset, y_offset, window_w, window_h);
-          
-          ctx.clearRect ( 0 , 0 , screen_h, c.height);
-          c.width = c.width;
-          
-          // Screen
-          ctx.beginPath();
-          ctx.globalAlpha=0.2;
-          ctx.fillStyle="gray"; 
-          ctx.fillRect ( scroll_offset_x , scroll_offset_y , screen_w, screen_h);
-          
-          ctx.beginPath();
-          ctx.globalAlpha=0.5;
-          ctx.fillStyle = "gray";
-          ctx.font = "bold 16px Arial";
-          ctx.fillText("Screen: " + screen_w + " x " + screen_h, scroll_offset_x+4 , scroll_offset_y+16);
-  
-          // Browser
-          ctx.beginPath();
-          ctx.globalAlpha=0.4;
-          ctx.fillStyle="gray"; 
-          ctx.rect(screen_pos_x+scroll_offset_x,screen_pos_y+scroll_offset_y,window_outer_w,window_outer_h);
-          ctx.fill();
-          ctx.beginPath();
-          ctx.globalAlpha=0.5;
-          ctx.fillStyle = "#333";
-          ctx.font = "bold 12px Arial";
-          ctx.fillText("Browser: "+ window_outer_w + " x " + window_outer_h +" "+userAgent, screen_pos_x+scroll_offset_x+4,screen_pos_y+scroll_offset_y+16);
-
-          // Document
-          ctx.beginPath();
-          ctx.globalAlpha=1.0;
-          ctx.clearRect (screen_pos_x+scroll_offset_x , document_pos_y+scroll_offset_y , window_w,window_h);
-          ctx.strokeStyle="red"; 
-          ctx.rect(screen_pos_x+scroll_offset_x, document_pos_y+scroll_offset_y,window_w,window_h);
-          ctx.stroke();
           //if(!window_infocus){
             //console.log("blur the window");
           //  ctx.fillStyle = "#111";
