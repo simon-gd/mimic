@@ -220,7 +220,7 @@ def json_preprocess_answers_140(request, survey_id):
         try:
             eventDataURL = a.mouseData
             if settings.MIMIC_USE_AZURE_BLOB:
-                response = requests.get(eventDataURL, timeout=10.0) # urllib2.urlopen(eventDataURL)
+                response = requests.get(str(eventDataURL), timeout=10.0) # urllib2.urlopen(eventDataURL)
                 if response.status_code != 200:
                     return HttpResponse('{"error":"Failed to get file('+str(eventDataURL)+')"}', mimetype="application/json")
                 mouseDataJSON = response.json() #json.loads(jsonEventData.encode('utf-8'))
