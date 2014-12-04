@@ -218,6 +218,7 @@ def json_preprocess_answers_140(request, survey_id):
         miscEvents = []
         elements = {}
         try:
+            debug_data += " MIMIC_USE_AZURE_BLOB: "+ str(settings.MIMIC_USE_AZURE_BLOB)
             eventDataURL = a.mouseData
             if settings.MIMIC_USE_AZURE_BLOB:
                 response = requests.get(str(eventDataURL), timeout=10.0) # urllib2.urlopen(eventDataURL)
