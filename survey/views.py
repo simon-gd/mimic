@@ -211,6 +211,28 @@ def processWorkerIDAndExperiment(survey, request):
 
     return worker_id, condition, experiment, user
 
+def mymake_blob_url(container_name, blob_name):
+        '''
+        Creates the url to access a blob.
+        container_name: Name of container.
+        blob_name: Name of blob.
+        account_name:
+            Name of the storage account. If not specified, uses the account
+            specified when BlobService was initialized.
+        protocol:
+            Protocol to use: 'http' or 'https'. If not specified, uses the
+            protocol specified when BlobService was initialized.
+        host_base:
+            Live host base url.  If not specified, uses the host base specified
+            when BlobService was initialized.
+        '''
+
+        return '{0}://{1}{2}/{3}/{4}'.format(settings.AZURE_PROTOCOL,
+                                             settings.AZURE_STORAGE_ACCOUNT,
+                                             settings.AZURE_HOST_BASE,
+                                             container_name,
+                                             blob_name)
+
 def saveMouseData(survey, worker_id, question_id, rawEventData):
     # XXX need to add support for multiple blob files per answer 
     url = ""
@@ -222,10 +244,11 @@ def saveMouseData(survey, worker_id, question_id, rawEventData):
         blob_service.create_container(container_name)
         try:
             blob_service.get_blob_metadata(container_name, blob_name)
-            #url = blob_service.make_blob_url(container_name, blob_name)
+
+            url = mymake_blob_url(container_name, blob_name)
         except:     
             blob_service.put_blob(container_name, blob_name , rawEventData, x_ms_blob_type='BlockBlob')
-            #url = blob_service.make_blob_url(container_name, blob_name)
+            url = mymake_blob_url(container_name, blob_name)
             #print(url)
     else:
         directory = os.path.join(settings.MEDIA_ROOT,container_name)
