@@ -164,6 +164,7 @@ def json_preprocess_answers_140(request, survey_id):
     skipped_count = 0
     errors = []
     force_reprocess = True
+    debug_data = "";
     if "force_reprocess" in request.GET:
         force_reprocess = request.GET["force_reprocess"]
 
@@ -221,8 +222,9 @@ def json_preprocess_answers_140(request, survey_id):
             if settings.MIMIC_USE_AZURE_BLOB:
                 response = requests.get(eventDataURL, timeout=10.0) # urllib2.urlopen(eventDataURL)
                 if response.status_code != 200:
-                    print("failded to get the file!!! ", eventDataURL)
+                    return HttpResponse('{"error":"Failed to get file('+str(eventDataURL)+')"}', mimetype="application/json")
                 mouseDataJSON = response.json() #json.loads(jsonEventData.encode('utf-8'))
+                mouseDataJSON
 
             else:
                 #txt = open(eventDataURL)
@@ -250,7 +252,7 @@ def json_preprocess_answers_140(request, survey_id):
             ttime = tdelta.total_seconds() #float(end_time-start_time) / 1000.0
             
             print("times:", ttime)
-
+            debug_data += " time: "+ str(ttime)
             for e in events:
                 for dataPt in events[e]:
                     if e == "click":
@@ -308,9 +310,10 @@ def json_preprocess_answers_140(request, survey_id):
             p_a.scroll_count = scrolls
             p_a.cursor_y =  json.dumps( cursor_y )
             print("processed Answer ", start_time, end_time, ttime, clicks, keydown)
+            debug_data += " processed Answer: "+ str(clicks) + " " + str(keydown)
             p_a.save()
             print("saving ", p_a.id)
-    return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+',"skipped":'+str(skipped_count)+'}', mimetype="application/json")
+    return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+',"skipped":'+str(skipped_count)+',"debug":'+str(debug_data)+'}', mimetype="application/json")
 
 def json_preprocess_answers_130(request, survey_id):
     survey = get_object_or_404(Survey, id=survey_id)

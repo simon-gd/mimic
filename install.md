@@ -24,11 +24,17 @@ gunicorn:
 nginx: 
 
 ### MySQL
+/etc/init.d/mysqld restart
+
 Add permissiong to mysql (not sure if this is needed)
 	
 	mysql -u root -p
 	GRANT ALL ON mimic.* TO root@'127.0.0.1' IDENTIFIED BY 'password';
 
+
+	GRANT ALL PRIVILEGES ON *.* TO 'root'@'%';
+
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;
 
 ### nginx
 [http://wiki.nginx.org/Main](http://wiki.nginx.org/Main)
@@ -38,6 +44,8 @@ Add permissiong to mysql (not sure if this is needed)
 - Restart: ``sudo /etc/init.d/nginx restart``
 - View Logs: ``nano /var/log/nginx/error.log``
 - Config location: ``/etc/nginx/sites-enabled``
+
+proxy_set_header X-Real-IP $remote_addr;
 
 
 ### Gunicorn
