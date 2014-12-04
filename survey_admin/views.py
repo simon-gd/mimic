@@ -235,7 +235,7 @@ def json_preprocess_answers_140(request, survey_id):
             events = mouseDataJSON["events"];
             
             elements = mouseDataJSON["elements"];
-            debug_data += " elements: "+ str(elements)
+            #debug_data += " elements: "+ str(elements)
             #print(mouseDataJSON)
             start_time = int(round(time.time() * 1000))
             end_time = 0
@@ -292,7 +292,8 @@ def json_preprocess_answers_140(request, survey_id):
         except Exception as e:
             #error = "json_preprocess_answers:  Error: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
             #errors.append(error)
-            print("Exeption:", e)
+            debug_data += " error: "+ str(e)
+            #print("Exeption:", e)
             continue
         print(p_a.id)
         if p_a != None:
