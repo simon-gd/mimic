@@ -407,7 +407,7 @@
                         'condition':condition,
                         'csrfmiddlewaretoken': '{{ csrf_token }}'} ).done(function() {
                             var cache = [];
-                            console.log(logBuffer);
+                            //console.log(logBuffer);
                             concatLogBuffer = JSON.stringify(logBuffer);
 
 
@@ -421,11 +421,14 @@
                                     'condition':condition,
                                     'csrfmiddlewaretoken': '{{ csrf_token }}'}
                             }).done(function() {
-                                if(total_pages == current_question){
+                                if(current_question >= total_pages){
                                     //$('.submit').prop('disabled', false);
+                                    console.log("saved current_question ", current_question);
                                     $('#mainForm').submit();
                                 }
 
+                            }).fail(function() {
+                                console.error("Saving Mouse Data Failed.");   
                             });
 
                             

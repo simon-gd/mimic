@@ -215,7 +215,7 @@ def saveMouseData(survey, worker_id, question_id, rawEventData):
     # XXX need to add support for multiple blob files per answer 
     url = ""
     blob_name = "ExperimentAnswer-"+str(worker_id)+"-"+str(question_id)+'.json'
-    container_name = "sraw-"+str(survey.id)
+    container_name = "sraw-v14-"+str(survey.id)
 
     if settings.MIMIC_USE_AZURE_BLOB:
         blob_service = BlobService(account_name=settings.AZURE_STORAGE_ACCOUNT, account_key=settings.AZURE_STORAGE_KEY)
