@@ -224,7 +224,7 @@ def json_preprocess_answers_140(request, survey_id):
                 if response.status_code != 200:
                     return HttpResponse('{"error":"Failed to get file('+str(eventDataURL)+')"}', mimetype="application/json")
                 mouseDataJSON = response.json() #json.loads(jsonEventData.encode('utf-8'))
-                mouseDataJSON
+                
 
             else:
                 #txt = open(eventDataURL)
@@ -233,7 +233,9 @@ def json_preprocess_answers_140(request, survey_id):
                 mouseDataJSON = json.load(data_file)
                 #mouseDataJSON = json.loads(response)
             events = mouseDataJSON["events"];
+            
             elements = mouseDataJSON["elements"];
+            debug_data += " elements: "+ str(elements)
             #print(mouseDataJSON)
             start_time = int(round(time.time() * 1000))
             end_time = 0
