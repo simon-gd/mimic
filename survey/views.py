@@ -222,11 +222,11 @@ def saveMouseData(survey, worker_id, question_id, rawEventData):
         blob_service.create_container(container_name)
         try:
             blob_service.get_blob_metadata(container_name, blob_name)
-            url = blob_service.make_blob_url(container_name, blob_name)
+            #url = blob_service.make_blob_url(container_name, blob_name)
         except:     
             blob_service.put_blob(container_name, blob_name , rawEventData, x_ms_blob_type='BlockBlob')
-            url = blob_service.make_blob_url(container_name, blob_name)
-            print(url)
+            #url = blob_service.make_blob_url(container_name, blob_name)
+            #print(url)
     else:
         directory = os.path.join(settings.MEDIA_ROOT,container_name)
         if not os.path.exists(directory):
