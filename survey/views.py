@@ -40,7 +40,8 @@ from django.template import RequestContext
 from survey.models import Question, Survey, SurveyMembership, Experiment, ExperimentUser, ExperimentAnswer
 from survey.forms import WorkerIDForm
 
-from mimic.settings import local as settings
+#from mimic.settings import local as settings
+from django.conf import settings
 
 if settings.MIMIC_USE_AZURE_BLOB:
     from azure.storage import *
@@ -97,7 +98,9 @@ def create_experiment_session(request, worker_id, condition, survey):
         REMOTE_HOST = ""
         REMOTE_ADDR = ""
         
-        if request.META.has_key('HTTP_X_FORWARDED_FOR'):
+        if request.META.has_key('HTTP_X_REAL_IP'):
+            REMOTE_ADDR = request.META['HTTP_X_REAL_IP']
+        elif request.META.has_key('HTTP_X_FORWARDED_FOR'):
             REMOTE_ADDR = request.META['HTTP_X_FORWARDED_FOR']
         elif request.META.has_key('REMOTE_ADDR'):
             REMOTE_ADDR = request.META['REMOTE_ADDR']

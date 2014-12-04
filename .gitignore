@@ -211,6 +211,7 @@ docs/_build/
 *.log
 *.pot
 *.pyc
+media
 templates_survey_private
 media_private
 mimic/settings/base.py
