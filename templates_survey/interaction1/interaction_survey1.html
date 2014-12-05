@@ -326,7 +326,7 @@
 
             var questionData = {{ question|safe}};
             var questionCondition = {{ condition|safe}};
-            var total_pages =  3;
+            var total_pages =  4;
             var current_question =  parseInt({{qnum|safe}});
             var answer = "";
             var confidence = 0;
@@ -380,14 +380,24 @@
                             return;
                         }
                         answer = {'a1':a1, 'a2':a2, 'confidence': confidence};
-
                     }else if(current_question == 2){
+                        var who_from = $('input:radio[name=who_from]:checked').val();
+                        var what_department = $('input:radio[name=what_department]:checked').val();
+                        if(!who_from || !what_department ){
+
+                            $(".error").html("<div id='myerror4' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                            return;
+                        }
+                        answer = {'who_from':who_from, 'what_department':what_department};
+
+                    }else if(current_question == 3){
                         var gender = $('input:radio[name=gender]:checked').val();
                         var occupation = $('#occupation option:selected').val();
                         var education = $('#education option:selected').val();
                         var color_blind = $('input:radio[name=color_blind]:checked').val();
                         var training = $('input:radio[name=training]:checked').val();
                         var prev_question = $('input:radio[name=prev_question]:checked').val();
+                        var comments_prev = $('#comments_prev').val();
                         var comments = $('#comments').val();
 
                         if(!gender || !occupation || !education || !color_blind || !training || !prev_question){
@@ -396,7 +406,7 @@
                             return;
                         }
 
-                        answer = {'gender':gender, 'occupation':occupation, 'education':education, 'color_blind':color_blind, 'training':training, 'prev_question': prev_question,'comments':comments};
+                        answer = {'gender':gender, 'occupation':occupation, 'education':education, 'color_blind':color_blind, 'training':training, 'prev_question': prev_question,'comments_prev':comments_prev, 'comments':comments};
                     }
 
                     $('.submit').prop('disabled', true);
@@ -542,7 +552,7 @@
             <div id="page0" class="page container size-16-9">
                 <div class="row">
                     <div id="" class="col-xs-12">
-                        <em>Page 1/3</em>
+                        <em>Page 1/4</em>
                     </div>
                 </div>
                 <div class="row">
@@ -586,7 +596,7 @@
             <div id="page1" class="page container size-16-9">
                 <div class="row">
                     <div id="" class="col-xs-12">
-                        <em>Page 2/3</em>
+                        <em>Page 2/4</em>
                     </div>
                 </div>
                 <div class="row">
@@ -653,12 +663,75 @@
                     </div>
                 </div>
             </div>
-
             <!-- PAGE 2 - QUESTION -->
-            <div id="page2" class="page container size-16-9">
+             <div id="page2" class="page container size-16-9">
                 <div class="row">
                     <div id="" class="col-xs-12">
-                        <em>Page 3/3</em>
+                        <em>Page 3/4</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-7">
+                        <div class="well well-sm">
+                            Subject: Tomorrow's meeting  <br/>
+                            From: "Ginger Holmes" &lt;gholmes@bru.edu&gt; <br/>
+                            Date: Wed, May 13, 2009 8:31 am  <br/>
+                            To: "Pat Jones" &lt;patjones@bru.edu&gt;<br/> 
+                            Priority: Normal<br/>
+                            <br/>
+                            Pat,<br/> 
+                            Since Christi is out of town, the staff council meeting will be held via telephone tomorrow. We will discuss the proposed reorganization of the Human Resources department to better serve the faculty and staff at BRU. During this conference call, we will also discuss the decisions reached at the 11am meeting of the University Benefits department. It is critical that all attendees of the University Benefits department, especially those who attended the morning meeting, also attend this conference call, to ensure that necessary recommendations of this committee are incorporated into our procedural changes. Details for the conference call are listed below. Also, please confirm your participation via email to me. <br/>
+
+                            Date: Thursday, May 14 <br/>
+                            Time: 2:00 PM (EST) <br/>
+                            Number: 1-800-555-1200 8533123 (passcode)<br/>
+                            <br/>
+                            Thanks, <br/>
+                            Ginger Holmes <br/>
+                            Administrative Coordinator Recruiting and Staffing <br/>
+                            Baton Rouge University <br/>
+                            www.bru.edu<br/>                 
+                           
+                            
+                        </div>
+                      
+                    </div>
+
+                    <div class="col-xs-5">
+                        <div>Please answer the following questions:</div>
+                    
+                        <p class="lead"><strong>Who is the email message sent to?</strong></p>
+                        <div class="radio"><label> <input type="radio" id="who-from-1" name="who_from" value="Ginger Holmes" /> Ginger Holmes </label></div>
+                        <div class="radio"><label> <input type="radio" id="who-from-2" name="who_from" value="John Stone" /> John Stone </label></div>
+                        <div class="radio"><label> <input type="radio" id="who-from-3" name="who_from" value="Pat Jones" /> Pat Jones </label></div>
+                        <div class="radio"><label> <input type="radio" id="who-from-4" name="who_from" value="Edward Downs" /> Edward Downs </label></div>
+                        <div class="radio"><label> <input type="radio" id="who-from-5" name="who_from" value="Sadie Stinfeld" /> Sadie Stinfeld </label></div>
+                        <p class="lead"><strong>What department is holding the meeting prior to the conference call?</strong></p>
+                        
+                        <div class="radio"><label> <input type="radio" id="what_department-1" name="what_department" value="Recruiting and Staffing" /> Recruiting and Staffing </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-2" name="what_department" value="Learning and Professional Development" /> Learning and Professional Development </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-3" name="what_department" value="Temporary Employment" /> Temporary Employment </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-4" name="what_department" value="International HR" /> International HR </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-5" name="what_department" value="Equal Opportunity Employment" /> Equal Opportunity Employment </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-6" name="what_department" value="Health Insurance Options" /> Health Insurance Options </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-7" name="what_department" value="Compensation" /> Compensation </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-8" name="what_department" value="Disability Services" /> Disability Services </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-9" name="what_department" value="University Benefits" /> University Benefits </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-10" name="what_department" value="Orientation" /> Orientation </label></div>
+                        
+                        <br />
+                        <button type="submit" class="btn btn-default submit">Next Page</button>
+                        <div id="error2" class="error text-danger"></div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 3 - QUESTION -->
+            <div id="page3" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 4/4</em>
                     </div>
                 </div>
                 <div class="row">
@@ -754,7 +827,7 @@
                         </li>
                     </ul>
 
-                    <p id="p3" class="lead"><strong>Did you previously do another HIT identical or similar to this? Your answer will <b id='b28'>not</b> affect our decision to accept or reject this HIT.</strong></p>
+                    <p id="p3" class="lead"><strong>Did you previously do another HIT identical or similar to this? Your answer will not affect our decision to accept or reject this HIT. </strong></p>
                     <ul class="list-inline pull-down text-left">
                         <li>
                             <input type="radio" id="prev_question-1" name="prev_question" value="Yes" /><label for="prev_question-1">&nbsp;Yes</label>
@@ -770,9 +843,12 @@
                         </li>
                     </ul>
 
+                    <p class="lead"><strong>If you answered Yes to previous question, please give us a bit of details about how that HIT was similar to this one. Again, your answer will not affect our decision to accept or reject this HIT.</strong></p>
+                    <textarea id="comments" name="comments_prev" class="form-control" rows="2"></textarea>
 
 
-                    <p class="lead">Please provide any comments or concerns:</p>
+
+                    <p class="lead"><strong>Please provide any comments or concerns:</strong></p>
                     <textarea id="comments" name="comments" class="form-control" rows="5"></textarea>
 
 
