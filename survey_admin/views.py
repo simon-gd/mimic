@@ -230,7 +230,7 @@ def json_preprocess_answers_140(request, survey_id):
             else:
                 #txt = open(eventDataURL)
                 #response = txt.read()
-                data_file = open(eventDataURL, 'r')   
+                data_file = open(os.path.join(settings.MEDIA_ROOT,eventDataURL), 'r')   
                 mouseDataJSON = json.load(data_file)
                 #mouseDataJSON = json.loads(response)
             events = mouseDataJSON["events"];

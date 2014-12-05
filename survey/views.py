@@ -237,7 +237,7 @@ def saveMouseData(survey, worker_id, question_id, rawEventData):
     # XXX need to add support for multiple blob files per answer 
     url = ""
     blob_name = "ExperimentAnswer-"+str(worker_id)+"-"+str(question_id)+'.json'
-    container_name = "sraw-v14-"+str(survey.id)
+    container_name = "sraw-v14-"+str(survey.slug)
 
     if settings.MIMIC_USE_AZURE_BLOB:
         blob_service = BlobService(account_name=settings.AZURE_STORAGE_ACCOUNT, account_key=settings.AZURE_STORAGE_KEY)
@@ -254,8 +254,8 @@ def saveMouseData(survey, worker_id, question_id, rawEventData):
         directory = os.path.join(settings.MEDIA_ROOT,container_name)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        url = os.path.join(directory, blob_name)
-        with open(url, 'w') as outfile:
+        url = os.path.join(container_name, blob_name)
+        with open(os.path.join(settings.MEDIA_ROOT,url), 'w') as outfile:
             outfile.write(rawEventData)
     return url
 
@@ -290,7 +290,7 @@ def save_question(request):
         mouseDataLink = ""
         if 'mouseData' in request.POST:
             mouseData = request.POST['mouseData']
-            mouseDataLink = saveMouseData(survey, worker_id, current_question.id, mouseData)
+            mouseDataLink = saveMouseData(survey, worker_id, current_question.slug, mouseData)
             question_finished = True
 
         answer = ""
