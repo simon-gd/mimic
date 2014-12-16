@@ -254,19 +254,18 @@
                         var gender = $('input:radio[name=gender]:checked').val();
                         var occupation = $('#occupation option:selected').val();
                         var education = $('#education option:selected').val();
-                        var color_blind = $('input:radio[name=color_blind]:checked').val();
                         var training = $('input:radio[name=training]:checked').val();
                         var prev_question = $('input:radio[name=prev_question]:checked').val();
                         var comments_prev = $('#comments_prev').val();
                         var comments = $('#comments').val();
 
-                        if(!gender || !occupation || !education || !color_blind || !training || !prev_question){
+                        if(!gender || !occupation || !education  || !training || !prev_question){
 
                             $(".error").html("<div id='myerror4' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
                             return;
                         }
 
-                        answer = {'gender':gender, 'occupation':occupation, 'education':education, 'color_blind':color_blind, 'training':training, 'prev_question': prev_question,'comments_prev':comments_prev, 'comments':comments};
+                        answer = {'gender':gender, 'occupation':occupation, 'education':education, 'training':training, 'prev_question': prev_question,'comments_prev':comments_prev, 'comments':comments};
                     }
 
                     $('.submit').prop('disabled', true);
