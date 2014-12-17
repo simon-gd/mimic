@@ -294,17 +294,19 @@ def json_preprocess_answers_140(request, survey_id):
             #error = "json_preprocess_answers:  Error: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
             #errors.append(error)
             #debug_data += " error: "+ str(e)
-            #print("Exeption:", e)
+            print("Exeption:", e)
+            p_a.delete()
+            
             continue
         print(p_a.id)
         if p_a != None:
-            p_a.init_event = b64encode(zlib.compress(json.dumps(initEvents), 9)) 
-            p_a.mouse_move_event =  b64encode(zlib.compress(json.dumps(mouseMoveEvents), 9))
-            p_a.mouse_click_event =  b64encode(zlib.compress(json.dumps(clickEvents), 9))
-            p_a.keydown_event =  b64encode(zlib.compress(json.dumps(keydownEvents), 9))
-            p_a.scroll_event =  b64encode(zlib.compress(json.dumps(scrollEvents), 9))
-            p_a.misc_event =  b64encode(zlib.compress(json.dumps( miscEvents ), 9))
-            p_a.elements =  b64encode(zlib.compress(json.dumps( elements ), 9))
+            p_a.init_event = json.dumps(initEvents) #b64encode(zlib.compress(json.dumps(initEvents), 9)) 
+            p_a.mouse_move_event =  json.dumps(mouseMoveEvents)#b64encode(zlib.compress(json.dumps(mouseMoveEvents), 9))
+            p_a.mouse_click_event =  json.dumps(clickEvents)#b64encode(zlib.compress(json.dumps(clickEvents), 9))
+            p_a.keydown_event =  json.dumps(keydownEvents)#b64encode(zlib.compress(json.dumps(keydownEvents), 9))
+            p_a.scroll_event =  json.dumps(scrollEvents) #b64encode(zlib.compress(json.dumps(scrollEvents), 9))
+            p_a.misc_event =  json.dumps( miscEvents )#b64encode(zlib.compress(json.dumps( miscEvents ), 9))
+            p_a.elements =  json.dumps( elements )#b64encode(zlib.compress(json.dumps( elements ), 9))
             # analitic data
             p_a.window_h = window_h
             p_a.window_w = window_w
@@ -313,10 +315,10 @@ def json_preprocess_answers_140(request, survey_id):
             p_a.keys_count = keydown
             p_a.scroll_count = scrolls
             p_a.cursor_y =  json.dumps( cursor_y )
-            print("processed Answer ", start_time, end_time, ttime, clicks, keydown)
+            #print("processed Answer ", start_time, end_time, ttime, clicks, keydown)
             #debug_data += " processed Answer: "+ str(clicks) + " " + str(keydown)
             p_a.save()
-            print("saving ", p_a.id)
+            #print("saving ", p_a.id)
     return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+',"skipped":'+str(skipped_count)+'}', mimetype="application/json")
 
 def json_preprocess_answers_130(request, survey_id):
@@ -592,7 +594,7 @@ def json_answers(request, survey_id, question_id):
         confidenceClick = 0
         mouseClickDataRaw = a.mouse_click_event
         try:
-            clickEventData = zlib.decompress(b64decode(mouseClickDataRaw))
+            clickEventData = mouseClickDataRaw #zlib.decompress(b64decode(mouseClickDataRaw))
             clickEventDataJSON = json.loads(clickEventData.encode('utf-8'))
             for line in clickEventDataJSON:
                 if 'e' in line and 'target' in line['e'] and 'id' in line['e']['target'] and "confidence" in line['e']['target']['id']:
@@ -997,10 +999,10 @@ def process_mouse_paths(request, answer_id):
     expAns = get_object_or_404(ExperimentAnswerProcessed, id=answer_id)
     version = expAns.experiment.version
     mouseDataRaw = expAns.misc_event
-    eventData = zlib.decompress(b64decode(mouseDataRaw))
+    eventData = mouseDataRaw#zlib.decompress(b64decode(mouseDataRaw))
     #mouseClicks = zlib.decompress(b64decode(expAns.mouse_click_event))
     #scrolls = zlib.decompress(b64decode(expAns.scroll_event))
-    elements = zlib.decompress(b64decode(expAns.elements))
+    elements = expAns.elements #zlib.decompress(b64decode(expAns.elements))
     survey = expAns.experiment.survey
     current_question = expAns.question
 
@@ -1127,7 +1129,7 @@ def comp_heatmap (request, survey_id, question_id, condition, ids):
         mouseMoveDataRaw = expAns.mouse_move_event
         mouseClickDataRaw = expAns.mouse_click_event
         
-        mouseMovesJSON = zlib.decompress(b64decode(mouseMoveDataRaw))
+        mouseMovesJSON = mouseMoveDataRaw#zlib.decompress(b64decode(mouseMoveDataRaw))
         mouseData = json.loads(mouseMovesJSON.encode('utf-8'))
         for m in mouseData:
             mouseMoves.append({'x': m['x'], 'y':m['y']})
@@ -1152,8 +1154,8 @@ def heatmap(request, answer_id):
     mouseMoveDataRaw = expAns.mouse_move_event
     mouseClickDataRaw = expAns.mouse_click_event
     
-    mouseMovesJSON = zlib.decompress(b64decode(mouseMoveDataRaw))
-    mouseClicksJSON = zlib.decompress(b64decode(mouseClickDataRaw))
+    mouseMovesJSON = mouseMoveDataRaw #zlib.decompress(b64decode(mouseMoveDataRaw))
+    mouseClicksJSON = mouseClickDataRaw #zlib.decompress(b64decode(mouseClickDataRaw))
     
     return render_to_response('heatmap.html', {'survey':survey,
                                                'question':current_question,
@@ -1198,7 +1200,7 @@ def createItemHoverHistograms(request, survey_id):
         allMoves[a.user.id] = {"user_id":a.user.id, "condition": a.experiment.survey_condition}
         #print("got",a.id)
         try:
-            mouseDataJSON = json.loads(zlib.decompress(b64decode(a.mouse_move_event)))
+            mouseDataJSON = json.loads(a.mouse_move_event) #json.loads(zlib.decompress(b64decode(a.mouse_move_event)))
             for line in mouseDataJSON:
                 #if "extra" in line:
                 #    print("extra", line["extra"])
