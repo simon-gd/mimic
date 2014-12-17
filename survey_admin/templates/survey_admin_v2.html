@@ -210,10 +210,24 @@ $(document).ready(function() {
       return true;
     }
   }
-  function comparer(a, b) {
-    var x = a[sortcol], y = b[sortcol];
-    return (x == y ? 0 : (x-y));//(x > y ? 1 : -1));
-  }
+  //function comparer(a, b) {
+  //  var x = a[sortcol], y = b[sortcol];
+  //  var result = (x == y) ?  0 :
+  //                       ((x > y ? 1 : -1)) * sign;
+  //  //return (x == y ? 0 : (x-y));//(x > y ? 1 : -1));
+  //}
+  var gridSorter = function(columnField, isAsc, grid, gridData) {
+       var sign = isAsc ? 1 : -1;
+       var field = columnField
+       gridData.sort(function (dataRow1, dataRow2) {
+              var value1 = dataRow1[field], value2 = dataRow2[field];
+              var result = (value1 == value2) ?  0 :
+                         ((value1 > value2 ? 1 : -1)) * sign;
+              return result;
+       });
+       grid.invalidate();
+       grid.render();
+   }
   function AnswerFormatter(row, cell, value, columnDef, dataContext) {
     //console.log("AnswerFormatter", row, cell, value, columnDef, dataContext);
     var correct = dataContext["correct_"+columnDef.name];
@@ -704,10 +718,12 @@ $(document).ready(function() {
 				  */
 				  grid.onSort.subscribe(function (e, args) {
 				    //console.log(args);
-				    sortdir = args.sortAsc ? 1 : -1;
-				    sortcol = args.sortCol.field;
+				    //sortdir = args.sortAsc ? 1 : -1;
+				    //sortcol = args.sortCol.field;
 				    
-				    dataView.sort(comparer, args.sortAsc);
+            gridSorter(args.sortCol.field, args.sortAsc, grid, dataView);
+
+				    //dataView.sort(comparer, args.sortAsc);
 				    
 				    /*
 				    data.sort(function (dataRow1, dataRow2) {
