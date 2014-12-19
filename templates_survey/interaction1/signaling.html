@@ -262,12 +262,12 @@
                     if(current_question == 0){
 
                     }else if(current_question == 1){
-                        var a1 = $('input:radio[name=answer]:checked').val();
+                        var a1 = $('input:text[name=answer1]').val();
+                        var a2 = $('input:text[name=answer2]').val();
                         var how_calculated =  $('#how_calculated').val();
                         var confidence = $('input:radio[name=confidence]:checked').val();
                         //console.log(b);
-                        if(!a1){
-
+                        if(!a1 || !a2){
                             $(".error").html("<div id='myerror4' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
                             return;
                         }
@@ -281,7 +281,7 @@
                             return;
                         }
                        
-                        answer = {'answer':a1, 'how_calculated': how_calculated, 'confidence': confidence};
+                        answer = {'a1':a1, 'a2':a2, 'how_calculated': how_calculated, 'confidence': confidence};
                     }else if(current_question == 2){
                         var who_from = $('input:radio[name=who_from]:checked').val();
                         var what_department = $('input:radio[name=what_department]:checked').val();
@@ -358,11 +358,7 @@
                                 showPage("#page"+current_question.toString());
                                 $('.submit').prop('disabled', false);
                                 
-                                if(current_question==1 && !svg_has_loaded){
-                                    //console.log("Calling assignImages2")
-                                    assignImages2(condition);
-                                    svg_has_loaded = true;
-                                }
+                               
                             }
 
                         }).fail(function() {
