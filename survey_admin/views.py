@@ -146,6 +146,27 @@ def processLine(line):
 
 import requests
 
+def mymake_blob_url(container_name, blob_name):
+        '''
+        Creates the url to access a blob.
+        container_name: Name of container.
+        blob_name: Name of blob.
+        account_name:
+            Name of the storage account. If not specified, uses the account
+            specified when BlobService was initialized.
+        protocol:
+            Protocol to use: 'http' or 'https'. If not specified, uses the
+            protocol specified when BlobService was initialized.
+        host_base:
+            Live host base url.  If not specified, uses the host base specified
+            when BlobService was initialized.
+        '''
+
+        return '{0}://{1}{2}/{3}/{4}'.format(settings.AZURE_PROTOCOL,
+                                             settings.AZURE_STORAGE_ACCOUNT,
+                                             settings.AZURE_HOST_BASE,
+                                             container_name,
+                                             blob_name)
 
 def json_preprocess_answers_140(request, survey_id):
 
@@ -221,6 +242,9 @@ def json_preprocess_answers_140(request, survey_id):
             #debug_data += " MIMIC_USE_AZURE_BLOB: "+ str(settings.MIMIC_USE_AZURE_BLOB)
             eventDataURL = a.mouseData
             if settings.MIMIC_USE_AZURE_BLOB:
+                if not eventDataURL.startswith(settings.AZURE_PROTOCOL):
+                    b = eventDataURL.split("/")
+                    eventDataURL = mymake_blob_url(b[0], b[1]);
                 response = requests.get(str(eventDataURL), timeout=10.0) # urllib2.urlopen(eventDataURL)
                 if response.status_code != 200:
                     return HttpResponse('{"error":"Failed to get file('+str(eventDataURL)+')"}', mimetype="application/json")
@@ -296,7 +320,7 @@ def json_preprocess_answers_140(request, survey_id):
             #debug_data += " error: "+ str(e)
             print("Exeption:", e)
             p_a.delete()
-            
+
             continue
         print(p_a.id)
         if p_a != None:

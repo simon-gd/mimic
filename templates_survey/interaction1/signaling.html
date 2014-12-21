@@ -164,7 +164,7 @@
             }
         }
         function assignText(cond){
-            //if (cond == 0 || cond == 1){
+            if (cond == 0){
                 var s = ["<span>You know the following information:</span>",
                           "<ul>",
                           "<li>Of <b>1000</b> people tested for skin cancer, <b>10</b> people will actually have skin cancer.</li>",
@@ -172,7 +172,16 @@
                           "<li>Of the <b>990</b> people without skin cancer, <b>95</b> people incorrectly get a test result that says they have cancer.</li>",
                          "</ul>"].join("\n");  
                 $("#problem_statement").html(s);
-
+            }else{
+                
+                 var s = ["<span>You know the following information:</span>",
+                          "<ul>",
+                          "<li><b>10</b> out of every <b>1,000</b> women at age forty who participate in routine screening have breast cancer.</li>",
+                          "<li><b>8</b> of every <b>10</b> women with breast cancer will get a positive mammography.</li>",
+                          "<li><b>95</b> out of every <b>990</b> women without breast cancer will also get a positive mammography.</li>",
+                         "</ul>"].join("\n");  
+                $("#problem_statement").html(s);
+            }
             /*    
             }else {
                 var s = ["<span>You know the following information:</span>",
@@ -207,6 +216,7 @@
                 $("#answer_statement").html(s);
             }else{
                 
+                /*
                 var s = [
                         '<div class="well well-sm">',
                         '<p>If you got a <b>test result</b> that says you <b>have</b> skin cancer, what are the chances that you <b>actually have</b> skin cancer?</p>',
@@ -214,7 +224,14 @@
                         '<p><i><u><b>Hint</b>: Before receiving the test result, your chances are 10 out of 1000, but after receiving the test result that says you have cancer, the chances change!</u></i></p>',
                         '<p>The chances are <input id="input_a1" class="answer" name="answer1" type="text" />&nbsp;<strong>out of</strong>&nbsp;<input id="input_a2" class="answer" name="answer2" type="text" /></p>'
                         ].join("\n");
-
+                */
+                var s = [
+                        '<div class="well well-sm">',
+                        '<p>Here is a new representative sample of women at age forty who got a positive mammography in routine screening. How many of these women do you expect to actually have breast cancer?</p>',
+                        '</div>',
+                        '<p>Your answer: <input id="input_a1" class="answer" name="answer1" type="text" />&nbsp;<strong>out of</strong>&nbsp;<input id="input_a2" class="answer" name="answer2" type="text" /></p>'
+                        ].join("\n");
+                
                 $("#answer_statement").html(s);
             }
           
