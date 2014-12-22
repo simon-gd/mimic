@@ -199,13 +199,12 @@
   padding: 5px;
   padding-top: 0px;
   padding-bottom: 0;
-  border: 2px solid #333;
   -moz-border-radius: 10px;
   -webkit-border-radius: 10px;
   border-radius: 10px;
   margin: 0 0 0 10px;
-  background: #fff;
-  border-style: dashed;
+  /*background: #fff;
+  border-style: dashed;*/
   font-weight: bolder;
 }
 
@@ -231,12 +230,18 @@
     position: absolute;
     top: 1em;
     left: 20em;
+    background: #f0f0f0; border: 3px #000 solid; 
+     -moz-box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
+  -webkit-box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
+  box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
 }
 #droparea_1 {
     position: absolute;
     top: 8em;
     left: 7em;
     display: inline-block;
+    background: #fff;
+  border-style: dashed;
 }
 
 #droparea_2 {
@@ -244,6 +249,8 @@
     top: 8em;
     left: 33em;
     display: inline-block;
+    background: #fff;
+  border-style: dashed;
 }
 
 #droparea_3 {
@@ -251,6 +258,8 @@
     top: 15em;
     left: 0em;
     display: inline-block;
+    background: #fff;
+  border-style: dashed;
 }
 
 #droparea_4 {
@@ -258,6 +267,8 @@
     top: 15em;
     left: 13em;
     display: inline-block;
+    background: #fff;
+  border-style: dashed;
 }
 
 #droparea_5 {
@@ -265,6 +276,8 @@
     top: 15em;
     left: 26em;
     display: inline-block;
+    background: #fff;
+  border-style: dashed;
 }
 
 #droparea_6 {
@@ -272,6 +285,8 @@
     top: 15em;
     left: 39em;
     display: inline-block;
+    background: #fff;
+  border-style: dashed;
 }
 
 #droparea_7 {
@@ -279,6 +294,8 @@
     top: 23em;
     left: 13em;
     display: inline-block;
+    background: #fff;
+  border-style: dashed;
 }
 
 #droparea_8 {
@@ -286,6 +303,8 @@
     top: 23em;
     left: 26em;
     display: inline-block;
+    background: #fff;
+  border-style: dashed;
 }
 
 #droparea_9 {
@@ -293,6 +312,10 @@
     top: 30em;
     left: 19.5em;
     display: inline-block;
+    background: #f0f0f0; border: 3px #000 solid;
+     -moz-box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
+  -webkit-box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
+  box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
 }
 
 
@@ -359,6 +382,8 @@
 
 }
 
+
+
 #card0.correct { background: #bebada; border: 3px #000 solid; 
     -ms-transform: rotate(0deg); /* IE 9 */
     -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
@@ -400,6 +425,40 @@
     -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
     transform: rotate(0deg); }
 
+#card0.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card1.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card2.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card3.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+
+#card4.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+
+#card5.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card6.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card7.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card8.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card9.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+
+
 
 /* "You did it!" message */
 #successMessage {
@@ -409,6 +468,7 @@
   width: 0;
   height: 0;
   z-index: 100;
+  /*
   background: #dfd;
   border: 2px solid #333;
   -moz-border-radius: 10px;
@@ -417,6 +477,7 @@
   -moz-box-shadow: .3em .3em .5em rgba(0, 0, 0, .8);
   -webkit-box-shadow: .3em .3em .5em rgba(0, 0, 0, .8);
   box-shadow: .3em .3em .5em rgba(0, 0, 0, .8);
+  */
   padding: 20px;
 }
 
@@ -446,17 +507,66 @@
         var correctCards;
         var layoutMode;
         var possibleLayouts = {'1':true, '2':true, '3':true, '4':true, '5':true, '6':true,'7':true, '8':true};
+        var layoutMatches = {"1":[0, 1,2, 3,4, 5,6, 7,8], 
+                                 "2":[0, 2,1, 5,6, 3,4, 7,8],
+                                 "3":[0, 1,2, 4,3, 6,5, 8,7],
+                                 "4":[0, 2,1, 6,5, 4,3, 8,7],
+                                 "5":[0, 7,8, 3,5, 4,6, 1,2],
+                                 "6":[0, 8,7, 4,6, 3,5, 1,2],
+                                 "7":[0, 7,8, 5,3, 6,4, 2,1],
+                                 "8":[0, 8,7, 6,4, 5,3, 2,1]};
+        function init(condition) {
 
-        function init() {
+          if(condition == 0 || condition == 1){
+              $("#p1_step2").hide();
+              $("#p1_step3").hide();
+              $("#p1_step4").hide();
+              $("#p1_step5").hide();
+
+              $("#p1_step1_nextButton").click(function(e){
+                $("#p1_step1_nextButton").hide();
+                $("#p1_step2").fadeIn(1000); 
+                $("#p1_step2").effect("highlight", {}, 1000);
+              });
+
+               $("#p1_step1_nextButton").click(function(e){
+                $("#p1_step1_nextButton").hide();
+                $("#p1_step2").fadeIn(1000); 
+                $("#p1_step2").effect("highlight", {}, 1000);
+              });
+
+              $("#p1_step3_nextButton").click(function(e){
+                $("#p1_step3_nextButton").hide();
+                $("#p1_step4").fadeIn(1000); 
+                $("#p1_step4").effect("highlight", {}, 1000);
+              });
+
+              $("#p1_step4_nextButton").click(function(e){
+                $("#p1_step4_nextButton").hide();
+                $("#p1_step5").fadeIn(1000); 
+                $("#p1_step5").effect("highlight", {}, 1000);
+              });
+          }else if(condition == 2 || condition == 3){
+                $("#p1_step1_nextButton").hide();
+                //$("#p1_step2_nextButton").hide();
+                //$("#p1_step3_nextButton").hide(); 
+                //$("#p1_step4_nextButton").hide();
+
+                $("#p1_step3").hide();
+                $("#p1_step4").hide();
+                $("#p1_step5").hide();
+
+          }
+          
 
           // Hide the success message
           $('#successMessage').hide();
-          $('#successMessage').css( {
-            left: '580px',
-            top: '250px',
-            width: 0,
-            height: 0
-          } );
+          //$('#successMessage').css( {
+          //  left: '580px',
+          //  top: '250px',
+          //  width: 0,
+          //  height: 0
+          //} );
 
           // Reset the game
           correctCards = 0;
@@ -467,7 +577,9 @@
           // Create the pile of shuffled cards
           var numbers = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ];
           possibleLayouts = {'1':true, '2':true, '3':true, '4':true, '5':true, '6':true,'7':true, '8':true};
-          var text_numbers = [ "1000 Woman<br>Woman over 40", 
+          var text_numbers;
+          if(condition == 1 || condition == 3){
+            text_numbers  = [ "1000 Woman<br>Woman over 40", 
                                "103 Woman<br>Got Positive Mammography", 
                                "897 Woman<br>Got Negative Mammography", 
                                "8 Woman<br>Have Breast Cancer &<br> Got Positive Mammography", 
@@ -477,11 +589,24 @@
                                "10 Woman<br>Have Breast Cancer", 
                                "990 Woman<br>Do Not Have Breast Cancer", 
                                "1000 Woman<br>Woman over 40"];
+           }else if(condition == 0 || condition == 2){
+            text_numbers = [ "1000 People", 
+                               "103 People<br>Test Says \"Has Cancer\"", 
+                               "897 People<br>Test Says \"No Cancer\"", 
+                               "8 People<br>Have Cancer &<br> Test Says \"Has Cancer\"", 
+                               "95 People<br>Do Not Have Cancer &<br> Test Says \"Has Cancer\"", 
+                               "2 People<br>Have Cancer &<br> Test Says \"No Cancer\"", 
+                               "895 People<br>Do Not Have Cancer &<br> Test Says \"No Cancer\"", 
+                               "10 People<br>Have Cancer", 
+                               "990 People<br>Do Not Have Cancer", 
+                               "1000 People"]; 
+           }
+           
 
           //numbers.sort( function() { return Math.random() - .5 } );
 
-          for ( var i=0; i<10; i++ ) {
-            $('<div>' + text_numbers[numbers[i]] + '</div>').data( 'number', numbers[i] ).attr( 'id', 'card'+numbers[i] ).appendTo( '#cardPile' ).draggable( {
+          for ( var i=1; i<9; i++ ) {
+            $('<div>' + text_numbers[numbers[i]] + '</div>').data( 'number', numbers[i] ).attr( 'id', 'card'+numbers[i] ).addClass("no_color").appendTo( '#cardPile' ).draggable( {
               containment: '#content',
               stack: '#cardPile div',
               cursor: 'move',
@@ -492,11 +617,16 @@
           // Create the card slots
           var words = [ 'one', 'two', 'three', 'four', 'five', 'six' , 'seven', "eight", "nine", "ten"];
           for ( var i=0; i<=9; i++ ) {
-            $('<div id="droparea_'+i+'"></div>').data( 'number', i ).appendTo( '#cardSlots' ).droppable( {
-              accept: '#cardPile div',
-              hoverClass: 'hovered',
-              drop: handleCardDrop
-            } );
+            if(i == 0 || i == 9){
+                $('<div id="droparea_'+i+'">'+text_numbers[0]+'</div>').data( 'number', i ).appendTo( '#cardSlots' );
+            }else{
+                $('<div id="droparea_'+i+'"></div>').data( 'number', i ).appendTo( '#cardSlots' ).droppable( {
+                  accept: '#cardPile div',
+                  hoverClass: 'hovered',
+                  drop: handleCardDrop
+                } );
+            }
+           
           }
 
         }
@@ -516,14 +646,6 @@
             }
         }
         function updateLayouts(slotNumber, cardNumber){
-            var layoutMatches = {"1":[0, 1,2, 3,4, 5,6, 7,8], 
-                                 "2":[0, 2,1, 5,6, 3,4, 7,8],
-                                 "3":[0, 1,2, 4,3, 6,5, 8,7],
-                                 "4":[0, 2,1, 6,5, 4,3, 8,7],
-                                 "5":[0, 7,8, 3,5, 4,6, 1,2],
-                                 "6":[0, 8,7, 4,6, 3,5, 1,2],
-                                 "7":[0, 7,8, 5,3, 6,4, 2,1],
-                                 "8":[0, 8,7, 6,4, 5,3, 2,1]};
             var found = false;
             //console.log("before", possibleLayouts)
             for(var i=1; i <= 8; i++){
@@ -542,14 +664,7 @@
         }
 
         function checkLayouts(slotNumber, cardNumber){
-            var layoutMatches = {"1":[0, 1,2, 3,4, 5,6, 7,8], 
-                                 "2":[0, 2,1, 5,6, 3,4, 7,8],
-                                 "3":[0, 1,2, 4,3, 6,5, 8,7],
-                                 "4":[0, 2,1, 6,5, 4,3, 8,7],
-                                 "5":[0, 7,8, 3,5, 4,6, 1,2],
-                                 "6":[0, 8,7, 4,6, 3,5, 1,2],
-                                 "7":[0, 7,8, 5,3, 6,4, 2,1],
-                                 "8":[0, 8,7, 6,4, 5,3, 2,1]};
+           
             var found = false;
             //console.log("check", possibleLayouts)
             for(var i=1; i <= 8; i++){
@@ -690,15 +805,19 @@
           // If all the cards have been placed correctly then display a message
           // and reset the cards for another go
 
-          if ( correctCards == 10 ) {
+          if ( correctCards == 8 ) {
             $('#successMessage').show();
-            $('#successMessage').animate( {
-              left: '380px',
-              top: '200px',
-              width: '400px',
-              height: '100px',
-              opacity: 1
-            } );
+
+            //$('#successMessage').animate( {
+            //  left: '180px',
+            //  top: '240px',
+            //  width: '400px',
+            //  height: '100px',
+            //  opacity: 1
+            //} );
+           
+            $("#p1_step3").fadeIn(1000); 
+            $("#p1_step3").effect("highlight", {}, 1000);
           }
 
         }
@@ -734,9 +853,9 @@
             if (cond == 0){
                 var s = ["<span>You know the following information:</span>",
                           "<ul>",
-                          "<li>Of <b>1000</b> people tested for skin cancer, <b>10</b> people will actually have skin cancer.</li>",
-                          "<li>Of the <b>10</b> people with skin cancer, <b>8</b> people got a correct test result that says they have cancer.</li>",
-                          "<li>Of the <b>990</b> people without skin cancer, <b>95</b> people incorrectly get a test result that says they have cancer.</li>",
+                          "<li>Of <b>1000</b> people tested for skin cancer, <b>10</b> people will <b>actually</b> have skin cancer.</li>",
+                          "<li>Of the <b>10</b> people with skin cancer, <b>8</b> people got a correct <b>test result</b> that says they have cancer.</li>",
+                          "<li>Of the <b>990</b> people without skin cancer, <b>95</b> people incorrectly get a <b>test result</b> that says they have cancer.</li>",
                          "</ul>"].join("\n");  
                 $("#problem_statement").html(s);
             }else{
@@ -775,7 +894,7 @@
           
                 var s = [
                         '<div class="well well-sm">',
-                        '<p>If you got a test result that says you have skin cancer, what are the chances that you actually have skin cancer?</p>',
+                        '<p>If you got a <b>test result</b> that says you have skin cancer, what are the chances that you <b>actually</b> have skin cancer?</p>',
                         '</div>',
                         '<p>The chances are <input id="input_a1" class="answer" name="answer1" type="text" />&nbsp;<strong>out of</strong>&nbsp;<input id="input_a2" class="answer" name="answer2" type="text" /></p>'
                         ].join("\n");
@@ -816,7 +935,7 @@
 
             }
 
-            init();
+           
 
             assignIDs();
 
@@ -829,7 +948,8 @@
             var worker_id = "{{worker_id|safe}}";
             var condition = "{{condition|safe}}";
             var debug = parseInt({{debug|safe}});
-        
+            
+            init(condition);
             checkResolution(1000, 560);
 
             assignText(condition);
@@ -843,7 +963,9 @@
 
             $("#hintButton").click(function(e){
                 
+                
                 var id = correctCards;
+
                 var pos = $("#droparea_"+id).position();
 
                 //var offset2 = $("#card"+id).offset();
@@ -1114,40 +1236,53 @@
                 </div>
                 <div class="row">
                     <div class="col-xs-8">
-                        <p id="readtextbelow" class="lead"><strong>Read the text below carefully and answer the question as best as you can.</strong>
-                        </p>
-                    
-                        <div id="problem_statement" class="well well-sm">
-                            
-                        </div>
-                        <div id="content">
-                          <div id="cardPile">
-                          </div>
-                          
-                          <div id="cardSlots">
-                            
-                          </div>
-                          <div id="successMessage" style="display: none; left: 580px; top: 250px; width: 0px; height: 0px;">
-                            <h2>You did it!</h2>
-                            <button onclick="init()">Play Again</button>
-                          </div>
-                        </div>
+                       <div id="p1_step1"> 
+                            <p id="readtextbelow" class="lead"><strong>Step 1. Read the text below carefully.</strong>
+                            </p>
+                        
+                            <div id="problem_statement" class="well well-sm">
+                                
+                            </div>
+                             <button id="p1_step1_nextButton" class="btn btn-default submit">Next Step</button>
+                       </div>
+
+                       <div id="p1_step2"> 
+                            <p id="draginstructions" class="lead"><strong>Step 2. Drag the label boxes onto the diagram.</strong>
+                            </p>
+                            <div id="content">
+                              <div id="cardPile">
+                              </div>
+                              
+                              <div id="cardSlots">
+                                
+                              </div>
+                              <div id="successMessage" style="display: none; left: 180px; top: 240px; width: 400px; height: 100px;">
+                                <h2>Good Job! This is correct.</h2>
+                              </div>
+                            </div>
+                       </div>
 
                     </div>
 
                     <div class="col-xs-4">
-                        <p class="lead"><strong>Please answer the following questions:</strong></p>
-                        
-                        <div id="answer_statement">
+
+                        <div id="p1_step3">
+                            <p class="lead"><strong>Step 3. Answer the following questions carefully using the information from Step 1 or Step 2.</strong></p>
                             
+                            <div id="answer_statement">
+                                
+                            </div>
+                             <button id="p1_step3_nextButton" class="btn btn-default submit">Next Step</button>
+                        </div>
+                        
+                        <div id="p1_step4">
+                         <p class="lead"><strong>Step 4. Explain how you came up with your answer in Step 3.</strong></p>
+                         <textarea id="how_calculated" name="how_calculated" class="form-control" rows="3"></textarea>
+                          <button id="p1_step4_nextButton" class="btn btn-default submit">Next Step</button>
                         </div>
 
-                        
-
-                         <p class="lead"><strong>Please explain how you came up with your answer.</strong></p>
-                        <textarea id="how_calculated" name="how_calculated" class="form-control" rows="3"></textarea>
-
-                        <p class="lead"><strong>How confident are you in your answer?</strong></p>
+                        <div id="p1_step5">
+                        <p class="lead"><strong>Step 5. How confident are you in your answer?</strong></p>
 
                         <ul class="list-inline pull-down text-center">
                             <li style="width:19%">
@@ -1171,12 +1306,12 @@
                         </ul>
 
                         
-                        <button id="hintButton" class="btn btn-default submit">Hint</button>
+                       
                         <br />
                         <br />
                         <button type="submit" class="btn btn-default submit">Next Page</button>
                         <div id="error2" class="error text-danger"></div>
-
+                        </div>
                     </div>
                 </div>
             </div>
