@@ -1052,7 +1052,7 @@ def animated_mouse_paths(request, answer_id):
     #if version == 1:
     #    template = 'mouse_paths_animated.html'
     #else:
-    template = 'mouse_paths_animated_v3.html'
+    template = 'mouse_paths_animated_v4.html'
     
     return render_to_response(template, {'show_numbers':True,
                                                             'survey':survey,

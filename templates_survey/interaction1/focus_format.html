@@ -1,0 +1,1506 @@
+﻿{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--
+      The MIT License (MIT)
+      Copyright (c) 2014 Autodesk, Inc.
+
+      Permission is hereby granted, free of charge, to any person obtaining a copy
+      of this software and associated documentation files (the "Software"), to deal
+      in the Software without restriction, including without limitation the rights
+      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+      copies of the Software, and to permit persons to whom the Software is
+      furnished to do so, subject to the following conditions:
+
+      The above copyright notice and this permission notice shall be included in
+      all copies or substantial portions of the Software.
+
+      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+      FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+      AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+      LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+      THE SOFTWARE.
+    -->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Experiscope Test</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        .fill {
+            min-height: 100%;
+            height: 100%;
+        }
+        /* Customize font sizes based on media queries */
+        @media(max-width:767px) { /* Smaller than 800 wide... */
+            div, p {
+                font-size: 8px;
+            }
+        }
+
+        @media(min-width:768px) { /* 800w + */
+            div, p {
+                font-size: 10px;
+            }
+        }
+
+        @media(min-width:1000px) { /* 1024w + */
+            div, p {
+                font-size: 11px;
+            }
+        }
+
+        @media(min-width:1200px) { /* 1280w + */
+            div, p {
+                font-size: 14px;
+            }
+        }
+
+        .hover_text{ 
+            color: orangered;
+        }
+        /*.hover_text:hover {
+           
+            color: white;
+            background: blue;
+        }*/
+        .size-16-9 {
+            /*width: 95vw;  Let Bootstrap sizes handle */
+            height: 56vw; /* rounded from 9/16 = 56.25 */
+            /*overflow: hidden;*/
+            /*margin: 8vw auto 0 auto;*/
+            border: 0px solid black;
+        }
+
+        .lead {
+            font-size: 1.1em;
+            margin-top: 1.2em;
+            margin-bottom: 0.8em;
+        }
+
+        .answer {
+            width: 5em;
+        }
+
+        .likert {
+            text-indent: 10px;
+        }
+
+        img {
+            border: 0px solid black;
+        }
+
+        #wrapper_div {
+            margin-top: 10px;
+        }
+        
+        .container {
+            margin-left: 0;
+        }
+
+        #content {
+  text-align: center;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Header/footer boxes */
+
+.wideBox {
+  clear: both;
+  text-align: center;
+  margin: 70px;
+  padding: 10px;
+  background: #ebedf2;
+  border: 1px solid #333;
+}
+
+.wideBox h1 {
+  font-weight: bold;
+  margin: 20px;
+  color: #666;
+  font-size: .4em;
+}
+
+/* Slots for final card positions */
+
+#cardSlots {
+  margin: 50px auto 0 auto;
+  background: #ddf;
+  position: relative;
+  width: 100%;
+  height: 36em;
+  padding: 20px;
+  border: 2px solid #333;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  -moz-box-shadow: 0 0 .3em rgba(0, 0, 0, .8);
+  -webkit-box-shadow: 0 0 .3em rgba(0, 0, 0, .8);
+  box-shadow: 0 0 .3em rgba(0, 0, 0, .8);
+  background-image: url("{% static 'images/background.png' %}");
+  background-size: 100% 100%;
+}
+
+/* The initial pile of unsorted cards */
+
+
+#cardPile {
+  margin: 0 auto;
+  position: relative;  
+  width: 100%;
+  height: 120px;
+}
+
+
+  
+
+/* Individual cards and slots */
+#cardPile div {
+  position: absolute;
+  width: 16em;
+  height: 58px;
+  padding: 0px;
+  padding-top: 0px;
+  padding-bottom: 0;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  margin: 0 0 0 0px;
+  color: #000;
+  font-size: 0.8em;
+  text-shadow: 0 0 3px #ccc;
+  font-weight: bolder;
+   -moz-box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
+  -webkit-box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
+  box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
+  cursor: grab;
+  cursor: -webkit-grab; 
+  cursor: -moz-grab;
+}
+
+#cardSlots div {
+  width: 12em;
+  height: 58px;
+  padding: 5px;
+  padding-top: 0px;
+  padding-bottom: 0;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  margin: 0 0 0 10px;
+  /*background: #fff;
+  border-style: dashed;*/
+  font-weight: bolder;
+}
+
+
+
+/*#cardSlots div:first-child, #cardPile div:first-child {
+  margin-left: 0;
+}*/
+
+#cardSlots div.hovered {
+  background: #aaa;
+}
+
+
+#cardPile div.ui-draggable-dragging {
+  -moz-box-shadow: 0 0 1.8em rgba(0, 0, 0, .8);
+  -webkit-box-shadow: 0 0 1.8em rgba(0, 0, 0, .8);
+  box-shadow: 0 0 1.8em rgba(0, 0, 0, .8);
+  cursor: grabbing;  cursor: -webkit-grabbing; cursor:-moz-grabbing;
+}
+
+#droparea_0 {
+    position: absolute;
+    top: 1em;
+    left: 20em;
+    background: #f0f0f0; border: 3px #000 solid; 
+     -moz-box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
+  -webkit-box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
+  box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
+}
+#droparea_1 {
+    position: absolute;
+    top: 8em;
+    left: 7em;
+    display: inline-block;
+    background: #fff;
+  border-style: dashed;
+}
+
+#droparea_2 {
+    position: absolute;
+    top: 8em;
+    left: 33em;
+    display: inline-block;
+    background: #fff;
+  border-style: dashed;
+}
+
+#droparea_3 {
+    position: absolute;
+    top: 15em;
+    left: 0em;
+    display: inline-block;
+    background: #fff;
+  border-style: dashed;
+}
+
+#droparea_4 {
+    position: absolute;
+    top: 15em;
+    left: 13em;
+    display: inline-block;
+    background: #fff;
+  border-style: dashed;
+}
+
+#droparea_5 {
+    position: absolute;
+    top: 15em;
+    left: 26em;
+    display: inline-block;
+    background: #fff;
+  border-style: dashed;
+}
+
+#droparea_6 {
+    position: absolute;
+    top: 15em;
+    left: 39em;
+    display: inline-block;
+    background: #fff;
+  border-style: dashed;
+}
+
+#droparea_7 {
+    position: absolute;
+    top: 23em;
+    left: 13em;
+    display: inline-block;
+    background: #fff;
+  border-style: dashed;
+}
+
+#droparea_8 {
+    position: absolute;
+    top: 23em;
+    left: 26em;
+    display: inline-block;
+    background: #fff;
+  border-style: dashed;
+}
+
+#droparea_9 {
+    position: absolute;
+    top: 30em;
+    left: 19.5em;
+    display: inline-block;
+    background: #f0f0f0; border: 3px #000 solid;
+     -moz-box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
+  -webkit-box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
+  box-shadow: 0 0 .5em rgba(0, 0, 0, .8);
+}
+
+
+
+/* Individually coloured cards */
+#card0 { background: #bebada; border: 3px #000 solid; 
+    left: 0em; top: 0em;  
+}
+#card1 { background: #fdb462; border: 3px #000 solid; 
+     left: 0em; top: 0em;  
+ 
+}
+#card2 { background: #80b1d3; border: 3px #000 solid; 
+     left: 33em; top: 0em;  
+   
+}
+#card3 { background: #fb8072; border: 3px #fdb462 solid; 
+     left: 16.5em; top: 0em;  
+  
+}
+#card4 { background: #b3de69; border: 3px #fdb462 solid; 
+     left: 0em; top: 6em;  
+ 
+}
+#card5 { background: #fb8072; border: 3px #80b1d3 solid;  
+    left: 49.5em; top: 6em;  
+   }
+#card6 { background: #b3de69; border: 3px #80b1d3 solid; 
+     left: 16.5em; top: 6em;  
+   
+}
+#card7 { background: #fb8072; border: 3px #000 solid; 
+    left: 33em; top: 6em;  
+ 
+}
+#card8 { background: #b3de69; border: 3px #000 solid; 
+    left: 49.5em; top: 0em;  
+   
+}
+#card9 { background: #bebada; border: 3px #000 solid; 
+    left: 50em; top: 6em;  
+    
+
+}
+
+
+
+#card0.correct { background: #bebada; border: 3px #000 solid; 
+    -ms-transform: rotate(0deg); /* IE 9 */
+    -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
+    transform: rotate(0deg); 
+}
+#card1.correct { background: #fdb462; border: 3px #000 solid; 
+ -ms-transform: rotate(0deg); /* IE 9 */
+    -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
+    transform: rotate(0deg); 
+}
+#card2.correct { background: #80b1d3; border: 3px #000 solid; 
+ -ms-transform: rotate(0deg); /* IE 9 */
+    -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
+    transform: rotate(0deg); 
+}
+#card3.correct { background: #fb8072; border: 3px #fdb462 solid; 
+ -ms-transform: rotate(0deg); /* IE 9 */
+    -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
+    transform: rotate(0deg); 
+}
+#card4.correct { background: #b3de69; border: 3px #fdb462 solid; 
+ -ms-transform: rotate(0deg); /* IE 9 */
+    -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
+    transform: rotate(0deg); 
+}
+#card5.correct { background: #fb8072; border: 3px #80b1d3 solid;  -ms-transform: rotate(0deg); /* IE 9 */
+    -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
+    transform: rotate(0deg); }
+#card6.correct { background: #b3de69; border: 3px #80b1d3 solid;  -ms-transform: rotate(0deg); /* IE 9 */
+    -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
+    transform: rotate(0deg); }
+#card7.correct { background: #fb8072; border: 3px #000 solid; -ms-transform: rotate(0deg); /* IE 9 */
+    -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
+    transform: rotate(0deg); }
+#card8.correct { background: #b3de69; border: 3px #000 solid; -ms-transform: rotate(0deg); /* IE 9 */
+    -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
+    transform: rotate(0deg); }
+#card9.correct { background: #bebada; border: 3px #000 solid; -ms-transform: rotate(0deg); /* IE 9 */
+    -webkit-transform: rotate(0deg); /* Chrome, Safari, Opera */
+    transform: rotate(0deg); }
+
+#card0.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card1.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card2.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card3.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+
+#card4.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+
+#card5.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card6.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card7.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card8.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+#card9.no_color {
+    background: #f0f0f0; border: 3px #000 solid; 
+}
+
+
+
+/* "You did it!" message */
+#successMessage {
+  position: absolute;
+  left: 580px;
+  top: 250px;
+  width: 0;
+  height: 0;
+  z-index: 100;
+  /*
+  background: #dfd;
+  border: 2px solid #333;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  -moz-box-shadow: .3em .3em .5em rgba(0, 0, 0, .8);
+  -webkit-box-shadow: .3em .3em .5em rgba(0, 0, 0, .8);
+  box-shadow: .3em .3em .5em rgba(0, 0, 0, .8);
+  */
+  padding: 20px;
+}
+
+
+    </style>
+
+    <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.7.1/modernizr.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.6/jquery.mousewheel.min.js"></script>
+    <script type="text/javascript" src="{% static 'js/lib/bowser.min.js' %}"></script> 
+    <script type="text/javascript" src="{% static 'js/lib/screenfull.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/rangy-core.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/lib/rangy-serializer.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/app/detect-zoom.js' %}"></script>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script type="text/javascript" src="{% static 'js/mimic.js' %}"></script>
+
+
+    <script type="text/javascript">
+        var correctCards;
+        var layoutMode;
+        var possibleLayouts = {'1':true, '2':true, '3':true, '4':true, '5':true, '6':true,'7':true, '8':true};
+        var layoutMatches = {"1":[0, 1,2, 3,4, 5,6, 7,8], 
+                                 "2":[0, 2,1, 5,6, 3,4, 7,8],
+                                 "3":[0, 1,2, 4,3, 6,5, 8,7],
+                                 "4":[0, 2,1, 6,5, 4,3, 8,7],
+                                 "5":[0, 7,8, 3,5, 4,6, 1,2],
+                                 "6":[0, 8,7, 4,6, 3,5, 1,2],
+                                 "7":[0, 7,8, 5,3, 6,4, 2,1],
+                                 "8":[0, 8,7, 6,4, 5,3, 2,1]};
+        function init(cond) {
+
+         
+              $("#p1_step2").hide();
+              $("#p1_step3").hide();
+              $("#p1_step4").hide();
+              $("#p1_step5").hide();
+
+              $("#p1_step1_nextButton").click(function(e){
+                 
+                 if(cond == 0){
+                    $("#p1_step1_nextButton").hide();
+                    $("#p1_step2").fadeIn(1000); 
+                    $("#p1_step2").effect("highlight", {}, 1000);    
+                 }else {
+                    $("#p1_step2").hide();
+                    $("#p1_step1_nextButton").hide();
+                    $("#p1_step3").fadeIn(1000); 
+                    $("#p1_step3").effect("highlight", {}, 1000);    
+                  
+                }
+              
+              });
+
+                $("#p1_step1_nextButton").click(function(e){
+                $("#p1_step1_nextButton").hide();
+              });
+
+              $("#p1_step3_nextButton").click(function(e){
+                $("#p1_step3_nextButton").hide();
+                $("#p1_step4").fadeIn(1000); 
+                $("#p1_step4").effect("highlight", {}, 1000);
+              });
+
+              $("#p1_step4_nextButton").click(function(e){
+                $("#p1_step4_nextButton").hide();
+                $("#p1_step5").fadeIn(1000); 
+                $("#p1_step5").effect("highlight", {}, 1000);
+              });
+         
+          
+
+          // Hide the success message
+          $('#successMessage').hide();
+          //$('#successMessage').css( {
+          //  left: '580px',
+          //  top: '250px',
+          //  width: 0,
+          //  height: 0
+          //} );
+
+          // Reset the game
+          correctCards = 0;
+          layoutMode = 0;
+          $('#cardPile').html( '' );
+          $('#cardSlots').html( '' );
+
+          // Create the pile of shuffled cards
+          var numbers = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ];
+          possibleLayouts = {'1':true, '2':true, '3':true, '4':true, '5':true, '6':true,'7':true, '8':true};
+          var text_numbers;
+        
+            text_numbers = [ "1000 People", 
+                               "103 People<br>Test Says \"Has Cancer\"", 
+                               "897 People<br>Test Says \"No Cancer\"", 
+                               "8 People<br>Have Cancer &<br> Test Says \"Has Cancer\"", 
+                               "95 People<br>Do Not Have Cancer &<br> Test Says \"Has Cancer\"", 
+                               "2 People<br>Have Cancer &<br> Test Says \"No Cancer\"", 
+                               "895 People<br>Do Not Have Cancer &<br> Test Says \"No Cancer\"", 
+                               "10 People<br>Have Cancer", 
+                               "990 People<br>Do Not Have Cancer", 
+                               "1000 People"]; 
+          
+           
+
+          //numbers.sort( function() { return Math.random() - .5 } );
+
+          for ( var i=1; i<9; i++ ) {
+            $('<div>' + text_numbers[numbers[i]] + '</div>').data( 'number', numbers[i] ).attr( 'id', 'card'+numbers[i] ).addClass("no_color").appendTo( '#cardPile' ).draggable( {
+              containment: '#content',
+              stack: '#cardPile div',
+              cursor: 'move',
+              revert: true
+            } );
+          }
+
+          // Create the card slots
+          var words = [ 'one', 'two', 'three', 'four', 'five', 'six' , 'seven', "eight", "nine", "ten"];
+          for ( var i=0; i<=9; i++ ) {
+            if(i == 0 || i == 9){
+                $('<div id="droparea_'+i+'">'+text_numbers[0]+'</div>').data( 'number', i ).appendTo( '#cardSlots' );
+            }else{
+                $('<div id="droparea_'+i+'"></div>').data( 'number', i ).appendTo( '#cardSlots' ).droppable( {
+                  accept: '#cardPile div',
+                  hoverClass: 'hovered',
+                  drop: handleCardDrop
+                } );
+            }
+           
+          }
+
+        }
+        function figureOutMode(cardNumber){
+            if(layoutMode == 0){
+                if(cardNumber != 0 && cardNumber != 9)
+                    return 1;
+                else
+                    return 0;                
+            } else if(layoutMode == 1){
+                if(cardNumber != 0 && cardNumber != 9)
+                    return 2;
+                else
+                    return 1;    
+            } else {
+                    return 2;   
+            }
+        }
+        function updateLayouts(slotNumber, cardNumber){
+            var found = false;
+            //console.log("before", possibleLayouts)
+            for(var i=1; i <= 8; i++){
+                if(possibleLayouts[i]){
+                    if(layoutMatches[i][slotNumber] != cardNumber){
+                        //return true;
+                        possibleLayouts[i] = false;
+                    }else{
+                        found = true;
+                    }
+                }
+
+            }
+            //console.log("after", possibleLayouts)
+            return found;
+        }
+
+        function checkLayouts(slotNumber, cardNumber){
+           
+            var found = false;
+            //console.log("check", possibleLayouts)
+            for(var i=1; i <= 8; i++){
+                if(possibleLayouts[i]){
+                    if(layoutMatches[i][slotNumber] == cardNumber){
+                        found = true;
+                    }
+                }
+
+            }
+            //console.log("after", possibleLayouts)
+            return found;
+        }
+        function checkSlotCard(slotNumber, cardNumber){
+            if(layoutMode == 0){
+                if ((slotNumber == 0 || slotNumber == 9) &&  (cardNumber == 0 || cardNumber == 9)) {
+                    return true;
+                }else{
+                    if(cardNumber == 1){ // 103
+                        if(slotNumber == 1 || slotNumber == 2 || slotNumber == 7 || slotNumber == 8){
+                            return checkLayouts(slotNumber, cardNumber);
+                        }else{
+                            return false;
+                        }
+                    }
+                    else if(cardNumber == 2){ // 897
+                        if(slotNumber == 1 || slotNumber == 2 || slotNumber == 7 || slotNumber == 8){
+                            return checkLayouts(slotNumber, cardNumber);
+                        }else{
+                            return false;
+                        }
+                    }
+                    else if(cardNumber == 7){ // 10
+                        if(slotNumber == 1 || slotNumber == 2 || slotNumber == 7 || slotNumber == 8){
+                            return checkLayouts(slotNumber, cardNumber);
+                        }else{
+                            return false;
+                        }
+                    }
+                    else if(cardNumber == 8){ // 990
+                        if(slotNumber == 1 || slotNumber == 2 || slotNumber == 7 || slotNumber == 8){
+                            return checkLayouts(slotNumber, cardNumber);
+                        }else{
+                            return false;
+                        }
+                    }
+
+                    else if(cardNumber == 3){ // 8
+                        if(slotNumber == 3 || slotNumber == 4 || slotNumber == 5 || slotNumber == 6){
+                            return checkLayouts(slotNumber, cardNumber);
+                        }else{
+                            return false;
+                        }
+                    }
+
+                    else if(cardNumber == 4){ // 95
+                        if(slotNumber == 3 || slotNumber == 4 || slotNumber == 5 || slotNumber == 6){
+                            return checkLayouts(slotNumber, cardNumber);
+                        }else{
+                            return false;
+                        }
+                    }
+
+                    else if(cardNumber == 5){ // 2
+                        if(slotNumber == 3 || slotNumber == 4 || slotNumber == 5 || slotNumber == 6){
+                            return checkLayouts(slotNumber, cardNumber);
+                        }else{
+                            return false;
+                        }
+                    }
+
+                    else if(cardNumber == 6){ // 895
+                        if(slotNumber == 3 || slotNumber == 4 || slotNumber == 5 || slotNumber == 6){
+                            return checkLayouts(slotNumber, cardNumber);
+                        }else{
+                            return false;
+                        }
+                    }
+                    return false;
+                }
+            } else if(layoutMode == 1){
+                if(cardNumber == 0 || cardNumber == 9){
+                    if ((slotNumber == 0 || slotNumber == 9)) {
+                        return true;
+                    }else{
+                        return false;   
+                    }
+                }else{
+                     return checkLayouts(slotNumber, cardNumber);
+                }
+
+               
+
+            } else if(layoutMode == 2){
+               if(cardNumber == 0 || cardNumber == 9){
+                    if ((slotNumber == 0 || slotNumber == 9)) {
+                        return true;
+                    }else{
+                        return false;   
+                    }
+                }else{
+                     return checkLayouts(slotNumber, cardNumber);
+                }
+            } 
+            
+        }
+
+        function handleCardDrop( event, ui ) {
+          var slotNumber = $(this).data( 'number' );
+          var cardNumber = ui.draggable.data( 'number' );
+
+          console.log(slotNumber, cardNumber);
+
+          //if(layoutMode == 0){
+          //  layoutMode = figureOutMode(slotNumber, cardNumber);  
+          //}          
+
+          // If the card was dropped to the correct slot,
+          // change the card colour, position it directly
+          // on top of the slot, and prevent it being dragged
+          // again
+          
+          if ( checkSlotCard(slotNumber, cardNumber) ) {
+            if(cardNumber != 0 && cardNumber != 9 ){
+                updateLayouts(slotNumber, cardNumber);
+            }   
+            
+            layoutMode = figureOutMode(cardNumber);     
+            //console.log("layoutMode", layoutMode);
+            ui.draggable.addClass( 'correct' );
+            ui.draggable.draggable( 'disable' );
+            $(this).droppable( 'disable' );
+            ui.draggable.position( { of: $(this), my: 'left top', at: 'left top' } );
+            ui.draggable.draggable( 'option', 'revert', false );
+            correctCards++;
+          } 
+          
+          // If all the cards have been placed correctly then display a message
+          // and reset the cards for another go
+
+          if ( correctCards == 8 ) {
+            $('#successMessage').show();
+
+            //$('#successMessage').animate( {
+            //  left: '180px',
+            //  top: '240px',
+            //  width: '400px',
+            //  height: '100px',
+            //  opacity: 1
+            //} );
+           
+            $("#p1_step3").fadeIn(1000); 
+            $("#p1_step3").effect("highlight", {}, 1000);
+          }
+
+        }
+
+        function showPage(elementID) {
+            // try to find the requested page and alert if it's not found
+            $(".page").hide();
+            $(elementID).show();
+
+        }
+
+
+        function checkResolution(width,height){
+            if(screen.width < width || screen.height < height){
+                window.location.replace("./survey/not_supported/");
+            }
+
+        }
+
+        function assignIDs(){
+            var items = document.getElementsByTagName("*");
+            for (var i = items.length; i--;) {
+                var item = items[i];
+                if(item.id){}
+                else{
+                    var newID = item.nodeName.replace("#","") + "_" + i;
+                    //console.log(newID);
+                    item.id = newID;
+                }
+            }
+        }
+        function assignText(cond){
+            
+                var s = ["<span>You know the following information:</span>",
+                          "<ul>",
+                          "<li>Of <b>1000</b> people tested for skin cancer, <b>10</b> people will <b>actually</b> have skin cancer.</li>",
+                          "<li>Of the <b>10</b> people with skin cancer, <b>8</b> people got a correct <b>test result</b> that says they have cancer.</li>",
+                          "<li>Of the <b>990</b> people without skin cancer, <b>95</b> people incorrectly get a <b>test result</b> that says they have cancer.</li>",
+                         "</ul>"].join("\n");  
+                $("#problem_statement").html(s);
+
+                
+                if(cond == 0){
+                  $("#p1_step3_instructions").html("<strong>Step 3. Answer the following questions carefully using the information from Step 1 or Step 2.</strong>");
+                  $("#p1_step4_instructions").html("<strong>Step 4. Explain how you came up with your answer in Step 3.</strong>");
+                  $("#p1_step5_instructions").html("<strong>Step 5. How confident are you in your answer?</strong>");
+
+                  
+
+                  
+                }else{
+                  $("#p1_step3_instructions").html("<strong>Step 2. Answer the following questions carefully using the information from Step 1.</strong>");
+                  $("#p1_step4_instructions").html("<strong>Step 3. Explain how you came up with your answer in Step 2.</strong>");
+                  $("#p1_step5_instructions").html("<strong>Step 4. How confident are you in your answer?</strong>");
+                }
+                
+
+          
+            /*    
+            }else {
+                var s = ["<span>You know the following information:</span>",
+                          "<ul>",
+                          "<li>Of <b>1000</b> people tested for skin cancer, <b>10</b> people will <b>actually have</b> skin cancer.</li>",
+                          "</ul>",
+                          "<div>Unfortunately the test is sometimes wrong.</div>", 
+                          "<div>People who were tested might <b>actually have</b> skin cancer even though the <b>test said they did <u>not</u> have</b> skin cancer.</div>",
+                          "<ul>",
+                          "<li>Of the <b>10</b> people with skin cancer, <b>9</b> people got a <b>correct test result</b> that says they <b>have</b> cancer.</li>",
+                          "</ul>",
+                          "<div>Also, People who were tested might <b>actually <u>not</u> have</b> skin cancer even though the test said that <b>they do have</b> skin cancer.</div>",
+                          "<ul>",
+                          "<li>Of the <b>990</b> people without skin cancer, <b>89</b> people <b>incorrectly get a test result</b> that says they <b>have</b> cancer.</li>",
+                         "</ul>"].join("\n");  
+                $("#problem_statement").html(s);
+            }*/
+            
+        }
+
+        function assignText2(cond){
+            
+            if (cond == 0){
+          
+                var s = [
+                        '<div class="well well-sm">',
+                        '<p>If you got a <b>test result</b> that says you have skin cancer, what are the chances that you <b>actually</b> have skin cancer?</p>',
+                        '</div>',
+                        '<p>The chances are <input id="input_a1" class="answer" name="answer1" type="text" />&nbsp;<strong>out of</strong>&nbsp;<input id="input_a2" class="answer" name="answer2" type="text" /></p>'
+                        ].join("\n");
+
+                $("#answer_statement").html(s);
+            }else{
+                 var s = [
+                        '<div class="well well-sm">',
+                        '<p>Out of all <input id="input_a1" class="answer" name="answer1" type="text" /> people who were tested for skin cancer, there are a total of <input id="input_a2" class="answer" name="answer2" type="text" /> people who got a <b>test result</b> that says they have cancer, but only <input id="input_a3" class="answer" name="answer3" type="text" /> of those people <b>actually</b> have skin cancer. </p>',
+                        '<p>If you got a <b>test result</b> that says you have skin cancer, what are the chances that you <b>actually</b> have skin cancer?</p>',
+                       
+                        '<p>The chances are <input id="input_a4" class="answer" name="answer4" type="text" />&nbsp;<strong>out of</strong>&nbsp;<input id="input_a5" class="answer" name="answer5" type="text" /></p>',
+                         '</div>'
+                        ].join("\n");
+
+                $("#answer_statement").html(s);
+             
+            }
+          
+           
+        }
+
+       
+        
+        $(document).ready(function() {
+
+            if( bowser.msie && bowser.version < 10){
+                $("#button_for_fullscreen_ie").html("");
+                $("#or_press_button").html("");
+                $("#modal-footer").html("");
+
+            }
+
+           
+
+            assignIDs();
+
+            var questionData = {{ question|safe}};
+            var questionCondition = {{ condition|safe}};
+            var total_pages =  4;
+            var current_question =  parseInt({{qnum|safe}});
+            var answer = "";
+            var confidence = 0;
+            var worker_id = "{{worker_id|safe}}";
+            var condition = "{{condition|safe}}";
+            var debug = parseInt({{debug|safe}});
+            
+            init(condition);
+            checkResolution(1000, 560);
+
+            assignText(condition);
+            assignText2(condition);
+
+            var cardPileOffset = $("#cardPile").offset();
+            var cardSlotsOffset = $("#cardSlots").offset();
+            //    var offset2 = $("#card"+id).offset();
+            console.log(cardPileOffset, cardSlotsOffset);
+            var topDiff = cardSlotsOffset.top - cardPileOffset.top;
+
+            $("#hintButton").click(function(e){
+                
+                
+                var id = correctCards;
+
+                var pos = $("#droparea_"+id).position();
+
+                //var offset2 = $("#card"+id).offset();
+                console.log(topDiff, pos);
+                var l = pos.left+10;
+                var t = topDiff + pos.top;
+                $("#card"+id).css("z-index", 10);
+                $("#card"+id).animate({
+                    "left": l,
+                    "top": t,
+                    
+                  }, 1000, function() {
+                    $(this).addClass("correct");
+                    $(this).draggable( 'disable' );
+                    correctCards++;
+                  });
+            });
+
+            // Question submits
+            if(!debug){
+                $('.submit').click(function(e) {
+
+                    logFormatted(logBuffer, e);
+
+
+
+
+                    $(".error").html("");
+                    if(current_question == 0){
+
+                    }else if(current_question == 1){
+                        var a1 = $('input:text[name=answer1]').val();
+                        var a2 = $('input:text[name=answer2]').val();
+                        var how_calculated =  $('#how_calculated').val();
+                        var confidence = $('input:radio[name=confidence]:checked').val();
+                        //console.log(b);
+                        if(!a1 || !a2){
+                            $(".error").html("<div id='myerror4' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                            return;
+                        }
+                        if(!how_calculated){
+
+                            $(".error").html("<div id='myerror5' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                            return;
+                        }
+                        if(!confidence){
+                            $(".error").html("<div id='myerror3' class='alert alert-error'>Error: Please indicate your level of confidence to proceed.</div>");
+                            return;
+                        }
+                       
+                        answer = {'a1':a1, 'a2':a2, 'how_calculated': how_calculated, 'confidence': confidence};
+                    }else if(current_question == 2){
+                        var who_from = $('input:radio[name=who_from]:checked').val();
+                        var what_department = $('input:radio[name=what_department]:checked').val();
+                        if(!who_from || !what_department ){
+
+                            $(".error").html("<div id='myerror4' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                            return;
+                        }
+                        answer = {'who_from':who_from, 'what_department':what_department};
+
+                    }else if(current_question == 3){
+                        var gender = $('input:radio[name=gender]:checked').val();
+                        var occupation = $('#occupation option:selected').val();
+                        var education = $('#education option:selected').val();
+                        var training = $('input:radio[name=training]:checked').val();
+                        var prev_question = $('input:radio[name=prev_question]:checked').val();
+                        var comments_prev = $('#comments_prev').val();
+                        var comments = $('#comments').val();
+
+                        if(!gender || !occupation || !education  || !training || !prev_question){
+
+                            $(".error").html("<div id='myerror4' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                            return;
+                        }
+
+                        answer = {'gender':gender, 'occupation':occupation, 'education':education, 'training':training, 'prev_question': prev_question,'comments_prev':comments_prev, 'comments':comments};
+                    }
+
+                    $('.submit').prop('disabled', true);
+
+                    $.post("./survey/save_question/", { 'currentQ': current_question,
+                        'answer': JSON.stringify(answer),
+                        'worker_id':worker_id,
+                        'condition':condition,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'} ).done(function() {
+                            var cache = [];
+                            //console.log(logBuffer);
+                            concatLogBuffer = JSON.stringify(logBuffer);
+
+
+                            //var concatLogBuffer = JSON.stringify(logBuffer);
+
+                            $.ajax({type: "POST",
+                                url: "./survey/save_question/",
+                                data: {'mouseData': concatLogBuffer,
+                                    'currentQ': current_question,
+                                    'worker_id':worker_id,
+                                    'condition':condition,
+                                    'csrfmiddlewaretoken': '{{ csrf_token }}'}
+                            }).done(function() {
+                                if(current_question >= total_pages){
+                                    //$('.submit').prop('disabled', false);
+                                    console.log("saved current_question ", current_question);
+                                    $('#mainForm').submit();
+                                }
+
+                            }).fail(function() {
+                                console.error("Saving Mouse Data Failed.");   
+                            });
+
+                            
+
+
+                            if(total_pages == (current_question+1)){
+                                //$('#mainForm').submit();
+                                //$(window).unbind('beforeunload');
+                                current_question++;
+                                $("#currentQ").val(current_question);
+                                $(".error").html("<div id='calculating_message' class='alert alert-error'>Proccessing... Please Wait</div>");
+                            }else{
+                                // Go to next question
+                                current_question++;
+                                $("#currentQ").val(current_question);
+                                showPage("#page"+current_question.toString());
+                                $('.submit').prop('disabled', false);
+                                
+                               
+                            }
+
+                        }).fail(function() {
+                            $('.submit').prop('disabled', false);
+                            $(".error").html("<div id='myerror1' class='alert alert-error'>Error: Submission didn't work, please try again.</div>");
+                        });
+
+
+
+                });
+            } // not debug condition
+
+            $('.enter_full_screen').click(function () {
+                if (screenfull.enabled) {
+                    screenfull.request();
+                }
+                if (window.ActiveXObject){
+                    var wscript = new ActiveXObject("Wscript.shell");
+                    wscript.SendKeys("{F11}");
+                }
+
+            });
+
+            var fullscreen = debug || screenfull.isFullscreen || ( (screen.availHeight || screen.height-30) <= window.innerHeight);
+            if(fullscreen){
+
+                $('.submit').prop('disabled', false);
+                $('.submit_button_div').show("slow");
+                $('#myModal').modal('hide');
+
+            }else{
+                $('.submit').prop('disabled', true);
+                $('.submit_button_div').hide();
+                if(current_question > 0){
+                    $('#myModal').modal('show');
+                }
+            }
+            if (screenfull.enabled) {
+                document.addEventListener(screenfull.raw.fullscreenchange, function () {
+                    var fullscreen = debug || screenfull.isFullscreen || ( (screen.availHeight || screen.height-30) <= window.innerHeight);
+                    if(fullscreen){
+
+                        $('.submit').prop('disabled', false);
+                        $('.submit_button_div').show("slow");
+                        $('#myModal').modal('hide');
+
+                    }else{
+                        $('.submit').prop('disabled', true);
+                        $('.submit_button_div').hide();
+                        if(current_question > 0){
+                            $('#myModal').modal('show');
+                        }
+                    }
+                });
+            }
+
+            $(window).resize(function( e ) {
+                var fullscreen = debug || screenfull.isFullscreen || ( (screen.availHeight || screen.height-30) <= window.innerHeight);
+                if(fullscreen){
+                    $('.submit').prop('disabled', false);
+                    $('.submit_button_div').show("slow");
+                    $('#myModal').modal('hide');
+
+                }else{
+                    $('.submit').prop('disabled', true);
+                    $('.submit_button_div').hide();
+                    if(current_question > 0){
+                        $('#myModal').modal('show');
+                    }
+
+                }
+
+            });
+
+            showPage("#page"+current_question);
+
+        });
+
+    </script>
+
+</head>
+<body id="body">
+
+    <div id="wrapper_div" class="container-fluid fill">
+        <div id="wrapper_div2">
+            <!-- PAGE 0 - GENERAL INSTRUCTIONS -->
+
+            <div id="page0" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 1/4</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <h3 id="page_title">Scientific Study on Judgment and Visualization</h3>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-8">
+                        <p class="lead"><strong>Important:</strong></p>
+
+                        <div class="well well-sm">
+                            <ul>
+                                <li class="scaled_text" id="description_paragraph1">You can participate in this series of experiments <b id="bold1">only once</b>. If you have already completed a HIT with the same title (even a while ago), you <b id="bold2">cannot</b> complete this one and we would have to reject your HIT.</li>
+                                <li class="scaled_text" id="description_paragraph2">This HIT takes about 5 minutes to complete.</li>
+                                <li class="scaled_text" id="description_paragraph3">Read the instructions carefully and answer all questions before proceeding to the next page. HITs that are not completed carefully will be <b id="bold3">rejected</b> and the worker will not be paid.</li>
+                                <li class="scaled_text" id="description_paragraph4">You should remain focused, and once you start the HIT, you must not stop unless you have completed all the pages. Special attention must be given to the next page.</li>
+                                <li class="scaled_text" id="question1">To maximize your concentration on this HIT, we ask you to take it in <b id="bold4">Full Screen Mode.</b></li>
+                            </ul>
+                        </div>
+
+                      
+
+                    </div>
+
+                    <div class="col-xs-4">
+                        <p class="lead"><strong>Please Enter Full Screen Mode to proceed:</strong></p>
+
+                        <div class="well well-sm">
+                            <p class="scaled_text" id="question1">To enter <b id="bold6">Full Screen Mode</b>, please press <b id="bold8">F11</b> on your keyboard <span id="button_for_fullscreen_ie">or click this button: <button id="enter_full_screen1" type="button" class="btn btn-default enter_full_screen">Enter Full Screen Mode</button> <br />(Your browser may ask you to "Allow" access for this)</span> </p>
+
+                        </div>
+                        <div id="submit_button_div1" class="submit_button_div">
+                            <p class="text-success" id="question1"><b id="bold7">Full Screen Mode</b> entered successfully, please proceed to take the survey.</p>
+                            <button type="submit" id="submitButton1" name="submit" class="btn btn-default submit">Next Page</button>
+                            <div id="error1" class="error text-danger"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 1 - QUESTION -->
+            <div id="page1" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 2/4</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-8">
+                       <div id="p1_step1"> 
+                            <p id="readtextbelow" class="lead"><strong>Step 1. Read the text below carefully.</strong>
+                            </p>
+                        
+                            <div id="problem_statement" class="well well-sm">
+                                
+                            </div>
+                             <button id="p1_step1_nextButton" class="btn btn-default">Next Step</button>
+                       </div>
+
+                       <div id="p1_step2"> 
+                            <p id="draginstructions" class="lead"><strong>Step 2. Drag the label boxes onto the diagram to complete the diagram based on the information in Step 1.</strong>
+                            </p>
+                            <div id="content">
+                              <div id="cardPile">
+                              </div>
+                              
+                              <div id="cardSlots">
+                                
+                              </div>
+                              <div id="successMessage" style="display: none; left: 180px; top: 240px; width: 400px; height: 100px;">
+                                <h2>Good Job! This is correct.</h2>
+                              </div>
+                            </div>
+                       </div>
+
+                    </div>
+
+                    <div class="col-xs-4">
+
+                        <div id="p1_step3">
+                            <p class="lead" id="p1_step3_instructions"></p>
+                            
+                            <div id="answer_statement">
+                                
+                            </div>
+                             <button id="p1_step3_nextButton" class="btn btn-default">Next Step</button>
+                        </div>
+                        
+                        <div id="p1_step4">
+                         <p class="lead" id="p1_step4_instructions"><strong>Step 4. Explain how you came up with your answer in Step 3.</strong></p>
+                         <textarea id="how_calculated" name="how_calculated" class="form-control" rows="3"></textarea>
+                          <button id="p1_step4_nextButton" class="btn btn-default">Next Step</button>
+                        </div>
+
+                        <div id="p1_step5">
+                        <p class="lead" id="p1_step5_instructions"><strong>Step 5. How confident are you in your answer?</strong></p>
+
+                        <ul class="list-inline pull-down text-center">
+                            <li style="width:19%">
+                                No Confidence<br />
+                                <input type="radio" id="confidence-1" name="confidence" value="1" /><label id="confidence-1-label" for="confidence-1">&nbsp;1</label>
+                            </li>
+                            <li style="width:19%">
+                                <input type="radio" id="confidence-2" name="confidence" value="2" /><label id="confidence-2-label" for="confidence-2">&nbsp;2</label>
+                            </li>
+                            <li style="width:19%">
+                                Reasonable<br />Confidence<br />
+                                <input type="radio" id="confidence-3" name="confidence" value="3" /><label id="confidence-3-label" for="confidence-3">&nbsp;3</label>
+                            </li>
+                            <li style="width:19%">
+                                <input type="radio" id="confidence-4" name="confidence" value="4" /><label id="confidence-4-label" for="confidence-4">&nbsp;4</label>
+                            </li>
+                            <li style="width:19%">
+                                Very High<br />Confidence<br />
+                                <input type="radio" id="confidence-5" name="confidence" value="5" /><label id="confidence-5-label" for="confidence-5">&nbsp;5</label>
+                            </li>
+                        </ul>
+
+                        
+                       
+                        <br />
+                        <br />
+                        <button type="submit" class="btn btn-default submit">Next Page</button>
+                        <div id="error2" class="error text-danger"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- PAGE 2 - QUESTION -->
+             <div id="page2" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 3/4</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-7">
+                        <div class="well well-sm">
+                            Subject: Tomorrow's meeting  <br/>
+                            From: "Ginger Holmes" &lt;gholmes@bru.edu&gt; <br/>
+                            Date: Wed, May 13, 2009 8:31 am  <br/>
+                            To: "Pat Jones" &lt;patjones@bru.edu&gt;<br/> 
+                            Priority: Normal<br/>
+                            <br/>
+                            Pat,<br/> 
+                            Since Christi is out of town, the staff council meeting will be held via telephone tomorrow. We will discuss the proposed reorganization of the Human Resources department to better serve the faculty and staff at BRU. During this conference call, we will also discuss the decisions reached at the 11am meeting of the University Benefits department. It is critical that all attendees of the University Benefits department, especially those who attended the morning meeting, also attend this conference call, to ensure that necessary recommendations of this committee are incorporated into our procedural changes. Details for the conference call are listed below. Also, please confirm your participation via email to me. <br/>
+
+                            Date: Thursday, May 14 <br/>
+                            Time: 2:00 PM (EST) <br/>
+                            Number: 1-800-555-1200 8533123 (passcode)<br/>
+                            <br/>
+                            Thanks, <br/>
+                            Ginger Holmes <br/>
+                            Administrative Coordinator Recruiting and Staffing <br/>
+                            Baton Rouge University <br/>
+                            www.bru.edu<br/>                 
+                           
+                            
+                        </div>
+                      
+                    </div>
+
+                    <div class="col-xs-5">
+                       <p class="lead"><strong>Please answer the following questions:</strong></p>
+                    
+                        <p class="lead"><strong>Who is the email message sent to?</strong></p>
+                        <div class="radio"><label> <input type="radio" id="who-from-1" name="who_from" value="Ginger Holmes" /> Ginger Holmes </label></div>
+                        <div class="radio"><label> <input type="radio" id="who-from-2" name="who_from" value="John Stone" /> John Stone </label></div>
+                        <div class="radio"><label> <input type="radio" id="who-from-3" name="who_from" value="Pat Jones" /> Pat Jones </label></div>
+                        <div class="radio"><label> <input type="radio" id="who-from-4" name="who_from" value="Edward Downs" /> Edward Downs </label></div>
+                        <div class="radio"><label> <input type="radio" id="who-from-5" name="who_from" value="Sadie Stinfeld" /> Sadie Stinfeld </label></div>
+                        <p class="lead"><strong>What department is holding the meeting prior to the conference call?</strong></p>
+                        
+                        <div class="radio"><label> <input type="radio" id="what_department-1" name="what_department" value="Recruiting and Staffing" /> Recruiting and Staffing </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-2" name="what_department" value="Learning and Professional Development" /> Learning and Professional Development </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-3" name="what_department" value="Temporary Employment" /> Temporary Employment </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-4" name="what_department" value="International HR" /> International HR </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-5" name="what_department" value="Equal Opportunity Employment" /> Equal Opportunity Employment </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-6" name="what_department" value="Health Insurance Options" /> Health Insurance Options </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-7" name="what_department" value="Compensation" /> Compensation </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-8" name="what_department" value="Disability Services" /> Disability Services </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-9" name="what_department" value="University Benefits" /> University Benefits </label></div>
+                        <div class="radio"><label> <input type="radio" id="what_department-10" name="what_department" value="Orientation" /> Orientation </label></div>
+                        
+                        <br />
+                        <button type="submit" class="btn btn-default submit">Next Page</button>
+                        <div id="error2" class="error text-danger"></div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 3 - QUESTION -->
+            <div id="page3" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 4/4</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <p class="col-xs-10">
+                    <p class="lead"><strong>What is your Gender?</strong></p>
+                    <ul class="list-inline pull-down text-left">
+                        <li>
+                            <input type="radio" id="gender-1" name="gender" value="Male" /><label for="gender-1">&nbsp;Male</label>
+                        </li>
+                        <li>
+                            <input type="radio" id="gender-2" name="gender" value="Female" /><label for="gender-2">&nbsp;Female</label>
+                        </li>
+                    </ul>
+
+                    <p class="lead"><strong>What is the highest level of education that you have completed?</strong></p>
+                    <div class="col-xs-4">
+                        <select id="education" name="education" class="form-control">
+                            <option value="">---</option>
+                            <option value="Elementary School">Elementary School</option>
+                            <option value="High School">High School</option>
+                            <option value="Undergraduate Degree">Undergraduate Degree</option>
+                            <option value="Professional School">Professional School</option>
+                            <option value="Graduate Degree">Graduate Degree</option>
+                        </select>
+                    </div></br></br>
+
+                    <p class="lead"><strong>What category of occupation do you belong to?</strong></p>
+                    <div class="col-xs-4">
+                        <select id="occupation" name="occupation" class="form-control">
+                            <option value="">---</option>
+                            <option value="Unemployed, Retired, Homemaker">Unemployed, Retired, Homemaker</option>
+                            <option value="Management Occupations">Management Occupations</option>
+                            <option value="Business and Financial Operations Occupations">Business and Financial Operations Occupations</option>
+                            <option value="Computer and Mathematical Occupations">Computer and Mathematical Occupations</option>
+                            <option value="Architecture and Engineering Occupations">Architecture and Engineering Occupations</option>
+                            <option value="Life, Physical, and Social Science Occupations">Life, Physical, and Social Science Occupations</option>
+                            <option value="Community and Social Services Occupations">Community and Social Services Occupations</option>
+                            <option value="Legal Occupations">Legal Occupations</option>
+                            <option value="Education, Training, and Library Occupations">Education, Training, and Library Occupations</option>
+                            <option value="Student, Trainee">Student, Trainee</option>
+                            <option value="Arts, Design, Entertainment, Sports, and Media Occupations">Arts, Design, Entertainment, Sports, and Media Occupations</option>
+                            <option value="Healthcare Practitioners and Technical Occupations">Healthcare Practitioners and Technical Occupations</option>
+                            <option value="Healthcare Support Occupations">Healthcare Support Occupations</option>
+                            <option value="Protective Service Occupations">Protective Service Occupations</option>
+                            <option value="Food Preparation and Serving Related Occupations">Food Preparation and Serving Related Occupations</option>
+                            <option value="Building and Grounds Cleaning and Maintenance Occupations">Building and Grounds Cleaning and Maintenance Occupations</option>
+                            <option value="Personal Care and Service Occupations">Personal Care and Service Occupations</option>
+                            <option value="Sales and Related Occupations">Sales and Related Occupations</option>
+                            <option value="Office and Administrative Support Occupations">Office and Administrative Support Occupations</option>
+                            <option value="Farming, Fishing, and Forestry Occupations">Farming, Fishing, and Forestry Occupations</option>
+                            <option value="Construction and Extraction Occupations">Construction and Extraction Occupations</option>
+                            <option value="Installation, Maintenance, and Repair Occupations">Installation, Maintenance, and Repair Occupations</option>
+                            <option value="Production Occupations">Production Occupations</option>
+                            <option value="Transportation and Material Moving Occupations">Transportation and Material Moving Occupations</option>
+                            <option value="Military Specific Occupations">Military Specific Occupations</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div></br></br>
+                  
+
+                    <p class="lead"><strong>Have you had any training or education in how to calculate conditional probabilities (tasks such as this experiment)?</strong></p>
+                    <ul class="list-inline pull-down text-left">
+                        <li style="width:19%">
+                            Very little or None<br />
+                            <input type="radio" id="training-1" name="training" value="1" /><label for="training-1">&nbsp;1</label>
+                        </li>
+                        <li style="width:19%">
+                            A little<br />
+                            <input type="radio" id="training-2" name="training" value="2" /><label for="training-2">&nbsp;2</label>
+                        </li>
+                        <li style="width:19%">
+                            Moderate<br />
+                            <input type="radio" id="training-3" name="training" value="3" /><label for="training-3">&nbsp;3</label>
+                        </li>
+                        <li style="width:19%">
+                            Quite a bit <br />
+                            <input type="radio" id="training-4" name="training" value="4" /><label for="training-4">&nbsp;4</label>
+                        </li>
+                        <li style="width:19%">
+                            A lot<br />
+                            <input type="radio" id="training-5" name="training" value="5" /><label for="training-5">&nbsp;5</label>
+                        </li>
+                    </ul>
+
+                    <p id="p3" class="lead"><strong>Did you previously do another HIT identical or similar to this? Your answer will not affect our decision to accept or reject this HIT. </strong></p>
+                    <ul class="list-inline pull-down text-left">
+                        <li>
+                            <input type="radio" id="prev_question-1" name="prev_question" value="Yes" /><label for="prev_question-1">&nbsp;Yes</label>
+                        </li>
+                         <li>
+                            <input type="radio" id="prev_question-2" name="prev_question" value="Yes2" /><label for="prev_question-2">&nbsp;Yes, but didn't finish it.</label>
+                        </li>
+                        <li>
+                            <input type="radio" id="prev_question-3" name="prev_question" value="No" /><label for="prev_question-3">&nbsp;No</label>
+                        </li>
+                        <li>
+                            <input type="radio" id="prev_question-4" name="prev_question" value="Unsure" /><label for="prev_question-4">&nbsp;Unsure</label>
+                        </li>
+                    </ul>
+
+                    <p class="lead"><strong>If you answered Yes to previous question, please give us a bit of details about how that HIT was similar to this one. Again, your answer will not affect our decision to accept or reject this HIT.</strong></p>
+                    <textarea id="comments_prev" name="comments_prev" class="form-control" rows="2"></textarea>
+
+
+
+                    <p class="lead"><strong>Please provide any comments or concerns:</strong></p>
+                    <textarea id="comments" name="comments" class="form-control" rows="5"></textarea>
+
+
+                    <br />
+                    <div class="row">
+
+                        <div class="col-md-1"><button type="submit" class="btn btn-default submit">Submit</button></div>
+                        <div class="col-md-9"><span id="error3" class="error text-danger"></span><span id="calculating" class="calculating"></span></div>
+
+                    </div>
+
+
+
+                </div>
+            </div>
+            
+        <form id="mainForm" action="/?worker_id={{worker_id}}&condition={{condition}}" method="post"> {% csrf_token %}
+            <input type="hidden" id="currentQ" name="currentQ" value="{{qnum}}">
+            <input type="hidden" name="worker_id" value="{{worker_id}}">
+            <input type="hidden" name="condition" value="{{condition}}">
+        </form>
+
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div id="modal-dialog" class="modal-dialog">
+                <div id="modal-content" class="modal-content">
+                    <div id="modal-header" class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel">Full Screen Mode</h4>
+                    </div>
+                    <div id="modal-body" class="modal-body">
+                        Please stay in Full Screen Mode. Press <strong>F11</strong> <span id="or_press_button"> or press the button bellow.</span>
+                    </div>
+                    <div id="modal-footer" class="modal-footer">
+                        <button id="enter_full_screen2" type="button" class="btn btn-primary enter_full_screen">Enter Full Screen Mode</button></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+    </div>
+</body>
+</html>
+
+
+
+
+

@@ -234,6 +234,9 @@ $(document).ready(function() {
     $('#userCanvas').load(function(){
       
     var mouseMoves = {{mouseMoves|safe}};
+
+    mouseMoves = mouseMoves.sort(function(a, b){return a.time-b.time});
+
     var version = parseInt({{version|safe}});
     
     function getURLParameter(name) {
@@ -660,7 +663,7 @@ $(document).ready(function() {
             elementData['offset'] = {'left': 0, 'top': 0};
         }else {
             //var el = $('iframe').contents().find('#'+id)[0];
-            var element = $('iframe').contents().find('#'+id);
+            var element = $('iframe').contents().find(id);
               
             elementData['width'] = element.width();
             elementData['height'] = element.height();
@@ -814,11 +817,11 @@ $(document).ready(function() {
        
        var element_c=document.getElementById("elementHighlight");
        var element_ctx=c.getContext("2d");
-       if(mouseMoves[currentPt].e && mouseMoves[currentPt].e.target && mouseMoves[currentPt].e.target.offset){
+       if(mouseMoves[currentPt].e && mouseMoves[currentPt].e.target){
            
            var el = mouseMoves[currentPt].e.target;
-           var el2 = captureElementData(el.id);
-
+           var el2 = captureElementData(el);
+           /*
            element_ctx.clearRect ( 0 , 0 , element_c.width, element_c.height);
            element_c.width = element_c.width;
            element_ctx.beginPath();
@@ -831,6 +834,7 @@ $(document).ready(function() {
            }
            
            element_ctx.stroke();
+           */
        }
         // Draw pageX and pageY of the points
         ctx.beginPath();
@@ -1605,7 +1609,7 @@ $(document).ready(function() {
             $("#time").val(currentTime/1000.0);
             d3.select(".currentGraphTimelinePosition").attr("transform","translate("+x_mapping(currentTime/1000.0)+",0)");
             //console.log((mouseMoves[currentPt+1].time-startTime), currentTime)
-            drawMouseMoveHeatmap(currentPt);
+            //drawMouseMoveHeatmap(currentPt);
             
             while(currentPt < (totalPts-1) && ((mouseMoves[currentPt+1].time-startTime) < currentTime)){
               currentPt++;
