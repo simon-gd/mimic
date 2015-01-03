@@ -30,7 +30,9 @@ SOFTWARE.
 <link rel="stylesheet" href="{% static 'css/jquery-ui.min.css' %}" >
 <link type="text/css" rel="stylesheet" href="{% static 'css/layout-default-latest.css' %}" />
 <script type="text/javascript" src="{% static 'js/lib/jquery-ui.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/jquery.simulate.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery.simulate.dandd.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery.simulate.ext.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery.simulate.drag-n-drop.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/rangy-core.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/rangy-serializer.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/jquery.layout-latest.min.js' %}"></script>
@@ -231,6 +233,13 @@ path.line2 {
 
 head.ready(function() {
 $(document).ready(function() {
+
+
+    var isDragging = false;
+    var dragElement = 0;
+    var dragOffsetX = 0;
+    var dragOffsetY = 0;
+
     $('#userCanvas').load(function(){
       
     var mouseMoves = {{mouseMoves|safe}};
@@ -1459,38 +1468,165 @@ $(document).ready(function() {
       }
       
     }
+   
+
     
+    function findDropEvent(j)
+    {
+      var p = j+1;
+      var drags = 0;
+      while(p < mouseMoves.length){
+        if (mouseMoves[p].type == "drop"){
+           return [p, drags]; 
+        }
+        if (mouseMoves[p].type == "drag"){
+           drags++; 
+        }
+        p++;
+      }
+      return -1;
+
+    }
     function simulateEvent(currentPt)
     {
-      if(!mouseMoves[currentPt].e)
+      if(!mouseMoves[currentPt].e){
             return;
+      } else if (mouseMoves[currentPt].type == "drag"){
+        //var mousePt = [mouseMoves[currentPt].e.pageX, mouseMoves[currentPt].e.pageY];
+        //console.log("drag",mouseMoves[currentPt]);
+        //var elementID = mouseMoves[currentPt].e.target;
+        //var element = $('iframe').contents().find(elementID);
+        //dragElement = element; 
+        //var dx = mousePt[0];
+        //var dy = mousePt[1];
+        //element.simulate("drag" );
 
-      if (mouseMoves[currentPt].type == "mousedown"){
-        var mousePt = getMousePosition(mouseMoves[currentPt]);
+
+      }
+      else if (mouseMoves[currentPt].type == "drag-start"){
+        var drag_start_time = mouseMoves[currentPt].time;
         var elementID = mouseMoves[currentPt].e.target;
         var element = $('iframe').contents().find(elementID);
-        element.focus();
+        console.log("drag-start",elementID, element);
+
+        //dragElement = element; 
+
+
+        dropEventNumB = findDropEvent(currentPt);
+        dropEventNum = dropEventNumB[0];
+        drags = dropEventNumB[1]
+        dropEvent = mouseMoves[dropEventNum];
+        var drag_end_time = dropEvent.time;
+        var dropElementID = dropEvent.e.target;
+        var dropElement = $('iframe').contents().find(dropElementID);
+        var timediff = drag_end_time-drag_start_time/1000.0;
+        console.log("drop",timediff, dropElement[0]);
+
+        //if(dropEvent > 0){
+            element.simulate("drag-n-drop", {dropTarget: dropElement[0], interpolation:{stepWidth : 10, duration: 1}});
+        //}
+
+      }
+      else if (mouseMoves[currentPt].type == "drag-stop"){
+        //console.log("drag-stop",mouseMoves[currentPt]);
+        //dragElement = 0; 
+
+      }
+      else if (mouseMoves[currentPt].type == "drop"){
+        
+        //var mousePt = [mouseMoves[currentPt].e.pageX, mouseMoves[currentPt].e.pageY];
+        
+        //var elementID = mouseMoves[currentPt].e.target;
+        //var element = $('iframe').contents().find(elementID);
+        //var dx = mousePt[0];
+        //var dy = mousePt[1];
+        //console.log("drop",elementID, dragElement, element[0]);
+
+        //dragElement.simulate("drop", {dropTarget: element[0]});
+
+      }
+
+      else if (mouseMoves[currentPt].type == "mousedown"){
+        var mousePt = [mouseMoves[currentPt].e.pageX, mouseMoves[currentPt].e.pageY];
+        var elementID = mouseMoves[currentPt].e.target;
+        var element = $('iframe').contents().find(elementID);
+        //element.focus();
         if(elementID != "#submit"){
-          element.simulate(mouseMoves[currentPt].type);
+          isDragging = true;
+          dragElement = element;
+          //var offset = element.offset();
+          //dragOffsetX = mousePt[0]-offset.left;
+          //dragOffsetY = mousePt[1]-offset.top;
+          //console.log("dragstart", dragOffsetX, dragOffsetY, offset, mousePt);
+          //dragElement.zIndex( 100 );
+          //element.simulate(mouseMoves[currentPt].type);
+          //element.simulate("drag", { dx: 71,dy: 71 });
+          //console.log("drag", elementID);
+          if(elementID.indexOf("card") > -1){
+            //var dragTarget = $('iframe').contents().find("#droparea_2");
+            //console.log(dragTarget[0]);
+            //element.simulate("simulate-drag");
+            //element.simulate("mousedown", {which:1});  
+          }
+          
+
         }
 
       }
-      if (mouseMoves[currentPt].type == "mouseup"){
-        var mousePt = getMousePosition(mouseMoves[currentPt]);
-        var elementID = +mouseMoves[currentPt].e.target;
+      else if (mouseMoves[currentPt].type == "mouseup"){
+        var mousePt = [mouseMoves[currentPt].e.pageX, mouseMoves[currentPt].e.pageY];
+        var elementID = mouseMoves[currentPt].e.target;
         var element = $('iframe').contents().find(elementID);
+        
+
+
         if(elementID != "#submit"){
-          element.simulate(mouseMoves[currentPt].type);
+          //element.simulate(mouseMoves[currentPt].type);
+          //element.simulate("drop", { dx: 71,dy: 71 });
+          isDragging = false;
+          //dragElement.zIndex( 1 );
+          if(elementID && elementID.indexOf("card") > -1){
+            //element.simulate("simulate-drag");
+            //element.simulate("mouseup", {which:1});
+            //element.simulate("click", {which:1});
+            //element.simulate("simulate-drop");
+            //var dragTarget = $('iframe').contents()[0].elementFromPoint(mousePt[0], mousePt[1]);
+
+            //var dragTarget = $('iframe').contents().find("#droparea_2");  
+            //console.log("mouseup", dragTarget);
+
+            //element.simulate("drag-n-drop", {dropTarget: dragTarget});
+           
+          }
+          dragElement = 0;
         }
       }
-      if (mouseMoves[currentPt].type == "mousemove"){
+      else if (mouseMoves[currentPt].type == "mousemove"){
         var mousePt = [mouseMoves[currentPt].x, mouseMoves[currentPt].y];//getMousePosition(mouseMoves[currentPt]);
         var elementID = mouseMoves[currentPt].e.target;
         var element = $('iframe').contents().find(elementID);
-        element.focus();
-        element.simulate(mouseMoves[currentPt].type, {pageX: mousePt[0], pageY: mousePt[1]});
+        //element.focus();
+
+        if(elementID.indexOf("card") > -1){
+            //element.simulate(mouseMoves[currentPt].type, {pageX: mousePt[0], pageY: mousePt[1]});  
+
+            //element.simulate("drag");  
+            //var prevId = findPrevMouseMove(currentPt);
+            //var prevMousePt = getMousePosition(mouseMoves[prevId]);
+            //var parentOffset = element.parent().offset();
+        
+
+            //var dx = mousePt[0]-dragOffsetX;
+            //var dy = mousePt[1]-dragOffsetY;
+            //console.log("drag", dx, dy, dragOffsetX, dragOffsetY);
+            //dragElement.offset({left:dx,top:dy});
+            //element.simulate(mouseMoves[currentPt].type, {pageX: mousePt[0], pageY: mousePt[1]});    
+        }else{
+            element.simulate(mouseMoves[currentPt].type, {pageX: mousePt[0], pageY: mousePt[1]});    
+        }
+        
       }
-      if (mouseMoves[currentPt].type == "click" || mouseMoves[currentPt].type == "dblclick"){
+      else if (mouseMoves[currentPt].type == "click" || mouseMoves[currentPt].type == "dblclick"){
         var mousePt = getMousePosition(mouseMoves[currentPt]);
         var elementID = mouseMoves[currentPt].e.target;
         var element = $('iframe').contents().find(elementID);
@@ -1503,7 +1639,7 @@ $(document).ready(function() {
           element.attr('selected', true);
         }
       }
-      if (mouseMoves[currentPt].type == "focusout" || mouseMoves[currentPt].type == "blur"){
+      else if (mouseMoves[currentPt].type == "focusout" || mouseMoves[currentPt].type == "blur"){
         var elementID = mouseMoves[currentPt].e.target;
         var element = $('iframe').contents().find(elementID);
         element.blur();
@@ -1519,7 +1655,7 @@ $(document).ready(function() {
         
         
       }
-      if (mouseMoves[currentPt].type == "focusin" || mouseMoves[currentPt].type == "focus"){
+      else if (mouseMoves[currentPt].type == "focusin" || mouseMoves[currentPt].type == "focus"){
         var elementID = mouseMoves[currentPt].e.target;
         var element = $('iframe').contents().find(elementID);
         element.focus();
@@ -1528,7 +1664,7 @@ $(document).ready(function() {
         //  element.simulate(mouseMoves[currentPt].type);
       }
      
-      if (mouseMoves[currentPt].type == "keydown" ){ //|| mouseMoves[currentPt].type == "keypress"){
+      else if (mouseMoves[currentPt].type == "keydown" ){ //|| mouseMoves[currentPt].type == "keypress"){
         var elementID = mouseMoves[currentPt].e.target;
         var element = $('iframe').contents().find(elementID);
         //console.log("simulateEvent: ", mouseMoves[currentPt].type, elementID, element, my_keycode_dictionary[mouseMoves[currentPt].e.which]);
@@ -1588,8 +1724,8 @@ $(document).ready(function() {
             $("#event_"+c).toggleClass( "disabled", true).toggleClass( "enabled", false);
           }
         }
-        updateWindowFocus(currentPt);
-        drawWindow(currentPt);
+        //updateWindowFocus(currentPt);
+        //drawWindow(currentPt);
         simulateEvent(currentPt);
         showSelectedText(currentPt);
         
@@ -1627,7 +1763,7 @@ $(document).ready(function() {
                   $("#event_"+c).toggleClass( "disabled", true).toggleClass( "enabled", false);
                 }
               }
-              drawWindow(currentPt);
+              //drawWindow(currentPt);
             }  
             setTimeout(function(){ animatedDraw(currentPt); },0);
             

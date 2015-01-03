@@ -44,6 +44,7 @@ urlpatterns = patterns('',
     url(r'^experiment/(?P<survey_id>\d+)/(?P<user_id>\d+)/$', 'survey_admin.views.json_experiment', name='json_experiment'),
     url(r'^update_experiment_state/(?P<survey_id>\d+)/(?P<user_id>\d+)/(?P<state>\d+)/$', 'survey_admin.views.update_experiment_state', name='update_experiment_state'),
     url(r'^preprocess/(?P<survey_id>\d+)/$', 'survey_admin.views.json_preprocess_answers', name='json_preprocess_answers'),
+    url(r'^export/(?P<survey_id>\d+)/$', 'survey_admin.views.json_export_answers', name='json_export_answers'),
     
     url(r'^get_stat_similarity$', 'survey_admin.views.get_stat_similarity', name='get_stat_similarity'),
     url(r'^get_stat_correlation$', 'survey_admin.views.get_stat_correlation', name='get_stat_correlation'),

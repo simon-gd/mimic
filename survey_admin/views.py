@@ -241,8 +241,11 @@ def json_preprocess_answers_140(request, survey_id):
         try:
             #debug_data += " MIMIC_USE_AZURE_BLOB: "+ str(settings.MIMIC_USE_AZURE_BLOB)
             eventDataURL = a.mouseData
+            
+
             if settings.MIMIC_USE_AZURE_BLOB:
                 if not eventDataURL.startswith(settings.AZURE_PROTOCOL):
+                    print(eventDataURL, settings.AZURE_PROTOCOL)
                     b = eventDataURL.split("/")
                     eventDataURL = mymake_blob_url(b[0], b[1]);
                 response = requests.get(str(eventDataURL), timeout=10.0) # urllib2.urlopen(eventDataURL)
@@ -318,8 +321,10 @@ def json_preprocess_answers_140(request, survey_id):
             #error = "json_preprocess_answers:  Error: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
             #errors.append(error)
             #debug_data += " error: "+ str(e)
-            print("Exeption:", e)
-            p_a.delete()
+            skipped_count += 1
+            print("Exeption:", e, a.user)
+            #raise
+            #p_a.delete()
 
             continue
         print(p_a.id)
@@ -508,7 +513,19 @@ def json_preprocess_answers_130(request, survey_id):
 
 
 @staff_member_required
+def json_export_answers(request, survey_id):
+    export_survey_all(survey_id)
+    return HttpResponse('{"done":"done"}', mimetype="application/json")
+    #export_survey_all(survey_id)
+    #return HttpResponse('{"status":"done"}', mimetype="application/json")
+    #return createItemHoverHistograms(request, survey_id);
+    #return json_preprocess_answers_140(request, survey_id)
+
+
+@staff_member_required
 def json_preprocess_answers(request, survey_id):
+    #export_survey_all(survey_id)
+    #return HttpResponse('{"done":"done"}', mimetype="application/json")
     #export_survey_all(survey_id)
     #return HttpResponse('{"status":"done"}', mimetype="application/json")
     #return createItemHoverHistograms(request, survey_id);

@@ -159,7 +159,7 @@ function addElementData(e, idName) {
     return identifier;
 }
 
-function logFormatted(logBuffer, e, typeOverwrite) {
+function logFormatted(logBuffer, e, typeOverwrite, extra) {
     var eventName = typeOverwrite || e.type;
     var time_stamp = (new Date).getTime();
     if (!(eventName in logBuffer.events)){
@@ -238,6 +238,8 @@ function logFormatted(logBuffer, e, typeOverwrite) {
     } else if (eventName == "mouseup" || eventName == "click" || eventName == "dblclick" || eventName == "keyup") {
         selectionData = getSelectionText();
         eobj['selectedText'] = selectionData[1];
+    } else if( eventName == "drag" || eventName == "drop" || eventName == "drag-start" || eventName == "drag-stop"){
+        eobj['drag-info'] = {helper: extra.helper.attr("id"), position: extra.position, offset: extra.offset};
     }
 
     if (isDefined(e, 'deltaX')) {

@@ -170,6 +170,9 @@ $(document).ready(function() {
       var preprocess_url = '{% url "json_preprocess_answers" "999" %}'.replace (999, g_survey);
       $("#preprocess_link_div").html('<a id="preprocess_link" href="'+preprocess_url+'" target="_blank">Process new answers</a>');
 
+       var export_url = '{% url "json_export_answers" "999" %}'.replace (999, g_survey);
+      $("#export_link_div").html('<a id="export_link" href="'+export_url+'" target="_blank">Export answers</a>');
+
 	  var url = '{% url "json_all_questions" "999" %}'.replace (999, g_survey);
 	  $.getJSON(url, function(questions) {
 	      var options = '<option value="-1">Select a question</option>';
@@ -809,6 +812,7 @@ $(document).ready(function() {
     <a id="group_conditions" class="btn" style="width: 150px; margin: 3px;" href="#">Group by conditions</a>-->
     </form>
     <div id="preprocess_link_div"></div>
+    <div id="export_link_div"></div>
     Selected UserID: <span id="current_user">N/A</span>
     <div id="experiment_info">
     </div>

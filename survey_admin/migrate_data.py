@@ -64,7 +64,7 @@ def maptest(obj):
         k["answer"] = json.loads(k["answer"])
     if "correct_answer" in k:
         k["correct_answer"] = json.loads(k["correct_answer"])
-    if "cursor_y" in k:
+    if "cursor_y" in k and len(k["cursor_y"]) > 0:
         k["cursor_y"] = json.loads(k["cursor_y"])
     return k
 #from zipfile_infolist import print_info
@@ -91,7 +91,7 @@ def export_survey_all(survey_id):
     experiments_json_string = json.dumps(experiments_data, indent=2)
 
     experimentAnswers = ExperimentAnswer.objects.filter(experiment__survey = survey[0])
-    experimentAnswers_json_string = serializers.serialize('json', experimentAnswers, indent=2,  relations={'experiment':{'fields':('survey_condition','remote_address', 'http_user_agent')}, 'question':{'fields':('correct_answer')}})
+    experimentAnswers_json_string = serializers.serialize('json', experimentAnswers, indent=2,  relations={'user':{'fields':('worker_id')}, 'experiment':{'fields':('survey_condition','remote_address', 'http_user_agent')}, 'question':{'fields':('correct_answer')}})
     experimentAnswers_data = map(maptest, json.loads(experimentAnswers_json_string))
     experimentAnswers_json_string = json.dumps(experimentAnswers_data, indent=2)
 
@@ -99,7 +99,8 @@ def export_survey_all(survey_id):
     experimentAnswerProcessed = queryset_iterator(ExperimentAnswerProcessed.objects.filter(experiment__survey = survey[0]), chunksize=20)
     experimentAnswerProcessed_json_string = serializers.serialize('json', experimentAnswerProcessed, indent=2,  
         fields=('source_answer','experiment', 'question', 'answer', 'confidence', 'user', 'processed_at', 'time', 'clicks_count', 'keys_count'
-            'scroll_count', 'cursor_y', 'window_h', 'window_w','bias', 'error'), relations={'experiment':{'fields':('survey_condition','remote_address', 'http_user_agent')}, 'question':{'fields':('correct_answer')}})
+            'scroll_count', 'window_h', 'window_w'), relations={'user':{'fields':('worker_id')}, 'experiment':{'fields':('survey_condition','remote_address', 'http_user_agent')}, 
+                                                                                'question':{'fields':('correct_answer')}})
     experimentAnswerProcessed_data = map(maptest, json.loads(experimentAnswerProcessed_json_string))
     
     for eap in experimentAnswerProcessed_data:
@@ -110,19 +111,28 @@ def export_survey_all(survey_id):
     for eap in experimentAnswerProcessed:
         # compressed data
         mouseData = {}
-        init_eventJSON = zlib.decompress(b64decode(eap.init_event))
-        mouse_move_eventJSON = zlib.decompress(b64decode(eap.mouse_move_event))
-        mouse_click_eventJSON = zlib.decompress(b64decode(eap.mouse_click_event))
-        keydown_eventJSON = zlib.decompress(b64decode(eap.keydown_event))
-        scroll_eventJSON = zlib.decompress(b64decode(eap.scroll_event))
-        misc_eventJSON = zlib.decompress(b64decode(eap.misc_event))
+        init_eventJSON = eap.init_event
+        mouse_move_eventJSON = eap.mouse_move_event
+        mouse_click_eventJSON = eap.mouse_click_event
+        keydown_eventJSON = eap.keydown_event
+        scroll_eventJSON = eap.scroll_event
+        misc_eventJSON = eap.misc_event
+        if(len(init_eventJSON) > 0):
+            mouseData['init_event'] = json.loads(init_eventJSON)
+        if(len(mouse_move_eventJSON) > 0):
+            mouseData['mouse_move_event'] = json.loads(mouse_move_eventJSON)
 
-        mouseData['init_event'] = json.loads(init_eventJSON)
-        mouseData['mouse_move_event'] = json.loads(mouse_move_eventJSON)
-        mouseData['mouse_click_event'] = json.loads(mouse_click_eventJSON)
-        mouseData['keydown_event'] = json.loads(keydown_eventJSON)
-        mouseData['scroll_event'] = json.loads(scroll_eventJSON)
-        mouseData['misc_event'] = json.loads(misc_eventJSON)
+        if(len(mouse_click_eventJSON) > 0):
+            mouseData['mouse_click_event'] = json.loads(mouse_click_eventJSON)
+
+        if(len(keydown_eventJSON) > 0):
+            mouseData['keydown_event'] = json.loads(keydown_eventJSON)
+
+        if(len(scroll_eventJSON) > 0):
+            mouseData['scroll_event'] = json.loads(scroll_eventJSON)
+
+        if(len(misc_eventJSON) > 0):
+            mouseData['misc_event'] = json.loads(misc_eventJSON)
         
         i_url = os.path.join(interaction_directory, "experimentAnswersProcessedMousedata_"+str(eap.pk)+".zip")
         zf = zipfile.ZipFile(i_url, 

@@ -606,7 +606,10 @@
               containment: '#content',
               stack: '#cardPile div',
               cursor: 'move',
-              revert: true
+              revert: true,
+              drag: function(event, ui){  logFormatted(logBuffer, event, "drag", ui); },
+              start: function(event, ui){ logFormatted(logBuffer, event, "drag-start", ui); },
+              stop: function(event, ui){ logFormatted(logBuffer, event, "drag-stop", ui);}
             } );
           }
 
@@ -769,6 +772,9 @@
         }
 
         function handleCardDrop( event, ui ) {
+
+          logFormatted(logBuffer, event, "drop", ui);
+
           var slotNumber = $(this).data( 'number' );
           var cardNumber = ui.draggable.data( 'number' );
 
