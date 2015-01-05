@@ -79,7 +79,7 @@
         }*/
         .size-16-9 {
             /*width: 95vw;  Let Bootstrap sizes handle */
-            height: 56vw; /* rounded from 9/16 = 56.25 */
+             /*height: 56vw; rounded from 9/16 = 56.25 */
             /*overflow: hidden;*/
             /*margin: 8vw auto 0 auto;*/
             border: 0px solid black;
@@ -208,7 +208,7 @@
   font-weight: bolder;
 }
 
-#content_diagram{
+#drag_content_diagram{
   position: relative;
 }
 
@@ -441,9 +441,6 @@
     background: #f0f0f0; border: 3px #000 solid; 
 }
 
-
-
-/* "You did it!" message */
 #successMessage {
   position: absolute;
   left: 580px;
@@ -451,16 +448,6 @@
   width: 0;
   height: 0;
   z-index: 100;
-  /*
-  background: #dfd;
-  border: 2px solid #333;
-  -moz-border-radius: 10px;
-  -webkit-border-radius: 10px;
-  border-radius: 10px;
-  -moz-box-shadow: .3em .3em .5em rgba(0, 0, 0, .8);
-  -webkit-box-shadow: .3em .3em .5em rgba(0, 0, 0, .8);
-  box-shadow: .3em .3em .5em rgba(0, 0, 0, .8);
-  */
   padding: 20px;
 }
 
@@ -486,6 +473,8 @@
     <script type="text/javascript" src="{% static 'js/mimic.js' %}"></script>
 
 
+
+
     <script type="text/javascript">
         var worker_id = "{{worker_id|safe}}";
         var condition = "{{condition|safe}}";
@@ -503,77 +492,205 @@
                                  "7":[0, 7,8, 5,3, 6,4, 2,1],
                                  "8":[0, 8,7, 6,4, 5,3, 2,1]};
         var dropEvents = [];
+
+        var steps;
+        var required_questions;
+
+        // confidence diagram_use how_calculated, how_focus, answer_focus1, answer_focus2, answer_focus3 answer_chance1 answer_chance2
+        if(condition == 0){
+          steps = ["problem_setup","question", "confidence", "how_calculated"];
+          required_questions = ["answer_chance1", "answer_chance2","confidence", "how_calculated"];
+        }else if(condition == 1){
+          steps = ["problem_setup","visualization","question", "confidence", "how_calculated","use_visualization"];
+          required_questions = ["answer_chance1", "answer_chance2","confidence", "how_calculated", "diagram_use"];
+        }else if(condition == 2){
+          steps = ["problem_setup","drag_drop_visualization", "focus", "question", "confidence", "how_calculated","use_visualization", "use_focus"];
+          required_questions = ["answer_chance1", "answer_chance2","confidence", "how_calculated", "diagram_use", "how_focus", "answer_focus1", "answer_focus2", "answer_focus3" ];
+        }else if(condition == 3){
+          steps = ["problem_setup","drag_drop_visualization", "question", "confidence", "how_calculated","use_visualization"];
+          required_questions = ["answer_chance1", "answer_chance2","confidence", "how_calculated", "diagram_use" ]; 
+        }else if(condition == 4){
+          steps = ["problem_setup","focus", "question", "confidence", "how_calculated","use_focus"]; 
+          required_questions = ["answer_chance1", "answer_chance2","confidence", "how_calculated", "how_focus", "answer_focus1", "answer_focus2", "answer_focus3" ];
+        }
+
+
+
         function init(cond) {
-
-         
-              $("#p1_step2").hide();
-              $("#p1_step3_c0").hide();
-              $("#p1_step3_c1").hide();
-              $("#p1_step4").hide();
-              $("#p1_step5").hide();
-              $("#p1_step6").hide();
-              $("#p1_step7").hide();
-
-
-              $("#p1_step1_nextButton").click(function(e){
-                 
-                 if(cond == 0){
-                    $("#p1_step1_nextButton").hide();
-                    $("#p1_step2").fadeIn(1000); 
-                    $("#p1_step2").effect("highlight", {}, 1000);    
-                 }else {
-                    $("#p1_step2").hide();
-                    $("#p1_step1_nextButton").hide();
-                    $("#p1_step3_c1").fadeIn(1000); 
-                    $("#p1_step3_c1").effect("highlight", {}, 1000);    
-                  
-                }
               
-              });
+              for(var step=1; step <= steps.length; step++){
 
-                $("#p1_step1_nextButton").click(function(e){
-                $("#p1_step1_nextButton").hide();
-              });
+                var stepName = steps[step-1];
+                if(stepName == "problem_setup") {
+                  var s = ['<div id="p1_step'+step+'">',
+                           '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Read the text below carefully.</strong></p>',
+                           '<div id="problem_statement" class="well well-sm">',
+                            "<span>You know the following information:</span>",
+                            "<ul>",
+                            "<li>Of <b>1000</b> people tested for skin cancer, <b>10</b> people will <b>actually</b> have skin cancer.</li>",
+                            "<li>Of the <b>10</b> people with skin cancer, <b>8</b> people got a correct <b>test result</b> that says they have cancer.</li>",
+                            "<li>Of the <b>990</b> people without skin cancer, <b>95</b> people incorrectly get a <b>test result</b> that says they have cancer.</li>",
+                           "</ul>",    
+                           '</div>',
+                           '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
+                           '</div>'].join("\n");  
 
-              $("#p1_step3_c0_nextButton").click(function(e){
-                $("#p1_step3_c0_nextButton").hide();
-                $("#p1_step4").fadeIn(1000); 
-                $("#p1_step4").effect("highlight", {}, 1000);
+                  $("#p1_left").append(s);
+                } else if(stepName == "question") {
+                    var prev_steps = (cond == 0) ? "Step 1" : "previous steps";
 
-                $('html, body').animate({
-                  scrollTop: $("#p1_step4").offset().top}, 2000);
+                    s = ['<div id="p1_step'+step+'">',
+                            '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Answer the following questions carefully using the information from '+prev_steps+'.</strong></p>',
+                            '<div id="p1_step'+step+'+_body">',
+                                '<div class="well well-sm">',
+                        '<p>If you got a <b>test result</b> that says you have skin cancer, what are the chances that you <b>actually</b> have skin cancer?</p>',
+                        '</div>',
+                        '<p>The chances are <input id="answer_chance1" class="answer" name="answer_chance1" type="text" />&nbsp;<strong>out of</strong>&nbsp;<input id="answer_chance2" class="answer" name="answer_chance2" type="text" /></p>',
+                            '</div>',
+                             '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
+                        '</div>'].join("\n");
+                   $("#p1_right").append(s);
 
-              });
+                } else if(stepName == "visualization") {
+                     var s = ['<div id="p1_step'+step+'">',
+                           '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
+                  
+                           '<img src="{% static 'images/dtree.png' %}" width="100%">',
+                           '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
+                           '</div>'].join("\n");  
 
-              $("#p1_step4_nextButton").click(function(e){
-                $("#p1_step4_nextButton").hide();
-                $("#p1_step5").fadeIn(1000); 
-                $("#p1_step5").effect("highlight", {}, 1000);
+                  $("#p1_left").append(s);
+                } else if(stepName == "drag_drop_visualization") {
+                      
+                      var s = ['<div id="p1_step'+step+'">',
+                                '<p id="draginstructions" class="lead"><strong>Step '+step+'. Drag all the label boxes onto the diagram based on the information in Step 1.</strong></p>',
+                                '<div id="drag_content_diagram">',
+                                '<div id="cardPile">',
+                                '</div>',
+                                '<div id="cardSlots">',
+                                '</div>',
+                                '<div id="successMessage" style="display: none; left: 180px; top: 140px; width: 400px; height: 100px;">',
+                                '<h2>Good Job! This is correct.</h2>',
+                                '</div>',
+                                '</div>'].join("\n");
+                  $("#p1_left").append(s);
+                  
+                } else if(stepName == "focus") {
+                    var prev_steps = (cond == 4) ? "Step 1" : "previous steps";
 
-              });
+                    var s = ['<div id="p1_step'+step+'">', 
+                    '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Answer the following questions carefully using the information from '+prev_steps+'.</strong></p>',
+                                    
+                                    '<div id="p1_step'+step+'_body">',
+                                         '<p>How many people were tested for skin cancer? <input id="answer_focus1" class="answer" name="answer_focus1" type="text" /></p>',
+                                        '<p>Out of <span id="subset1_field" style="width: 4em; border-bottom: 1px solid black; display: inline-block;"></span> people who were tested for skin cancer, a total of  <input id="answer_focus2" class="answer" name="answer_focus2" type="text" /> people got a (correct or incorrect) test result that says they have cancer.</p>',
+                                        '<p>Out of <span id="subset2_field" style="width: 4em; border-bottom: 1px solid black; display: inline-block;"></span> people who got a test result that says they have cancer, only <input id="answer_focus3", class="answer" name="answer_focus3" type="text" /> people actually have skin cancer.</p>',                  
+                                    '</div>',
+                                    '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
+                        '</div>'].join("\n");
 
-              $("#p1_step5_nextButton").click(function(e){
-                $("#p1_step5_nextButton").hide();
-                $("#p1_step6").fadeIn(1000); 
-                $("#p1_step6").effect("highlight", {}, 1000);
-              });
+                     if(steps[step-2] == "drag_drop_visualization"){
+                         $("#drag_content_diagram").append(s);
+                     }else{
+                         $("#p1_left").append(s);
+                     }
+                    
+                  
+                } else if(stepName == "how_calculated") {
+                    var s = ['<div id="p1_step'+step+'">',
+                     '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Explain how you came up with your answer in Step '+(steps.indexOf("question")+1)+'.</strong></p>',
+                     '<textarea id="how_calculated" name="how_calculated" class="form-control" rows="3"></textarea>'];
 
-              $("#p1_step6_nextButton").click(function(e){
-                $("#p1_step6_nextButton").hide();
-                $("#p1_step7").fadeIn(1000); 
-                $("#p1_step7").effect("highlight", {}, 1000);
-              });
-         
-          
+                    if(step == steps.length){
+                           s.push('<br/><button type="submit" class="btn btn-default submit">Next Page</button>');
+                           s.push('<div id="error2" class="error text-danger"></div>');
+                        }else{
+                          s.push('<br/><button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>');
+                        }
+                        s.push('</div>');
+                    $("#p1_right").append(s.join("\n"));
 
+                  
+                } else if(stepName == "use_visualization") {
+                      var s = ['<div id="p1_step'+step+'">',
+                         '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Explain how you used the diagram to help you come up with your answer.</strong></p>',
+                         '<textarea id="diagram_use" name="diagram_use" class="form-control" rows="3"></textarea>'];
+                    if(step == steps.length){
+                           s.push('<br/><button type="submit" class="btn btn-default submit">Next Page</button>');
+                           s.push('<div id="error2" class="error text-danger"></div>');
+                        }else{
+                          s.push('<br/><button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>');
+                        }
+                        s.push('</div>');
+                    $("#p1_right").append(s.join("\n"));
+                } else if(stepName == "use_focus") {
+                      var s = ['<div id="p1_step'+step+'">',
+                     '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Explain how you used the information from Step '+(steps.indexOf("focus")+1)+'.</strong></p>',
+                     '<textarea id="how_focus" name="how_focus" class="form-control" rows="3"></textarea>'];
+                     if(step == steps.length){
+                           s.push('<br/><button type="submit" class="btn btn-default submit">Next Page</button>');
+                           s.push('<div id="error2" class="error text-danger"></div>');
+                        }else{
+                          s.push('<br/><button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>');
+                        }
+                        s.push('</div>');
+                    $("#p1_right").append(s.join("\n"));
+                } else if(stepName == "confidence") {
+                        var s = ['<div id="p1_step'+step+'">',
+                       ' <p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. How confident are you in your answer?</strong></p>',
+
+                        '<ul class="list-inline pull-down text-center">',
+                            '<li style="width:19%">No Confidence<br /><input type="radio" id="confidence-1" name="confidence" value="1" /><label id="confidence-1-label" for="confidence-1">&nbsp;1</label></li>',
+                            '<li style="width:19%">',
+                               ' <input type="radio" id="confidence-2" name="confidence" value="2" /><label id="confidence-2-label" for="confidence-2">&nbsp;2</label>',
+                          '  </li>',
+                           ' <li style="width:19%">',
+                               ' Reasonable<br />Confidence<br />',
+                                '<input type="radio" id="confidence-3" name="confidence" value="3" /><label id="confidence-3-label" for="confidence-3">&nbsp;3</label>',
+                           ' </li>',
+                           ' <li style="width:19%">',
+                              '  <input type="radio" id="confidence-4" name="confidence" value="4" /><label id="confidence-4-label" for="confidence-4">&nbsp;4</label>',
+                         '   </li>',
+                           ' <li style="width:19%">',
+                               ' Very High<br />Confidence<br />',
+                               ' <input type="radio" id="confidence-5" name="confidence" value="5" /><label id="confidence-5-label" for="confidence-5">&nbsp;5</label>',
+                           ' </li>',
+                        '</ul>'];
+
+                        if(step == steps.length){
+                           s.push('<button type="submit" class="btn btn-default submit">Next Page</button>');
+                           s.push('<div id="error2" class="error text-danger"></div>');
+                        }else{
+                          s.push('<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>');
+                        }
+                        s.push('</div>');
+
+                      $("#p1_right").append(s.join("\n"));
+                } else if(stepName == "next_page") {
+                       var s = ['<div id="p1_step'+step+'">',
+                       
+                        '</div>'].join("\n");
+                      $("#p1_right").append(s);
+                } 
+
+
+              }
+
+             for(var step=1; step <= steps.length; step++){
+                if(step > 1){
+                  $("#p1_step"+step).hide();  
+                }                
+                 (function(s) {
+                 $("#p1_step"+step+"_nextButton").click(function(e){
+                    $("#p1_step"+s+"_nextButton").hide();
+                    $("#p1_step"+(s+1)).fadeIn(1000); 
+                    $("#p1_step"+(s+1)).effect("highlight", {}, 1000);
+                    $('html, body').animate({
+                        scrollTop: $("#p1_step"+(s+1)).offset().top}, 2000);  
+                })})(step);
+              }
           // Hide the success message
           $('#successMessage').hide();
-          //$('#successMessage').css( {
-          //  left: '580px',
-          //  top: '250px',
-          //  width: 0,
-          //  height: 0
-          //} );
 
           // Reset the game
           correctCards = 0;
@@ -825,18 +942,15 @@
 
             
 
-            $('#content_diagram').animate({top: "-10em"}, 1000, function(){
+            $('#drag_content_diagram').animate({top: "-10em"}, 1000, function(){
               $('#successMessage').fadeOut(1000);
-              if(condition == 0){
-                $("#p1_step3_c0").fadeIn(1000); 
-                $("#p1_step3_c0").effect("highlight", {}, 1000);
-              }else{
-                $("#p1_step3_c1").fadeIn(1000); 
-                $("#p1_step3_c1").effect("highlight", {}, 1000);
-              }
+                var nextStep = steps.indexOf("drag_drop_visualization") + 2;
+                $("#p1_step"+nextStep).fadeIn(1000); 
+                $("#p1_step"+nextStep).effect("highlight", {}, 1000);
+              
 
               $('html, body').animate({
-                  scrollTop: $("#p1_step3_c0").offset().top}, 2000);
+                  scrollTop: $("#p1_step"+nextStep).offset().top}, 2000);
               });
 
             
@@ -871,91 +985,9 @@
                 }
             }
         }
-        function assignText(cond){
-            
-                var s = ["<span>You know the following information:</span>",
-                          "<ul>",
-                          "<li>Of <b>1000</b> people tested for skin cancer, <b>10</b> people will <b>actually</b> have skin cancer.</li>",
-                          "<li>Of the <b>10</b> people with skin cancer, <b>8</b> people got a correct <b>test result</b> that says they have cancer.</li>",
-                          "<li>Of the <b>990</b> people without skin cancer, <b>95</b> people incorrectly get a <b>test result</b> that says they have cancer.</li>",
-                         "</ul>"].join("\n");  
-                $("#problem_statement").html(s);
+        
 
-                
-                if(cond == 0){
-                  $("#p1_step3_c0_instructions").html("<strong>Step 3. Answer the following questions carefully using the information from Step 1 or Step 2.</strong>");
-                  //$("#p1_step3_c0_instructions").html("<strong>Step 3. Answer the following questions carefully using the information from Step 1 or Step 2.</strong>");
-                  $("#p1_step4_instructions").html("<strong>Step 4. Answer the following questions carefully using the information from previous steps.");
-                  //$("#p1_step5_instructions").html("<strong>Step 5. How confident are you in your answer?</strong>");
-
-                  
-
-                  
-                }else{
-                  $("#p1_step3_c1_instructions").html("<strong>Step 2. Answer the following questions carefully using the information from Step 1.</strong>");
-                  $("#p1_step4_instructions").html("<strong>Step 3. Explain how you came up with your answer in Step 2.</strong>");
-                  $("#p1_step5_instructions").html("<strong>Step 4. How confident are you in your answer?</strong>");
-                }
-                
-
-          
-            /*    
-            }else {
-                var s = ["<span>You know the following information:</span>",
-                          "<ul>",
-                          "<li>Of <b>1000</b> people tested for skin cancer, <b>10</b> people will <b>actually have</b> skin cancer.</li>",
-                          "</ul>",
-                          "<div>Unfortunately the test is sometimes wrong.</div>", 
-                          "<div>People who were tested might <b>actually have</b> skin cancer even though the <b>test said they did <u>not</u> have</b> skin cancer.</div>",
-                          "<ul>",
-                          "<li>Of the <b>10</b> people with skin cancer, <b>9</b> people got a <b>correct test result</b> that says they <b>have</b> cancer.</li>",
-                          "</ul>",
-                          "<div>Also, People who were tested might <b>actually <u>not</u> have</b> skin cancer even though the test said that <b>they do have</b> skin cancer.</div>",
-                          "<ul>",
-                          "<li>Of the <b>990</b> people without skin cancer, <b>89</b> people <b>incorrectly get a test result</b> that says they <b>have</b> cancer.</li>",
-                         "</ul>"].join("\n");  
-                $("#problem_statement").html(s);
-            }*/
-            
-        }
-
-        function assignText2(cond){
-            
-            if (cond == 0){
-
-                var s = [
-                        '<p>How many people were tested for skin cancer? <input id="input_a1" class="answer" name="answer1" type="text" /></p>',
-                        '<p>Out of <span id="subset1_field" style="width: 4em; border-bottom: 1px solid black; display: inline-block;"></span> people who were tested for skin cancer, a total of  <input id="input_a2" class="answer" name="answer2" type="text" /> people got a (correct or incorrect) test result that says they have cancer.</p>',
-                        '<p>Out of <span id="subset2_field" style="width: 4em; border-bottom: 1px solid black; display: inline-block;"></span> people who got a test result that says they have cancer, only <input id="input_a3" class="answer" name="answer3" type="text" /> people actually have skin cancer.</p>'                      
-                            ].join("\n");
-
-            
-                $("#p1_step3_c0_body").html(s);
-
-                s = [
-                        '<div class="well well-sm">',
-                        '<p>If you got a <b>test result</b> that says you have skin cancer, what are the chances that you <b>actually</b> have skin cancer?</p>',
-                        '</div>',
-                        '<p>The chances are <input id="input_a4" class="answer" name="answer4" type="text" />&nbsp;<strong>out of</strong>&nbsp;<input id="input_a5" class="answer" name="answer5" type="text" /></p>'
-                        ].join("\n");
-
-                $("#p1_step4_body").html(s);
-            }else{
-                 var s = [
-                        '<div class="well well-sm">',
-                        '<p>Out of all <input id="input_a1" class="answer" name="answer1" type="text" /> people who were tested for skin cancer, there are a total of <input id="input_a2" class="answer" name="answer2" type="text" /> people who got a <b>test result</b> that says they have cancer, but only <input id="input_a3" class="answer" name="answer3" type="text" /> of those people <b>actually</b> have skin cancer. </p>',
-                        '<p>If you got a <b>test result</b> that says you have skin cancer, what are the chances that you <b>actually</b> have skin cancer?</p>',
-                       
-                        '<p>The chances are <input id="input_a4" class="answer" name="answer4" type="text" />&nbsp;<strong>out of</strong>&nbsp;<input id="input_a5" class="answer" name="answer5" type="text" /></p>',
-                         '</div>'
-                        ].join("\n");
-
-                $("#answer_statement").html(s);
-             
-            }
-          
-           
-        }
+       
 
        
         
@@ -983,47 +1015,18 @@
             init(condition);
             checkResolution(1000, 560);
 
-            assignText(condition);
-            assignText2(condition);
-
             var cardPileOffset = $("#cardPile").offset();
             var cardSlotsOffset = $("#cardSlots").offset();
-            //    var offset2 = $("#card"+id).offset();
-            console.log(cardPileOffset, cardSlotsOffset);
-            var topDiff = cardSlotsOffset.top - cardPileOffset.top;
 
-            $("#hintButton").click(function(e){
-                
-                
-                var id = correctCards;
-
-                var pos = $("#droparea_"+id).position();
-
-                //var offset2 = $("#card"+id).offset();
-                console.log(topDiff, pos);
-                var l = pos.left+10;
-                var t = topDiff + pos.top;
-                $("#card"+id).css("z-index", 10);
-                $("#card"+id).animate({
-                    "left": l,
-                    "top": t,
-                    
-                  }, 1000, function() {
-                    $(this).addClass("correct");
-                    $(this).draggable( 'disable' );
-                    correctCards++;
-                  });
-            });
-
-            $("#input_a1").keyup(function(e){
+            $("#answer_focus1").keyup(function(e){
                  //input_a1
-                 var a = $('input:text[name=answer1]').val();
+                 var a = $('input:text[name=answer_focus1]').val();
                  $("#subset1_field").text(a);
                  $("#subset1_field").effect("highlight");
             });
-            $("#input_a2").keyup(function(e){
+            $("#answer_focus2").keyup(function(e){
                  //input_a1
-                 var a = $('input:text[name=answer2]').val();
+                 var a = $('input:text[name=answer_focus2]').val();
                  $("#subset2_field").text(a);
                  $("#subset2_field").effect("highlight");
             });
@@ -1042,36 +1045,66 @@
                     if(current_question == 0){
 
                     }else if(current_question == 1){
-                        var a1 = $('input:text[name=answer1]').val();
-                        var a2 = $('input:text[name=answer2]').val();
-                        var a3 = $('input:text[name=answer3]').val();
-                        var a4 = $('input:text[name=answer4]').val();
-                        var a5 = $('input:text[name=answer5]').val();
+                        var a_f1 = $('input:text[name=answer_focus1]').val();
+                        var a_f2 = $('input:text[name=answer_focus2]').val();
+                        var a_f3 = $('input:text[name=answer_focus3]').val();
+                        var a_c1 = $('input:text[name=answer_chance1]').val();
+                        var a_c2 = $('input:text[name=answer_chance2]').val();
                         var how_calculated =  $('#how_calculated').val();
                         var diagram_use =  $('#diagram_use').val();
+                        var how_focus =  $('#how_focus').val();
                         
                         var confidence = $('input:radio[name=confidence]:checked').val();
-                        //console.log(b);
-                        if(!a1 || !a2 || !a3 || !a4 || !a5){
-                            $(".error").html("<div id='myerror4' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
-                            return;
-                        }
-                        if(!how_calculated){
 
-                            $(".error").html("<div id='myerror5' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                        for(var i=0; i < required_questions.length; i++){
+                          var rq = required_questions[i];
+                          if(rq == "answer_chance1" && !a_c1){
+                            $(".error").html("<div id='myerror"+i+"' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
                             return;
-                        }
-                         if(!diagram_use){
-
-                            $(".error").html("<div id='myerror5' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                          }
+                          if(rq == "answer_chance2" && !a_c2){
+                            $(".error").html("<div id='myerror"+i+"' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
                             return;
-                        }
-                        if(!confidence){
-                            $(".error").html("<div id='myerror3' class='alert alert-error'>Error: Please indicate your level of confidence to proceed.</div>");
+                          }
+                          if(rq == "confidence" && !confidence){
+                            $(".error").html("<div id='myerror"+i+"' class='alert alert-error'>Error: Please indicate your level of confidence to proceed.</div>");
                             return;
+                          }
+                          if(rq == "how_calculated" && !how_calculated){
+                           $(".error").html("<div id='myerror"+i+"' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                            return;
+                          }
+                          if(rq == "diagram_use" && !diagram_use){
+                           $(".error").html("<div id='myerror"+i+"' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                            return;
+                          }
+                          if(rq == "how_focus" && !how_focus){
+                           $(".error").html("<div id='myerror"+i+"' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                            return;
+                          }
+                          if(rq == "answer_focus1" && !a_f1){
+                           $(".error").html("<div id='myerror"+i+"' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                            return;
+                          }
+                          if(rq == "answer_focus2" && !a_f2){
+                           $(".error").html("<div id='myerror"+i+"' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                            return;
+                          }
+                          if(rq == "answer_focus3" && !a_f3){
+                           $(".error").html("<div id='myerror"+i+"' class='alert alert-error'>Error: Please fill out all the fields to proceed.</div>");
+                            return;
+                          }
                         }
-                       
-                        answer = {'a1':a1, 'a2':a2, 'a3':a3, 'a4':a4, 'a5':a5, 'diagram_use':diagram_use, 'how_calculated': how_calculated, 'confidence': confidence, 'dropEvents': dropEvents};
+                        a_f1 = a_f1 ? a_f1 : "";
+                        a_f2 = a_f2 ? a_f2 : "";
+                        a_f3 = a_f3 ? a_f3 : "";
+                        a_c1 = a_c1 ? a_c1 : "";
+                        a_c2 = a_c2 ? a_c2 : "";
+                        how_calculated = how_calculated ? how_calculated : "";
+                        diagram_use =  diagram_use ? diagram_use : "";
+                        how_focus =  how_focus ? how_focus : "";
+                        confidence = confidence ? confidence : "";
+                        answer = {'a_c1':a_c1, 'a_c2':a_c1, 'a_f1':a_f1, 'a_f2':a_f2, 'a_f3':a_f3, 'diagram_use':diagram_use, 'how_focus':how_focus, 'how_calculated': how_calculated, 'confidence': confidence, 'dropEvents': dropEvents};
                     }else if(current_question == 2){
                         var who_from = $('input:radio[name=who_from]:checked').val();
                         var what_department = $('input:radio[name=what_department]:checked').val();
@@ -1290,110 +1323,11 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-xs-8">
-                       <div id="p1_step1"> 
-                            <p id="readtextbelow" class="lead"><strong>Step 1. Read the text below carefully.</strong>
-                            </p>
-                        
-                            <div id="problem_statement" class="well well-sm">
-                                
-                            </div>
-                             <button id="p1_step1_nextButton" class="btn btn-default">Next Step</button>
-                       </div>
-
-                       <div id="p1_step2"> 
-                            <p id="draginstructions" class="lead"><strong>Step 2. Drag all the label boxes onto the diagram based on the information in Step 1.</strong>
-                            </p>
-                            <div id="content_diagram">
-                              <div id="cardPile">
-                              </div>
-                              
-                              <div id="cardSlots">
-                                
-                              </div>
-                              <div id="successMessage" style="display: none; left: 180px; top: 140px; width: 400px; height: 100px;">
-                                <h2>Good Job! This is correct.</h2>
-                              </div>
-
-
-                               <div id="p1_step3_c0"> 
-                                    <p class="lead" id="p1_step3_c0_instructions"></p>
-                                    
-                                    <div id="p1_step3_c0_body">
-                                        
-                                    </div>
-                                    <button id="p1_step3_c0_nextButton" class="btn btn-default">Next Step</button>
-                               </div>
-
-                            </div>
-                       </div>
-
-                        <div id="p1_step3_c1"> 
-                                    <p class="lead" id="p1_step3_c0_instructions"></p>
-                                    
-                                    <div id="p1_step3_c0_body">
-                                        
-                                    </div>
-                                    <button id="p1_step3_c0_nextButton" class="btn btn-default">Next Step</button>
-                        </div>
-
-
+                    <div id="p1_left" class="col-xs-8">
                     </div>
 
-                    <div class="col-xs-4">
-
-                        <div id="p1_step4">
-                            <p class="lead" id="p1_step4_instructions"></p>
-                            
-                            <div id="p1_step4_body">
-                                
-                            </div>
-                             <button id="p1_step4_nextButton" class="btn btn-default">Next Step</button>
-                        </div>
+                    <div id="p1_right" class="col-xs-4">
                         
-                        <div id="p1_step5">
-                         <p class="lead" id="p1_step5_instructions"><strong>Step 5. Explain how you came up with your answer in Step 4.</strong></p>
-                         <textarea id="how_calculated" name="how_calculated" class="form-control" rows="3"></textarea>
-                         <button id="p1_step5_nextButton" class="btn btn-default">Next Step</button>
-                        </div>
-
-                        <div id="p1_step6">
-                         <p class="lead" id="p1_step6_instructions"><strong>Step 6. Explain how you used the diagram to help you come up with your answer.</strong></p>
-                         <textarea id="diagram_use" name="diagram_use" class="form-control" rows="3"></textarea>
-                         <button id="p1_step6_nextButton" class="btn btn-default">Next Step</button>
-                        </div>
-
-                        <div id="p1_step7">
-                        <p class="lead" id="p1_step7_instructions"><strong>Step 7. How confident are you in your answer?</strong></p>
-
-                        <ul class="list-inline pull-down text-center">
-                            <li style="width:19%">
-                                No Confidence<br />
-                                <input type="radio" id="confidence-1" name="confidence" value="1" /><label id="confidence-1-label" for="confidence-1">&nbsp;1</label>
-                            </li>
-                            <li style="width:19%">
-                                <input type="radio" id="confidence-2" name="confidence" value="2" /><label id="confidence-2-label" for="confidence-2">&nbsp;2</label>
-                            </li>
-                            <li style="width:19%">
-                                Reasonable<br />Confidence<br />
-                                <input type="radio" id="confidence-3" name="confidence" value="3" /><label id="confidence-3-label" for="confidence-3">&nbsp;3</label>
-                            </li>
-                            <li style="width:19%">
-                                <input type="radio" id="confidence-4" name="confidence" value="4" /><label id="confidence-4-label" for="confidence-4">&nbsp;4</label>
-                            </li>
-                            <li style="width:19%">
-                                Very High<br />Confidence<br />
-                                <input type="radio" id="confidence-5" name="confidence" value="5" /><label id="confidence-5-label" for="confidence-5">&nbsp;5</label>
-                            </li>
-                        </ul>
-
-                        
-                       
-                        <br />
-                        <br />
-                        <button type="submit" class="btn btn-default submit">Next Page</button>
-                        <div id="error2" class="error text-danger"></div>
-                        </div>
                     </div>
                 </div>
             </div>

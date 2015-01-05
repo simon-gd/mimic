@@ -109,8 +109,9 @@ function captureElementData2(id) {
     elementData['position'] = element.position();
     elementData['class'] = element.attr('class');
     elementData['tabindex'] = element.attr('tabindex');
-    elementData['nodeName'] = element[0].nodeName;
-
+    try{
+        elementData['nodeName'] = element[0].nodeName;
+    }catch(e){}
     return elementData;
 }
 
@@ -132,13 +133,19 @@ function addElementData(e, idName) {
             elementData['offset'] = $(identifier).offset();
             elementData['position'] = $(identifier).position();
             elementData['class'] = $(identifier).attr('class');
-            elementData['nodeName'] = $(identifier)[0].nodeName;
             elementData['tabindex'] = $(identifier).attr('tabindex');
+            try{
+                elementData['nodeName'] = $(identifier)[0].nodeName;    
+            
+            
+                
 
-            if ($(identifier)[0].nodeName == "OPTION" || $(identifier)[0].nodeName == "SELECT") {
-                elementData['parent'] = captureElementData2($(identifier)[0].parentNode.id);
-                //console.log(e, eventRaw, idName);
-            }
+                if ($(identifier)[0].nodeName == "OPTION" || $(identifier)[0].nodeName == "SELECT") {
+                    elementData['parent'] = captureElementData2($(identifier)[0].parentNode.id);
+                    //console.log(e, eventRaw, idName);
+                }
+            }catch(e){}
+
             logBuffer.elements[identifier] = elementData;
         }
     } else if (isDefined(e[idName], 'documentElement')) {
