@@ -540,7 +540,7 @@
                     var prev_steps = (cond == 0) ? "Step 1" : "previous steps";
 
                     s = ['<div id="p1_step'+step+'">',
-                            '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Answer the following questions carefully using the information from '+prev_steps+'.</strong></p>',
+                            '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Answer the following question carefully using the information from '+prev_steps+'.</strong></p>',
                             '<div id="p1_step'+step+'+_body">',
                                 '<div class="well well-sm">',
                         '<p>If you got a <b>test result</b> that says you have skin cancer, what are the chances that you <b>actually</b> have skin cancer?</p>',
@@ -612,8 +612,8 @@
 
                   
                 } else if(stepName == "use_visualization") {
-                      var s = ['<div id="p1_step'+step+'">',
-                         '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Explain how you used the diagram to help you come up with your answer.</strong></p>',
+                      var s = ['<div id="p1_step'+step+'">',   
+                         '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Explain how you used the diagram in Step 2 to answer in Step '+(steps.indexOf("question")+1)+'.</strong></p>',
                          '<textarea id="diagram_use" name="diagram_use" class="form-control" rows="3"></textarea>'];
                     if(step == steps.length){
                            s.push('<br/><button type="submit" class="btn btn-default submit">Next Page</button>');
@@ -625,7 +625,7 @@
                     $("#p1_right").append(s.join("\n"));
                 } else if(stepName == "use_focus") {
                       var s = ['<div id="p1_step'+step+'">',
-                     '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Explain how you used the information from Step '+(steps.indexOf("focus")+1)+'.</strong></p>',
+                     '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Explain how you used the information from Step ' +(steps.indexOf("focus")+1)+' to answer in Step '+(steps.indexOf("question")+1)+'.</strong></p>',
                      '<textarea id="how_focus" name="how_focus" class="form-control" rows="3"></textarea>'];
                      if(step == steps.length){
                            s.push('<br/><button type="submit" class="btn btn-default submit">Next Page</button>');
@@ -1341,41 +1341,41 @@
                 <div class="row">
                     <div class="col-xs-7">
                         <div class="well well-sm">
-                            Subject: Tomorrow's meeting  <br/>
-                            From: "Ginger Holmes" &lt;gholmes@bru.edu&gt; <br/>
+                            Subject: Tomorrow&apos;s meeting  <br/>
+                            From: &quot;Laura Evans&quot; &lt;levans@bru.edu&gt; <br/>
                             Date: Wed, May 13, 2009 8:31 am  <br/>
-                            To: "Pat Jones" &lt;patjones@bru.edu&gt;<br/> 
+                            To: &quot;Arin Phillips&quot; &lt;aphillips@bru.edu&gt;<br/>
                             Priority: Normal<br/>
                             <br/>
-                            Pat,<br/> 
-                            Since Christi is out of town, the staff council meeting will be held via telephone tomorrow. We will discuss the proposed reorganization of the Human Resources department to better serve the faculty and staff at BRU. During this conference call, we will also discuss the decisions reached at the 11am meeting of the University Benefits department. It is critical that all attendees of the University Benefits department, especially those who attended the morning meeting, also attend this conference call, to ensure that necessary recommendations of this committee are incorporated into our procedural changes. Details for the conference call are listed below. Also, please confirm your participation via email to me. <br/>
-
+                            Arin,<br/>
+                            Since Christi is out of town, the staff council meeting will be held via telephone tomorrow. We will discuss the proposed reorganization of the Human Resources department to better serve the faculty and staff at BRU. During this conference call, we will also discuss the decisions reached at the 11am meeting of the International HR department. It is critical that all attendees of the International HR department, especially those who attended the morning meeting, also attend this conference call, to ensure that necessary recommendations of this committee are incorporated into our procedural changes. Details for the conference call are listed below. Also, please confirm your participation via email to me. <br/>
+ 
                             Date: Thursday, May 14 <br/>
                             Time: 2:00 PM (EST) <br/>
                             Number: 1-800-555-1200 8533123 (passcode)<br/>
                             <br/>
                             Thanks, <br/>
-                            Ginger Holmes <br/>
+                            Laura Evans <br/>
                             Administrative Coordinator Recruiting and Staffing <br/>
                             Baton Rouge University <br/>
-                            www.bru.edu<br/>                 
+                            www.bru.edu<br/>                
                            
                             
                         </div>
                       
                     </div>
 
-                    <div class="col-xs-5">
+                   <div class="col-xs-5">
                        <p class="lead"><strong>Please answer the following questions:</strong></p>
-                    
+                   
                         <p class="lead"><strong>Who is the email message sent to?</strong></p>
-                        <div class="radio"><label> <input type="radio" id="who-from-1" name="who_from" value="Ginger Holmes" /> Ginger Holmes </label></div>
-                        <div class="radio"><label> <input type="radio" id="who-from-2" name="who_from" value="John Stone" /> John Stone </label></div>
-                        <div class="radio"><label> <input type="radio" id="who-from-3" name="who_from" value="Pat Jones" /> Pat Jones </label></div>
-                        <div class="radio"><label> <input type="radio" id="who-from-4" name="who_from" value="Edward Downs" /> Edward Downs </label></div>
-                        <div class="radio"><label> <input type="radio" id="who-from-5" name="who_from" value="Sadie Stinfeld" /> Sadie Stinfeld </label></div>
+                        <div class="radio"><label> <input type="radio" id="who-from-1" name="who_from" value="Laura Evans" /> Laura Evans </label></div>
+                        <div class="radio"><label> <input type="radio" id="who-from-2" name="who_from" value="Mark Harris" /> Mark Harris </label></div>
+                        <div class="radio"><label> <input type="radio" id="who-from-3" name="who_from" value="Arin Phillips" /> Arin Phillips </label></div>
+                        <div class="radio"><label> <input type="radio" id="who-from-4" name="who_from" value="Richard Thompson" /> Richard Thompson </label></div>
+                        <div class="radio"><label> <input type="radio" id="who-from-5" name="who_from" value="Karen White" /> Karen White </label></div>
                         <p class="lead"><strong>What department is holding the meeting prior to the conference call?</strong></p>
-                        
+                       
                         <div class="radio"><label> <input type="radio" id="what_department-1" name="what_department" value="Recruiting and Staffing" /> Recruiting and Staffing </label></div>
                         <div class="radio"><label> <input type="radio" id="what_department-2" name="what_department" value="Learning and Professional Development" /> Learning and Professional Development </label></div>
                         <div class="radio"><label> <input type="radio" id="what_department-3" name="what_department" value="Temporary Employment" /> Temporary Employment </label></div>
@@ -1386,11 +1386,11 @@
                         <div class="radio"><label> <input type="radio" id="what_department-8" name="what_department" value="Disability Services" /> Disability Services </label></div>
                         <div class="radio"><label> <input type="radio" id="what_department-9" name="what_department" value="University Benefits" /> University Benefits </label></div>
                         <div class="radio"><label> <input type="radio" id="what_department-10" name="what_department" value="Orientation" /> Orientation </label></div>
-                        
+                       
                         <br />
                         <button type="submit" class="btn btn-default submit">Next Page</button>
                         <div id="error2" class="error text-danger"></div>
-
+ 
                     </div>
                 </div>
             </div>
@@ -1490,7 +1490,7 @@
                             <input type="radio" id="prev_question-1" name="prev_question" value="Yes" /><label for="prev_question-1">&nbsp;Yes</label>
                         </li>
                          <li>
-                            <input type="radio" id="prev_question-2" name="prev_question" value="Yes2" /><label for="prev_question-2">&nbsp;Yes, but didn't finish it.</label>
+                            <input type="radio" id="prev_question-2" name="prev_question" value="Yes2" /><label for="prev_question-2">&nbsp;Yes, but didn&apos;t finish it.</label>
                         </li>
                         <li>
                             <input type="radio" id="prev_question-3" name="prev_question" value="No" /><label for="prev_question-3">&nbsp;No</label>
