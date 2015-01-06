@@ -537,7 +537,7 @@
 
                   $("#p1_left").append(s);
                 } else if(stepName == "question") {
-                    var prev_steps = (cond == 0) ? "Step 1" : "previous steps";
+                    var prev_steps = (cond == 0) ? "Step 1" : "the previous steps";
 
                     s = ['<div id="p1_step'+step+'">',
                             '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Answer the following question carefully using the information from '+prev_steps+'.</strong></p>',
@@ -576,7 +576,7 @@
                   $("#p1_left").append(s);
                   
                 } else if(stepName == "focus") {
-                    var prev_steps = (cond == 4) ? "Step 1" : "previous steps";
+                    var prev_steps = (cond == 4) ? "Step 1" : "the previous steps";
 
                     var s = ['<div id="p1_step'+step+'">', 
                     '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Answer the following questions carefully using the information from '+prev_steps+'.</strong></p>',
@@ -613,7 +613,7 @@
                   
                 } else if(stepName == "use_visualization") {
                       var s = ['<div id="p1_step'+step+'">',   
-                         '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Explain how you used the diagram in Step 2 to answer in Step '+(steps.indexOf("question")+1)+'.</strong></p>',
+                         '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Explain how you used the diagram in Step 2 to answer the question in Step '+(steps.indexOf("question")+1)+'.</strong></p>',
                          '<textarea id="diagram_use" name="diagram_use" class="form-control" rows="3"></textarea>'];
                     if(step == steps.length){
                            s.push('<br/><button type="submit" class="btn btn-default submit">Next Page</button>');
@@ -625,7 +625,7 @@
                     $("#p1_right").append(s.join("\n"));
                 } else if(stepName == "use_focus") {
                       var s = ['<div id="p1_step'+step+'">',
-                     '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Explain how you used the information from Step ' +(steps.indexOf("focus")+1)+' to answer in Step '+(steps.indexOf("question")+1)+'.</strong></p>',
+                     '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Explain how you used the information from Step ' +(steps.indexOf("focus")+1)+' to answer the question in Step '+(steps.indexOf("question")+1)+'.</strong></p>',
                      '<textarea id="how_focus" name="how_focus" class="form-control" rows="3"></textarea>'];
                      if(step == steps.length){
                            s.push('<br/><button type="submit" class="btn btn-default submit">Next Page</button>');
@@ -1055,6 +1055,7 @@
                         var how_focus =  $('#how_focus').val();
                         
                         var confidence = $('input:radio[name=confidence]:checked').val();
+                        var layoutUsed = 0;
 
                         for(var i=0; i < required_questions.length; i++){
                           var rq = required_questions[i];
@@ -1104,7 +1105,16 @@
                         diagram_use =  diagram_use ? diagram_use : "";
                         how_focus =  how_focus ? how_focus : "";
                         confidence = confidence ? confidence : "";
-                        answer = {'a_c1':a_c1, 'a_c2':a_c1, 'a_f1':a_f1, 'a_f2':a_f2, 'a_f3':a_f3, 'diagram_use':diagram_use, 'how_focus':how_focus, 'how_calculated': how_calculated, 'confidence': confidence, 'dropEvents': dropEvents};
+                        if(steps.indexOf("drag_drop_visualization") > 0){
+                          for(var pi=1; pi <= 8; pi++){
+                            if(possibleLayouts[pi]){
+                                layoutUsed = pi;
+                            }
+
+                          }
+                        }
+                       
+                        answer = {'a_c1':a_c1, 'a_c2':a_c1, 'a_f1':a_f1, 'a_f2':a_f2, 'a_f3':a_f3, 'diagram_use':diagram_use, 'how_focus':how_focus, 'how_calculated': how_calculated, 'confidence': confidence, 'dropEvents': dropEvents, 'layoutUsed':layoutUsed };
                     }else if(current_question == 2){
                         var who_from = $('input:radio[name=who_from]:checked').val();
                         var what_department = $('input:radio[name=what_department]:checked').val();
@@ -1348,7 +1358,7 @@
                             Priority: Normal<br/>
                             <br/>
                             Arin,<br/>
-                            Since Christi is out of town, the staff council meeting will be held via telephone tomorrow. We will discuss the proposed reorganization of the Human Resources department to better serve the faculty and staff at BRU. During this conference call, we will also discuss the decisions reached at the 11am meeting of the International HR department. It is critical that all attendees of the International HR department, especially those who attended the morning meeting, also attend this conference call, to ensure that necessary recommendations of this committee are incorporated into our procedural changes. Details for the conference call are listed below. Also, please confirm your participation via email to me. <br/>
+                            Since Christi is out of town, the staff council meeting will be held via telephone tomorrow. We will discuss the proposed reorganization of the Human Resources department to better serve the faculty and staff at BRU. During this conference call, we will also discuss the decisions reached at the 11am meeting of the Disability Services department. It is critical that all attendees of the Disability Services department, especially those who attended the morning meeting, also attend this conference call, to ensure that necessary recommendations of this committee are incorporated into our procedural changes. Details for the conference call are listed below. Also, please confirm your participation via email to me. <br/>
  
                             Date: Thursday, May 14 <br/>
                             Time: 2:00 PM (EST) <br/>
