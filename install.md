@@ -3,7 +3,7 @@
 ## Local Setup (Windows)
 **Warning**: These instructions need quite a bit of clarification.
 
-These are rough instructions for setting up Mimic, assuming your have all the pre-requisits installed:
+These are rough instructions for setting sup Mimic, assuming your have all the pre-requisits installed:
 
 - using command line navigate to the mimic folder that contains manage.py
 - python manage.py syncdb
@@ -32,10 +32,18 @@ Add permissiong to mysql (not sure if this is needed)
 	mysql -u root -p
 	GRANT ALL ON mimic.* TO root@'127.0.0.1' IDENTIFIED BY 'password';
 
+	GRANT ALL ON mimic.* TO root@'localhost' IDENTIFIED BY 'password';
+
 
 	GRANT ALL PRIVILEGES ON *.* TO 'root'@'%';
 
+
+	GRANT ALL ON mimic.* TO root@'127.0.0.1' IDENTIFIED BY 'password';
+	
+
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;
+
+SHOW GRANTS FOR 'root'@'localhost';
 
 ### nginx
 [http://wiki.nginx.org/Main](http://wiki.nginx.org/Main)
@@ -43,8 +51,12 @@ GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'password' WITH GRANT OP
 - Start: ``sudo /etc/init.d/nginx restart``
 - Stop: ``sudo /etc/init.d/nginx stop``
 - Restart: ``sudo /etc/init.d/nginx restart``
+- Restart: ``sudo /etc/init.d/nginx reload``
+- service nginx realod
 - View Logs: ``nano /var/log/nginx/error.log``
 - Config location: ``/etc/nginx/sites-enabled``
+
+service nginx stop
 
 proxy_set_header X-Real-IP $remote_addr;
 
@@ -98,3 +110,19 @@ Now after a reboot the waagent starts creating a swap file and after a while it 
 swapon -s
 Filename    Type  Size Used Priority
 /mnt/swapfile                           file  1023996 0 -1
+
+
+log_error = /var/log/mysql/error.log
+
+
+sudo nano /etc/sysctl.conf
+append: fs.file-max = 100000
+
+sysctl -p
+
+
+
+proxy_connect_timeout 120s;
+proxy_read_timeout 120s;
+
+sudo update-rc.d -f  apache2 remove
