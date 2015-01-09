@@ -144,7 +144,7 @@ path.line2 {
     19: "pause",
     20: "caps",
     27: "esc",
-    32: "space",
+    32: " ",
     33: "pageup",
     34: "pagedown",
     35: "end",
@@ -155,7 +155,7 @@ path.line2 {
     40: "down",
     44: "print",
     45: "insert",
-    46: "delete",
+    46: "",
     48: "0",
     49: "1",
     50: "2",
@@ -195,22 +195,22 @@ path.line2 {
     91: "cmd",
     92: "cmd",
     93: "cmd",
-    96: "num_0",
-    97: "num_1",
-    98: "num_2",
-    99: "num_3",
-    100: "num_4",
-    101: "num_5",
-    102: "num_6",
-    103: "num_7",
-    104: "num_8",
-    105: "num_9",
-    106: "num_multiply",
-    107: "num_add",
+    96: "0",
+    97: "1",
+    98: "2",
+    99: "3",
+    100: "4",
+    101: "5",
+    102: "6",
+    103: "7",
+    104: "8",
+    105: "9",
+    106: "*",
+    107: "+",
     108: "num_enter",
-    109: "num_subtract",
-    110: "num_decimal",
-    111: "num_divide",
+    109: "-",
+    110: ".",
+    111: "/",
     124: "print",
     144: "num",
     145: "scroll",
@@ -534,13 +534,13 @@ $(document).ready(function() {
                     .style("stroke-opacity", 1.0);
                  
                  keyNode.append("title")
-                        .text(function(d) { return my_keycode_dictionary[d.which];});
+                        .text(function(d) { return (d.which) ? my_keycode_dictionary[d.which] : 0;});
                  keyNode.append("text")
                         .attr("dy", ".4em")
                         .attr("dx", "-.1em")
                         .attr("font-size", "6pt")
                         .style("text-anchor", "middle")
-                        .text(function(d) { return my_keycode_dictionary[d.which][0]; });
+                        .text(function(d) { return (d.which &&  my_keycode_dictionary[d.which])? my_keycode_dictionary[d.which][0] : 0; });
             
                  var focusNode = graph.selectAll(".dotFocus")
                     .data(focusinPts)

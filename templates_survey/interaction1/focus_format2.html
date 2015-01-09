@@ -512,6 +512,18 @@
         }else if(condition == 4){
           steps = ["problem_setup","focus", "question", "confidence", "how_calculated","use_focus"]; 
           required_questions = ["answer_chance1", "answer_chance2","confidence", "how_calculated", "how_focus", "answer_focus1", "answer_focus2", "answer_focus3" ];
+        }else if(condition == 5){
+          steps = ["problem_setup","visualization","focus", "question", "confidence", "how_calculated","use_visualization","use_focus"]; 
+          required_questions = ["answer_chance1", "answer_chance2","confidence", "how_calculated", "diagram_use", "how_focus", "answer_focus1", "answer_focus2", "answer_focus3" ];
+        }else if(condition == 7){
+          steps = ["problem_setup2","question", "confidence", "how_calculated"];
+          required_questions = ["answer_chance1", "answer_chance2","confidence", "how_calculated"];
+        }else if(condition == 8){
+          steps = ["problem_setup2","visualization", "question", "confidence", "how_calculated", "use_visualization"];
+          required_questions = ["answer_chance1", "answer_chance2","confidence", "how_calculated", "diagram_use"];
+        }else if(condition == 9){
+          steps = ["problem_setup2","drag_drop_visualization", "question", "confidence", "how_calculated","use_visualization"];
+          required_questions = ["answer_chance1", "answer_chance2","confidence", "how_calculated", "diagram_use"];
         }
 
 
@@ -536,10 +548,26 @@
                            '</div>'].join("\n");  
 
                   $("#p1_left").append(s);
+                } if(stepName == "problem_setup2") {
+                  var s = ['<div id="p1_step'+step+'">',
+                           '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Read the text below carefully.</strong></p>',
+                           '<div id="problem_statement" class="well well-sm">',
+                            "<span>You know the following information:</span>",
+                            "<ul>",
+                            "<li><b>10</b> out of every <b>1000</b> women at age forty who participate in routine screening have breast cancer.</li>",
+                            "<li><b>8</b> of every <b>10</b> women with breast cancer will get a positive mammography.</li>",
+                            "<li><b>95</b> out of every <b>990</b> women without breast cancer will also get a positive mammography.</li>",
+                           "</ul>",    
+                           '</div>',
+                           '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
+                           '</div>'].join("\n");  
+
+                  $("#p1_left").append(s);
                 } else if(stepName == "question") {
                     var prev_steps = (cond == 0) ? "Step 1" : "the previous steps";
-
-                    s = ['<div id="p1_step'+step+'">',
+                    var s;
+                    if(cond < 7){
+                       s = ['<div id="p1_step'+step+'">',
                             '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Answer the following question carefully using the information from '+prev_steps+'.</strong></p>',
                             '<div id="p1_step'+step+'+_body">',
                                 '<div class="well well-sm">',
@@ -549,17 +577,40 @@
                             '</div>',
                              '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
                         '</div>'].join("\n");
+                      }else{
+                        s = ['<div id="p1_step'+step+'">',
+                            '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Answer the following question carefully using the information from '+prev_steps+'.</strong></p>',
+                            '<div id="p1_step'+step+'+_body">',
+                                '<div class="well well-sm">',
+                        '<p>Here is a new representative sample of women at age forty who got a positive mammography in routine screening. How many of these women do you expect to actually have breast cancer?</p>',
+                        '</div>',
+                        '<p>Your answer: <input id="answer_chance1" class="answer" name="answer_chance1" type="text" />&nbsp;<strong>out of</strong>&nbsp;<input id="answer_chance2" class="answer" name="answer_chance2" type="text" /></p>',
+                            '</div>',
+                             '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
+                        '</div>'].join("\n");
+                      }
+                   
                    $("#p1_right").append(s);
-
                 } else if(stepName == "visualization") {
-                     var s = ['<div id="p1_step'+step+'">',
+                  var s;
+                   if(cond < 7){  
+                     s = ['<div id="p1_step'+step+'">',
                            '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
                   
                            '<img src="{% static 'images/dtree.png' %}" width="100%">',
                            '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
                            '</div>'].join("\n");  
+                   }else{
 
+                    s = ['<div id="p1_step'+step+'">',
+                           '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
+                  
+                           '<img src="{% static 'images/dtree2.png' %}" width="100%">',
+                           '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
+                           '</div>'].join("\n");  
+                   }
                   $("#p1_left").append(s);
+                
                 } else if(stepName == "drag_drop_visualization") {
                       
                       var s = ['<div id="p1_step'+step+'">',
@@ -702,8 +753,8 @@
           var numbers = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ];
           possibleLayouts = {'1':true, '2':true, '3':true, '4':true, '5':true, '6':true,'7':true, '8':true};
           var text_numbers;
-        
-            text_numbers = [ "1000 People", 
+          if(condition < 5){
+             text_numbers = [ "1000 People", 
                                "103 People<br>Test Says \"Has Cancer\"", 
                                "897 People<br>Test Says \"No Cancer\"", 
                                "8 People<br>Have Cancer &<br> Test Says \"Has Cancer\"", 
@@ -712,10 +763,19 @@
                                "895 People<br>Do Not Have Cancer &<br> Test Says \"No Cancer\"", 
                                "10 People<br>Have Cancer", 
                                "990 People<br>Do Not Have Cancer", 
-                               "1000 People"]; 
-          
-           
-
+                               "1000 People"];
+          }else{
+           text_numbers  = [ "1000 Woman<br>Woman over 40", 
+                               "103 Woman<br>Got Positive Mammography", 
+                               "897 Woman<br>Got Negative Mammography", 
+                               "8 Woman<br>Have Breast Cancer &<br> Got Positive Mammography", 
+                               "95 Woman<br>Do Not Have Breast Cancer &<br> Got Positive Mammography", 
+                               "2 Woman<br>Have Breast Cancer &<br> Got Negative Mammography", 
+                               "895 Woman<br>Do Not Have Breast Cancer &<br> Got Negative Mammography", 
+                               "10 Woman<br>Have Breast Cancer", 
+                               "990 Woman<br>Do Not Have Breast Cancer", 
+                               "1000 Woman<br>Woman over 40"];
+          }
           //numbers.sort( function() { return Math.random() - .5 } );
 
           for ( var i=1; i<9; i++ ) {

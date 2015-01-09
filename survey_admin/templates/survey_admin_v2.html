@@ -298,30 +298,32 @@ $(document).ready(function() {
       var movePts = dataContext.cursor_y;
       //var keyPts = dataContext.keyPts;
       //var clickPts = dataContext.clickPts;
-
-      //var max_y1 = maxProp(clickPts, 'y');
-      //var max_y2 = maxProp(keyPts, 'y');
-      var max_y3 = Math.max(movePts)//maxProp(movePts, 'y');
-      var max_y = max_y3; //Math.max(max_y1, max_y2, max_y3);
-		
-      for(var i=0; i < movePts.length; ++i){
-	//moveVals.push((movePts[i]['time']/1000.0)+":"+movePts[i]['y']);
-	moveVals.push(i+":"+movePts[i]);
-      }
-      /*
-      for(var i=0; i < clickPts.length; ++i){
-	clickVals.push((clickPts[i]['time']/1000.0)+":"+clickPts[i]['y']);
-      }
-      for(var i=0; i < keyPts.length; ++i){
-	keyVals.push((keyPts[i]['time']/1000.0)+":"+keyPts[i]['y']);
+      if(movePts){
+            //var max_y1 = maxProp(clickPts, 'y');
+          //var max_y2 = maxProp(keyPts, 'y');
+          var max_y3 = Math.max(movePts)//maxProp(movePts, 'y');
+          var max_y = max_y3; //Math.max(max_y1, max_y2, max_y3);
+        
+          for(var i=0; i < movePts.length; ++i){
+            //moveVals.push((movePts[i]['time']/1000.0)+":"+movePts[i]['y']);
+            moveVals.push(i+":"+movePts[i]);
+          }
+          /*
+          for(var i=0; i < clickPts.length; ++i){
+      clickVals.push((clickPts[i]['time']/1000.0)+":"+clickPts[i]['y']);
+          }
+          for(var i=0; i < keyPts.length; ++i){
+      keyVals.push((keyPts[i]['time']/1000.0)+":"+keyPts[i]['y']);
+          }
+          
+          console.log(keyVals);
+          */
+          $(cellNode).empty().sparkline(moveVals, {width: "100%", spotRadius: 0, chartRangeMin: 0, chartRangeMax: max_y, composite: true,chartRangeMinX:0, chartRangeMaxX: movePts.length})
+          //$(cellNode).empty().sparkline(keyVals, {type: 'bar', barWidth: 3, width: "100%", chartRangeMin: 0, chartRangeMax: 10, composite: true,chartRangeMinX:0, chartRangeMaxX: time});
+          //$(cellNode).empty().sparkline(clickPts, {width: "100%", spotRadius: 1.5, chartRangeMin: 0, chartRangeMax: max_y, composite: true, chartRangeMinX:0, chartRangeMaxX: time});
+        }
       }
       
-      console.log(keyVals);
-      */
-      $(cellNode).empty().sparkline(moveVals, {width: "100%", spotRadius: 0, chartRangeMin: 0, chartRangeMax: max_y, composite: true,chartRangeMinX:0, chartRangeMaxX: movePts.length})
-      //$(cellNode).empty().sparkline(keyVals, {type: 'bar', barWidth: 3, width: "100%", chartRangeMin: 0, chartRangeMax: 10, composite: true,chartRangeMinX:0, chartRangeMaxX: time});
-      //$(cellNode).empty().sparkline(clickPts, {width: "100%", spotRadius: 1.5, chartRangeMin: 0, chartRangeMax: max_y, composite: true, chartRangeMinX:0, chartRangeMaxX: time});
-    }
   }
     
 
@@ -361,15 +363,17 @@ $(document).ready(function() {
 				//var order = answers['data'][0]['q_order']
 			      
 				
-				if(answers['data'][0]['answer'][0] == "{"){
-				  var obj = $.parseJSON(answers['data'][0]['answer']);
+				if(answers['data'][3]['answer'][0] == "{"){
+				  var obj = $.parseJSON(answers['data'][3]['answer']);
+           console.log(obj);
 				  for(var i in obj){
 				    answerKeys.push(i);
 				  }
 				}else{
 				  answerKeys.push("answer");
 				}
-				console.log(answerKeys);
+        console.log("answer",answers['data'][3]['answer']);
+				console.log("keys",answerKeys);
 				//console.log("answerKeys ", answerKeys);
 				var columns = [
 				  {id: "num", name: "#", field: "id", width: 40, sortable: true},

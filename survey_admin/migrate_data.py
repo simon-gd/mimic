@@ -85,28 +85,30 @@ def export_survey_all(survey_id):
     questions_data = map(maptest, json.loads(questions_json_string))
     questions_json_string = json.dumps(questions_data, indent=2)
 
-    experiments = Experiment.objects.filter(survey=survey[0], finished=True)
+    experiments = Experiment.objects.filter(survey=survey[0], finished=True, state=0)
     experiments_json_string = serializers.serialize('json', experiments, indent=2)
     experiments_data = map(maptest, json.loads(experiments_json_string))
     experiments_json_string = json.dumps(experiments_data, indent=2)
 
-    experimentAnswers = ExperimentAnswer.objects.filter(experiment__survey = survey[0])
+    experimentAnswers = ExperimentAnswer.objects.filter(experiment__survey = survey[0], experiment__finished=True, experiment__state=0)
     experimentAnswers_json_string = serializers.serialize('json', experimentAnswers, indent=2,  relations={'user':{'fields':('worker_id')}, 'experiment':{'fields':('survey_condition','remote_address', 'http_user_agent')}, 'question':{'fields':('correct_answer')}})
     experimentAnswers_data = map(maptest, json.loads(experimentAnswers_json_string))
     experimentAnswers_json_string = json.dumps(experimentAnswers_data, indent=2)
 
     #queryset_iterator(ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True), chunksize=500)
-    experimentAnswerProcessed = queryset_iterator(ExperimentAnswerProcessed.objects.filter(experiment__survey = survey[0]), chunksize=20)
+    experimentAnswerProcessed = queryset_iterator(ExperimentAnswerProcessed.objects.filter(experiment__survey = survey[0], experiment__finished=True, experiment__state=0), chunksize=20)
     experimentAnswerProcessed_json_string = serializers.serialize('json', experimentAnswerProcessed, indent=2,  
         fields=('source_answer','experiment', 'question', 'answer', 'confidence', 'user', 'processed_at', 'time', 'clicks_count', 'keys_count'
             'scroll_count', 'window_h', 'window_w'), relations={'user':{'fields':('worker_id')}, 'experiment':{'fields':('survey_condition','remote_address', 'http_user_agent')}, 
                                                                                 'question':{'fields':('correct_answer')}})
     experimentAnswerProcessed_data = map(maptest, json.loads(experimentAnswerProcessed_json_string))
     
+    """
     for eap in experimentAnswerProcessed_data:
         i_url = os.path.join("data", "interaction", "experimentAnswersProcessedMousedata_"+str(eap['id'])+".zip")
         eap['user_events'] = i_url
 
+        
     experimentAnswerProcessed = queryset_iterator(ExperimentAnswerProcessed.objects.filter(experiment__survey = survey[0]), chunksize=20)
     for eap in experimentAnswerProcessed:
         # compressed data
@@ -143,7 +145,7 @@ def export_survey_all(survey_id):
             zf.writestr("experimentAnswersProcessedMousedata_"+str(eap.pk)+".json", json.dumps(mouseData))
         finally:
             zf.close()
-    
+    """
     experimentAnswerProcessed_json_string = json.dumps(experimentAnswerProcessed_data, indent=2) 
    
     
