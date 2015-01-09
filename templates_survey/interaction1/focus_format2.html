@@ -564,7 +564,7 @@
 
                   $("#p1_left").append(s);
                 } else if(stepName == "question") {
-                    var prev_steps = (cond == 0) ? "Step 1" : "the previous steps";
+                    var prev_steps = (cond == 0 || cond == 7) ? "Step 1" : "the previous steps";
                     var s;
                     if(cond < 7){
                        s = ['<div id="p1_step'+step+'">',
