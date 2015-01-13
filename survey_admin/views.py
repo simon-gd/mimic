@@ -193,12 +193,12 @@ def json_preprocess_answers_140(request, survey_id):
         p_a = None
         try:
             p_a = ExperimentAnswerProcessed.objects.get(source_answer=a)
-            p_a.experiment=a.experiment
-            p_a.question=a.question
-            p_a.answer=str(a.answer)
-            p_a.confidence=a.confidence
-            p_a.user=a.user
-            p_a.save()
+            #p_a.experiment=a.experiment
+            #p_a.question=a.question
+            #p_a.answer=str(a.answer)
+            #p_a.confidence=a.confidence
+            #p_a.user=a.user
+            #p_a.save()
           
             print(a.id, "Already exists")
             if not force_reprocess:
