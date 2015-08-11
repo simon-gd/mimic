@@ -1225,8 +1225,8 @@ def heatmap(request, answer_id):
     mouseMoveDataRaw = expAns.mouse_move_event
     mouseClickDataRaw = expAns.mouse_click_event
     
-    mouseMovesJSON = zlib.decompress(b64decode(mouseMoveDataRaw)) #mouseMoveDataRaw
-    mouseClicksJSON = zlib.decompress(b64decode(mouseClickDataRaw)) #mouseClickDataRaw
+    mouseMovesJSON = mouseMoveDataRaw #zlib.decompress(b64decode(mouseMoveDataRaw)) #mouseMoveDataRaw
+    mouseClicksJSON = mouseClickDataRaw #zlib.decompress(b64decode(mouseClickDataRaw)) #mouseClickDataRaw
     
     return render_to_response('heatmap.html', {'survey':survey,
                                                'question':current_question,
