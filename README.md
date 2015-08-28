@@ -50,3 +50,26 @@ For more detailed information See [install.md](https://github.com/sbreslav/mimic
 
 to create a db migration: do
 - ``python .\manage.py schemamigration survey --auto``
+
+## Docker & Docker Compose
+* `sudo apt-get update`
+* `sudo apt-get install curl`
+* `curl -sSL https://get.docker.com/ | sh`
+* `sudo usermod -aG docker $USER`
+* Check: `sudo docker run hello-world`
+* `sudo easy_install pip`
+* `sudo pip install -U docker-compose==1.4.0`
+* Add to ~/.profile:
+  if [ -d "$HOME/.local/bin" ] ; then
+  	PATH="$HOME/.local/bin:$PATH"
+  fi
+* `source ~/.profile`
+* got to folder that has docker-compose.yml
+* `docker-compose build`
+* `docker-compose up -d`
+* `docker-compose run web python manage.py migrate`
+* Monitor:
+	* `docker-compose ps`
+	* `docker-compose run web env`
+	* `docker-compose logs`
+* Stop: `docker-compose stop`
