@@ -57,6 +57,7 @@ to create a db migration: do
 * `curl -sSL https://get.docker.com/ | sh`
 * `sudo usermod -aG docker $USER`
 * Check: `sudo docker run hello-world`
+* `sudo apt-get install python-setuptools`
 * `sudo easy_install pip`
 * `sudo pip install -U docker-compose==1.4.0`
 * Add to ~/.profile:
