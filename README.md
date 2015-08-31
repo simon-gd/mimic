@@ -65,12 +65,23 @@ to create a db migration: do
   	PATH="$HOME/.local/bin:$PATH"
   fi
 * `source ~/.profile`
-* got to folder that has docker-compose.yml
+* git source code
+* go to the folder that has docker-compose.yml
+* modify .env to include:
+	SECRET_KEY=<key>
+	DB_NAME=postgres
+	DB_USER=postgres
+	DB_PASS=<pass>
+	DB_SERVICE=postgres
+	DB_PORT=5432
 * `docker-compose build`
-* `docker-compose up -d`
+* `docker-compose run web python manage.py collectstatic`
+* `docker-compose run web python manage.py syncdb`
 * `docker-compose run web python manage.py migrate`
+* `docker-compose up -d`
 * Monitor:
 	* `docker-compose ps`
 	* `docker-compose run web env`
 	* `docker-compose logs`
 * Stop: `docker-compose stop`
+* docker-compose run web /bin/bash
