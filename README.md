@@ -65,9 +65,9 @@ to create a db migration: do
   	PATH="$HOME/.local/bin:$PATH"
   fi
 * `source ~/.profile`
-* git source code
+* git clone https://github.com/sbreslav/mimic.git
 * go to the folder that has docker-compose.yml
-* modify .env to include:
+* create `pico .env` file to include:
 	SECRET_KEY=<key>
 	DB_NAME=postgres
 	DB_USER=postgres
