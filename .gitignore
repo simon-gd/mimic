@@ -206,10 +206,8 @@ docs/_build/
 *.pot
 *.pyc
 .env
+web/static/admin/
 media
 templates_survey_private
 media_private
-mimic/settings/base.py
-mimic/settings/local.py
-mimic/settings/production.py
 manage.py

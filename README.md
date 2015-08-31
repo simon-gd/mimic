@@ -84,4 +84,8 @@ to create a db migration: do
 	* `docker-compose run web env`
 	* `docker-compose logs`
 * Stop: `docker-compose stop`
+* docker rm $(docker ps -a -q)
+* docker rmi $(docker images | grep "^<none>" | awk "{print $3}")
+* docker rmi $(docker images -q --filter "dangling=true")
 * docker-compose run web /bin/bash
+* localhost?worker_id=1&condition=0
