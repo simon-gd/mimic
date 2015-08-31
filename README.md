@@ -4,8 +4,8 @@ An input capture and visual analytics system that records online user behavior t
 
 This code was used in experiments done for this paper: [Project Page](http://autodeskresearch.com/publications/mimic)
 
-![screenshot](https://github.com/sbreslav/mimic/raw/master/docs/screenshot.png)
-![screenshot2](https://github.com/sbreslav/mimic/raw/master/docs/screenshot2.png)
+![screenshot](web/docs/screenshot.png)
+![screenshot2](web/docs/screenshot2.png)
 
 ## Reference
 
@@ -89,3 +89,9 @@ to create a db migration: do
 * docker rmi $(docker images -q --filter "dangling=true")
 * docker-compose run web /bin/bash
 * localhost?worker_id=1&condition=0
+* Git
+  * `git remote` (check all the locations)
+  * `git remote -v`
+  * `git remote add autodesk https://github.com/sbreslav/designDEVS-IDE.git` (add a new repo)
+  * `git push -u autodesk master`
+
