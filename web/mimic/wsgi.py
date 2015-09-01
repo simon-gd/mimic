@@ -27,19 +27,6 @@ import sys
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mimic.settings")
 
-# This application object is used by any WSGI server configured to use this
-# file. This includes Django's development server, if the WSGI_APPLICATION
-# setting points here.
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
-
-# Apply WSGI middleware here.
-# from helloworld.wsgi import HelloWorldApplication
-# application = HelloWorldApplication(application)
-#path = '/home/simon/mimic/mimic'
-#path2 = '/home/simon/mimic'
-#if path not in sys.path:
-#    sys.path.append(path)
-#if path2 not in sys.path:
-#    sys.path.append(path2)
 

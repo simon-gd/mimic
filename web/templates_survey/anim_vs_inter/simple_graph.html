@@ -152,17 +152,26 @@ text {
 }
 
 .year.label {
-  font: 500 196px "Helvetica Neue";
-  fill: #ddd;
+  font: 500 56px "Helvetica Neue";
+  fill: #000;
 }
 
 .country.label  {
-  font: 500 96px "Helvetica Neue";
-  fill: #ddd;
+  font: 500 56px "Helvetica Neue";
+  fill: #000;
 }
 
 .year.label.active {
   fill: #aaa;
+}
+
+.y.label  {
+  font: 500 20px "Helvetica Neue";
+  fill: #000;
+}
+.x.label  {
+  font: 500 20px "Helvetica Neue";
+  fill: #000;
 }
 
 circle.pointTrajectory {
@@ -221,10 +230,16 @@ path.lineTrajectory {
 
         // confidence diagram_use how_calculated, how_focus, answer_focus1, answer_focus2, answer_focus3 answer_chance1 answer_chance2
         if(condition === 0){
-          steps = ["problem_setup","visualization","question", "confidence"];
+          steps = ["problem_setup","animated_viz","question", "confidence"];
           required_questions = ["answer_chance1", "confidence"];
         }else if(condition === 1){
-          steps = ["problem_setup","visualization2","question", "confidence"];
+          steps = ["problem_setup","interactive_viz","question", "confidence"];
+          required_questions = ["answer_chance1", "confidence"];
+        } else if(condition === 3){
+          steps = ["problem_setup","traces","question", "confidence"];
+          required_questions = ["answer_chance1", "confidence"];
+        }else if(condition === 4){
+          steps = ["problem_setup","small_multiples","question", "confidence"];
           required_questions = ["answer_chance1", "confidence"];
         }
 
@@ -236,7 +251,7 @@ path.lineTrajectory {
             for(step=1; step <= steps.length; step++){
                 var s;
                 var stepName = steps[step-1];
-                if(stepName == "problem_setup") {
+                if(stepName === "problem_setup") {
                   s = ['<div id="p1_step'+step+'">',
                            '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Read the text below carefully.</strong></p>',
                            '<div id="problem_statement" class="well well-sm">',
@@ -249,7 +264,7 @@ path.lineTrajectory {
                            '</div>'].join("\n");  
 
                   $("#p1_left").append(s);
-                } else if(stepName == "question") {
+                } else if(stepName === "question") {
                     var prev_steps = "the previous steps";
                                 
                    s = ['<div id="p1_step'+step+'">',
@@ -265,18 +280,50 @@ path.lineTrajectory {
                     
                    
                    $("#p1_right").append(s);
-                } else if(stepName == "visualization") {
+                } else if(stepName === "interactive_viz") {
                   s = ['<div id="p1_step'+step+'">',
                            '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
                            '<div id="chart" style="margin:0px"></div>',
                            '<span id="min-time">1800</span> ',
                            '<input type="range" name="points" min="0" max="208" step="1" value="0" id="slider-time" style="width:600px; display: inline;">',
-                           '<span id="max-time">2008</span>',
+                           '<span id="max-time">2008</span><br><br>',
                            //'&nbsp; <button id="graph_play_button" class="btn">Play</button><br>',
                            '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
                            '</div>'].join("\n");  
                   $("#p1_left").append(s);
-                  scatterPlotRun();
+                  scatterPlotRun(stepName);
+                } else if(stepName === "animated_viz") {
+                  s = ['<div id="p1_step'+step+'">',
+                           '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
+                           '<div id="chart" style="margin:0px"></div>',
+                           '<button id="play_button" class="btn btn-default">Play Animation</button>',
+                           '<button id="rewind_button" class="btn btn-default">Rewind</button><br><br>',
+                           //'&nbsp; <button id="graph_play_button" class="btn">Play</button><br>',
+                           '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
+                           '</div>'].join("\n");  
+                  $("#p1_left").append(s);
+                  scatterPlotRun(stepName);
+                } else if(stepName === "traces") {
+                  s = ['<div id="p1_step'+step+'">',
+                           '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
+                           '<div id="chart_traces" style="margin:0px"></div>',
+                           //'&nbsp; <button id="graph_play_button" class="btn">Play</button><br>',
+                           '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
+                           '</div>'].join("\n");  
+                  $("#p1_left").append(s);
+                  scatterPlotRun(stepName);
+                } else if(stepName === "small_multiples") {
+                  s = ['<div id="p1_step'+step+'">',
+                           '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
+                           '<div id="chart_traces" style="margin:0px"></div>',
+                           //'&nbsp; <button id="graph_play_button" class="btn">Play</button><br>',
+                           '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
+                           '</div>'].join("\n");  
+                  $("#p1_left").append(s);
+                  scatterPlotRun(stepName);
+                
+                
+                
                 } else if(stepName == "visualization2") {
                    s = ['<div id="p1_step'+step+'">',
                            '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',

@@ -6,8 +6,7 @@ function color(d) { return d.region; }
 function key(d) { return d.name; }
 
 
-function scatterPlotRun()
-{
+function scatterPlotRun(condition_name) {
 // Chart dimensions.
 var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5},
     width = 700 - margin.right,
@@ -63,7 +62,7 @@ svg.append("text")
 var label = svg.append("text")
     .attr("class", "year label")
     .attr("text-anchor", "end")
-    .attr("y", height - 24)
+    .attr("y", 24)
     .attr("x", width)
     .text(1800);
 
@@ -71,14 +70,14 @@ var label = svg.append("text")
 var countrylabel = svg.append("text")
     .attr("class", "country label")
     .attr("text-anchor", "start")
-    .attr("y", 80)
+    .attr("y", 24)
     .attr("x", 20)
     .text(" ");
 
 var first_time = true;
 
 // Load the data.
-d3.json("static/data/synteticData.json", function(nations) {
+d3.json("static/data/nations.json", function(nations) {
 
   // A bisector since many nation's data is sparsely-defined.
   var bisect = d3.bisector(function(d) { return d[0]; });
@@ -90,14 +89,17 @@ d3.json("static/data/synteticData.json", function(nations) {
       .data(interpolateData(1800))
     .enter().append("circle")
       .attr("class", "dot")
-      .style("fill", function(d) { return colorScale(color(d)); })
+      .style("fill", function(d) { return "grey";}) //return colorScale(color(d)); })
       .call(position)
       .on("mousedow", function(d, i) {
 
       })
       .on("mouseup", function(d, i) {
-        //dot.classed("selected", false);
-        //d3.select(this).classed("selected", !d3.select(this).classed("selected"));
+        dot.classed("selected", false);
+        dot.style("opacity", .6);
+        d3.select(this).classed("selected", !d3.select(this).classed("selected"));
+        d3.select(this).style("opacity", 1);
+       
         //dragit.trajectory.display(d, i, "selected");
 
         //TODO: test if has been dragged
@@ -108,7 +110,7 @@ d3.json("static/data/synteticData.json", function(nations) {
         
         clear_demo();
         if(dragit.statemachine.current_state == "idle") {
-          dragit.trajectory.display(d, i)
+          //dragit.trajectory.display(d, i)
           //dragit.utils.animateTrajectory(dragit.trajectory.display(d, i), dragit.time.current, 1000)
           countrylabel.text(d.name);
           dot.style("opacity", .4)
@@ -123,7 +125,7 @@ d3.json("static/data/synteticData.json", function(nations) {
           dot.style("opacity", 1);
         }
   
-        dragit.trajectory.remove(d, i);
+        //dragit.trajectory.remove(d, i);
         
       });
       //.call(dragit.object.activate)
@@ -134,14 +136,14 @@ d3.json("static/data/synteticData.json", function(nations) {
 
   // Start a transition that interpolates the data based on year.
   svg.transition()
-      .duration(30000)
+      .duration(3000)
       .ease("linear");
 
   // Positions the dots based on data.
   function position(dot) {
     dot.attr("cx", function(d) { return xScale(x(d)); })
        .attr("cy", function(d) { return yScale(y(d)); })
-       .attr("r", function(d) { return radiusScale(radius(d)); });
+       .attr("r", function(d) { return 8; });//radiusScale(radius(d)); });
   }
 
   // Defines a sort order so that the smallest dots are drawn on top.
@@ -151,8 +153,8 @@ d3.json("static/data/synteticData.json", function(nations) {
 
   // Updates the display to show the specified year.
   function displayYear(year) {
-    dot.data(interpolateData(year+dragit.time.min), key).call(position).sort(order);
-    label.text(dragit.time.min + Math.round(year));
+    dot.data(interpolateData(year), key).call(position).sort(order);
+    label.text(Math.round(year));
   }
 
   // Interpolates the dataset for the given (fractional) year.
@@ -182,13 +184,16 @@ d3.json("static/data/synteticData.json", function(nations) {
   
   init();
 
-  function update(v, duration) {
-    dragit.time.current = v || dragit.time.current;
+function update(v, duration) {
+    dragit.time.current = v;
     displayYear(dragit.time.current);
-    d3.select("#slider-time").property("value", dragit.time.current);
-  }
 
-  function init() {
+    if(condition_name === "interactive_viz"){
+       d3.select("#slider-time").property("value", dragit.time.current-dragit.time.min);   
+    }   
+}
+
+function init() {
 
     dragit.init(".gRoot");
 
@@ -206,13 +211,36 @@ d3.json("static/data/synteticData.json", function(nations) {
     //dragit.evt.register("update", update);
 
     //d3.select("#slider-time").property("value", dragit.time.current);
-
-    d3.select("#slider-time")
+    if(condition_name === "interactive_viz"){
+      d3.select("#slider-time")
       .on("input", function() { 
         console.log("slider-time: input");
-        update(parseInt(this.value), 500);
+        update(parseInt(this.value)+dragit.time.min);
         clear_demo();
       });
+    }else if(condition_name === "animated_viz"){
+      
+      d3.select("#rewind_button") 
+      .on("click", function() { 
+          dragit.time.current =dragit.time.min;
+          update(dragit.time.current);
+      });
+      
+      d3.select("#play_button")
+      .on("click", function() { 
+        //update(parseInt(this.value), 500);
+        if(demo_interval){
+          d3.select("#play_button").text("Play Animation");
+          clearInterval(demo_interval);
+          demo_interval = null;
+          clear_demo();
+        }else{
+          d3.select("#play_button").text("Pause Animation");
+          play_demo();  
+        }
+        
+      });
+    }
 
     var end_effect = function() {
       countrylabel.text("");
@@ -220,19 +248,32 @@ d3.json("static/data/synteticData.json", function(nations) {
     };
 
     //dragit.evt.register("dragend", end_effect);
-  }
+}
 
 function clear_demo() {
   if(first_time) {
-     svg.transition().duration(0);
+    svg.transition().duration(0);
     first_time = false;
-    window.clearInterval(demo_interval);
+    clearInterval(demo_interval);
     countrylabel.text("");
     //dragit.trajectory.removeAll();
     d3.selectAll(".dot").style("opacity", 1);
   }
 }
-
+var demo_interval = null;
+function play_demo(){
+  demo_interval = setInterval(function() {
+    //console.log("playing", dragit.time.current);
+    if((dragit.time.current+1)< dragit.time.max){
+      dragit.time.current+=1;
+      update(dragit.time.current);
+    }else{
+      clearInterval(demo_interval)
+      demo_interval = null;
+    }    
+  }, 400);
+}
+/*
 function play_demo() {
 
   var ex_nations = ["China", "India", "Indonesia", "Italy", "France", "Spain", "Germany", "United States"];
@@ -258,9 +299,9 @@ function play_demo() {
   d3.selectAll(".dot").filter(function(d) {
     return d.name == random_nation.name;
   }).style("opacity", 1)
-}
+}*/
 
-var demo_interval = null;
+
 /*
 setTimeout(function() {
   if(first_time) {
