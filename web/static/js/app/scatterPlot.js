@@ -5,7 +5,7 @@ function radius(d) { return d.population; }
 function color(d) { return d.region; }
 function key(d) { return d.name; }
 
-
+var startYear = 1820;
 function scatterPlotRun(condition_name) {
 // Chart dimensions.
 var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5},
@@ -64,7 +64,7 @@ var label = svg.append("text")
     .attr("text-anchor", "end")
     .attr("y", 24)
     .attr("x", width)
-    .text(1800);
+    .text(startYear);
 
 // Add the country label; the value is set on transition.
 var countrylabel = svg.append("text")
@@ -84,12 +84,14 @@ d3.json("static/data/nations.json", function(nations) {
   var bisect = d3.bisector(function(d) { return d[0]; });
 
   // Add a dot per nation. Initialize the data at 1800, and set the colors.
+  var selectedDot;
   var dot = svg.append("g")
       .attr("class", "dots")
     .selectAll(".dot")
-      .data(interpolateData(1800))
+      .data(interpolateData(1820))
     .enter().append("circle")
       .attr("class", "dot")
+      .style("opacity", .4)
       .style("fill", function(d) { return "grey";}) //return colorScale(color(d)); })
       .call(position)
       .on("mousedow", function(d, i) {
@@ -97,10 +99,12 @@ d3.json("static/data/nations.json", function(nations) {
       })
       .on("mouseup", function(d, i) {
         dot.classed("selected", false);
-        dot.style("opacity", .6);
+        dot.style("opacity", .4);
+        //selectedDot.moveToBack();
+        selectedDot = d3.select(this);
         d3.select(this).classed("selected", !d3.select(this).classed("selected"));
         d3.select(this).style("opacity", 1);
-       
+        selectedDot.moveToFront();
         //dragit.trajectory.display(d, i, "selected");
 
         //TODO: test if has been dragged
@@ -108,22 +112,24 @@ d3.json("static/data/nations.json", function(nations) {
 
       })
       .on("mouseenter", function(d, i) {
-        
         clear_demo();
         if(dragit.statemachine.current_state == "idle") {
           //dragit.trajectory.display(d, i)
           //dragit.utils.animateTrajectory(dragit.trajectory.display(d, i), dragit.time.current, 1000)
           countrylabel.text(d.name);
-          dot.style("opacity", .4)
-          d3.select(this).style("opacity", 1)
-          d3.selectAll(".selected").style("opacity", 1)
+          //dot.style("opacity", .4)
+          d3.select(this).style("opacity", 1).moveToFront();
+          //d3.selectAll(".selected").style("opacity", 1)
         }
       })
       .on("mouseleave", function(d, i) {
         
         if(dragit.statemachine.current_state == "idle") {
           countrylabel.text("");
-          dot.style("opacity", 1);
+          dot.style("opacity", .4);
+          if(selectedDot){
+            selectedDot.style("opacity", 1);
+          }
         }
   
         //dragit.trajectory.remove(d, i);
@@ -198,10 +204,10 @@ function init() {
 
     dragit.init(".gRoot");
 
-    dragit.time = {min:1800, max:2009, step:1, current:1800};
+    dragit.time = {min:startYear, max:2009, step:1, current:1820};
     dragit.data = d3.range(nations.length).map(function() { return Array(); });
 
-    for(var yy = 1800; yy<2009; yy++) {
+    for(var yy = startYear; yy<2009; yy++) {
 
       interpolateData(yy).filter(function(d, i) { 
         dragit.data[i][yy-dragit.time.min] = [xScale(x(d)), yScale(y(d))];
@@ -245,7 +251,7 @@ function init() {
 
     var end_effect = function() {
       countrylabel.text("");
-      dot.style("opacity", 1);
+      //dot.style("opacity", 1);
     };
 
     //dragit.evt.register("dragend", end_effect);
@@ -258,7 +264,7 @@ function clear_demo() {
     clearInterval(demo_interval);
     countrylabel.text("");
     //dragit.trajectory.removeAll();
-    d3.selectAll(".dot").style("opacity", 1);
+    //d3.selectAll(".dot").style("opacity", 1);
   }
 }
 var demo_interval = null;
@@ -272,7 +278,7 @@ function play_demo(){
       clearInterval(demo_interval)
       demo_interval = null;
     }    
-  }, 400);
+  }, 100);
 }
 /*
 function play_demo() {

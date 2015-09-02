@@ -4,7 +4,7 @@ function y(d) { return d.lifeExpectancy; }
 function radius(d) { return d.population; }
 function color(d) { return d.region; }
 function key(d) { return d.name; }
-
+var startYear = 1820;
 function linePlotRun(condition_name) {
 // Chart dimensions.
 var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5},
@@ -88,7 +88,7 @@ d3.json("static/data/nations.json", function(nations) {
   var bisect = d3.bisector(function(d) { return d[0]; });
   // A bisector since many nation's data is sparsely-defined.
   var years = [];
-  for(var yy = 1800; yy<2009; yy++) {
+  for(var yy = startYear; yy<2009; yy++) {
       years.push(yy);
       //var cobj = interpolateData(yy);
       //mydata[] = {
@@ -118,7 +118,7 @@ d3.json("static/data/nations.json", function(nations) {
       .style("fill", function(d) { return "none"; })
       .style("stroke", function(d) { return "grey"; })
     .on("mouseenter", function(d, i) {
-          console.log("mouseenter", d, i);
+          //console.log("mouseenter", d, i);
           countrylabel.text(d.name);
           countryEnter.style("stroke", "red")
           d3.select(this).style("stroke", "red")
@@ -148,7 +148,7 @@ d3.json("static/data/nations.json", function(nations) {
       })
      .on("mouseenter", function(d, i) {
           countrylabel.text(d.name);
-          label.text(1800+i);
+          label.text(startYear+i);
           d3.select(this).style("stroke", "red");
           d3.select(this.parentNode.parentNode).moveToFront();
           d3.select(this.parentNode.parentNode).select("path").style("stroke", "red").moveToFront();
