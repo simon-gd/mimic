@@ -189,8 +189,24 @@ path.lineTrajectory {
   pointer-events: none;
 }
 
+.countryline{
+  stroke-width: 2;
+}
+
 .selected {
   stroke-width: 4;
+}
+
+rect.extent {
+  fill: #000;
+  fill-opacity: .125;
+  stroke: #fff;
+}
+
+rect.frame {
+  fill: #fff;
+  fill-opacity: .7;
+  stroke: #aaa;
 }
 
     </style>
@@ -208,6 +224,8 @@ path.lineTrajectory {
     <script type="text/javascript" src="{% static 'js/lib/d3.v3.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/lib/dragit.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/app/scatterPlot.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/app/linePlot.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/app/smallMultiplesPlot.js' %}"></script>
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -235,10 +253,10 @@ path.lineTrajectory {
         }else if(condition === 1){
           steps = ["problem_setup","interactive_viz","question", "confidence"];
           required_questions = ["answer_chance1", "confidence"];
-        } else if(condition === 3){
+        } else if(condition === 2){
           steps = ["problem_setup","traces","question", "confidence"];
           required_questions = ["answer_chance1", "confidence"];
-        }else if(condition === 4){
+        }else if(condition === 3){
           steps = ["problem_setup","small_multiples","question", "confidence"];
           required_questions = ["answer_chance1", "confidence"];
         }
@@ -311,16 +329,16 @@ path.lineTrajectory {
                            '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
                            '</div>'].join("\n");  
                   $("#p1_left").append(s);
-                  scatterPlotRun(stepName);
+                  linePlotRun(stepName);
                 } else if(stepName === "small_multiples") {
                   s = ['<div id="p1_step'+step+'">',
                            '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
-                           '<div id="chart_traces" style="margin:0px"></div>',
+                           '<div id="chart_sm" style="margin:0px"></div>',
                            //'&nbsp; <button id="graph_play_button" class="btn">Play</button><br>',
                            '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
                            '</div>'].join("\n");  
                   $("#p1_left").append(s);
-                  scatterPlotRun(stepName);
+                  smallMultiplesPlotRun(stepName);
                 
                 
                 
