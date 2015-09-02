@@ -5,7 +5,6 @@ function radius(d) { return d.population; }
 function color(d) { return d.region; }
 function key(d) { return d.name; }
 
-
 function linePlotRun(condition_name) {
 // Chart dimensions.
 var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5},
@@ -64,7 +63,7 @@ var label = svg.append("text")
     .attr("text-anchor", "end")
     .attr("y", 24)
     .attr("x", width)
-    .text(1800);
+    .text("");
 
 // Add the country label; the value is set on transition.
 var countrylabel = svg.append("text")
@@ -77,7 +76,7 @@ var countrylabel = svg.append("text")
 var first_time = true;
 
 var line = d3.svg.line()
-       .interpolate("basis")
+       .interpolate("linear")
        .x(function(d) { return d.x; })
        .y(function(d) { return d.y; });
 
@@ -102,7 +101,7 @@ d3.json("static/data/nations.json", function(nations) {
               name: c.name,
               values: years.map(function(d) {
                 //console.log("interpolateValues", x(c));
-                return {x: xScale(interpolateValues(x(c), d)), y: yScale(interpolateValues(y(c), d))};
+                return {name: c.name, x: xScale(interpolateValues(x(c), d)), y: yScale(interpolateValues(y(c), d))};
               })
             };
   });
@@ -113,7 +112,7 @@ d3.json("static/data/nations.json", function(nations) {
   var countryEnter = country.enter().append("g")
       .attr("class", "country")
       .attr("id", function(d) { return d.name; });
-  countryEnter.append("path")
+   countryEnter.append("path")
       .attr("class", "countryline")
       .attr("d", function(d) { return line(d.values); })
       .style("fill", function(d) { return "none"; })
@@ -121,8 +120,8 @@ d3.json("static/data/nations.json", function(nations) {
     .on("mouseenter", function(d, i) {
           console.log("mouseenter", d, i);
           countrylabel.text(d.name);
-          countryEnter.style("stroke", "grey")
-          d3.select(this).style("stroke", "black")
+          countryEnter.style("stroke", "red")
+          d3.select(this).style("stroke", "red")
       })
       .on("mouseleave", function(d, i) {
 
@@ -133,7 +132,37 @@ d3.json("static/data/nations.json", function(nations) {
         //dragit.trajectory.remove(d, i);
         
       });
+  countryEnter.append("g").selectAll(".circle")
+    .data(function (d) { return d.values })
+    .enter().append("circle")
+     .attr("r", 4)
+     .attr("fill", function (d, i){ return "hsl(225, 0%, "+ (100-((i / years.length)*80)).toString() +"%)";})
+     .attr("stroke", "none")
+     .attr("fill-opacity", function(d, i){ return ((i / years.length)*0.8); })
+     .attr("cx", function (d) {
+          //console.log("circle", d);
+          return d.x;
+      })
+     .attr("cy", function (d) {
+          return d.y;
+      })
+     .on("mouseenter", function(d, i) {
+          countrylabel.text(d.name);
+          label.text(1800+i);
+          d3.select(this).style("stroke", "red");
+          d3.select(this.parentNode.parentNode).moveToFront();
+          d3.select(this.parentNode.parentNode).select("path").style("stroke", "red").moveToFront();
+          //console.log( this.parentNode.parentNode); //d3.select(this).node());
+      })
+      .on("mouseleave", function(d, i) {
+        countrylabel.text("");
+        label.text("");
+        d3.select(this).style("stroke", "none");
+        d3.select(this.parentNode.parentNode).select("path").style("stroke", "grey").moveToBack();
+        
+      });
 
+  
   // Add a dot per nation. Initialize the data at 1800, and set the colors.
   /*
   var dot = svg.append("g")

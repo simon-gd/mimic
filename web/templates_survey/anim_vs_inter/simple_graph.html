@@ -222,6 +222,19 @@ rect.frame {
     <script type="text/javascript" src="{% static 'js/lib/rangy-serializer.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/app/detect-zoom.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/lib/d3.v3.js' %}"></script>
+    <script type="text/javascript">
+    d3.selection.prototype.moveToFront = function() {
+      return this.each(function(){
+      this.parentNode.appendChild(this);
+      });
+    };
+
+    d3.selection.prototype.moveToBack = function() {
+      return this.each(function(){
+      this.parentNode.insertBefore(this,  this.parentNode.firstChild);
+      });
+    };
+    </script>
     <script type="text/javascript" src="{% static 'js/lib/dragit.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/app/scatterPlot.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/app/linePlot.js' %}"></script>
