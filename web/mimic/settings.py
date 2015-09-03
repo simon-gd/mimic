@@ -291,3 +291,4 @@ WSGI_APPLICATION = '%s.wsgi.application' % SITE_NAME
 MIMIC_USE_AZURE_BLOB = False
 AZURE_STORAGE_ACCOUNT = "<azure_account_name>"
 AZURE_STORAGE_KEY = "<azure storage key>"
+AZURE_PROTOCOL = "https"

@@ -263,8 +263,6 @@ $(document).ready(function() {
       new Slick.Data.Aggregators.Avg("clicks"),
       new Slick.Data.Aggregators.Avg("scrolls"),
       new Slick.Data.Aggregators.Avg("keydown"),
-      new Slick.Data.Aggregators.Avg("conf"),
-      new Slick.Data.Aggregators.Avg("conf_click"),
       new Slick.Data.Aggregators.Avg("window_h"),
       new Slick.Data.Aggregators.Avg("window_w"),
     ],
@@ -363,8 +361,8 @@ $(document).ready(function() {
 				//var order = answers['data'][0]['q_order']
 			      
 				
-				if(answers['data'][3]['answer'][0] == "{"){
-				  var obj = $.parseJSON(answers['data'][3]['answer']);
+				if(answers && answers['data'] && answers['data'].length > 0 && answers['data'][0]['answer'][0] == "{"){
+				  var obj = $.parseJSON(answers['data'][0]['answer']);
            console.log(obj);
 				  for(var i in obj){
 				    answerKeys.push(i);
@@ -372,7 +370,7 @@ $(document).ready(function() {
 				}else{
 				  answerKeys.push("answer");
 				}
-        console.log("answer",answers['data'][3]['answer']);
+        console.log("answer",answers['data'][0]['answer']);
 				console.log("keys",answerKeys);
 				//console.log("answerKeys ", answerKeys);
 				var columns = [
@@ -384,9 +382,6 @@ $(document).ready(function() {
 				  { id: "clicks", name: "Clicks", field: "clicks", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
 				  { id: "scrolls", name: "Scrolls", field: "scrolls", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
 				  { id: "keydown", name: "Keydown", field: "keydown", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
-				  { id: "conf", name: "Confidence", field: "conf", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
-				  { id: "conf_click", name: "Confidence Click", field: "conf_click", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
-			      
 				  { id: "valid", name: "Valid", field: "valid", sortable: true, editable: true, width: 40, minWidth: 20, maxWidth: 40, cssClass: "cell-effort-driven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox },
 				  {id: "cursor_y", name: "Cursor-Y", sortable: false, width: 100, formatter: waitingFormatter, rerenderOnResize: true, asyncPostRender: renderSparkline},
 				  { id: "window_h", name: "Window Height", field: "window_h", sortable: true, groupTotalsFormatter: avgTotalsFormatter },
@@ -456,8 +451,6 @@ $(document).ready(function() {
 					     clicks: answers['data'][i]['clicks'],
 					     scrolls: answers['data'][i]['scrolls'],
 					     keydown: answers['data'][i]['keydown'],
-					     conf: answers['data'][i]['confidence'],
-					     conf_click: answers['data'][i]['confidenceClick'],
 					     window_h: answers['data'][i]['window_h'],
 					     window_w: answers['data'][i]['window_w'],
 					     valid: v

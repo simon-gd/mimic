@@ -36,6 +36,7 @@ import ast
 from base64 import b64decode, b64encode
 import urllib2
 from distutils.version import LooseVersion, StrictVersion
+import sys, traceback
 
 from django.core import serializers
 from django.core.urlresolvers import reverse
@@ -161,7 +162,6 @@ def mymake_blob_url(container_name, blob_name):
             Live host base url.  If not specified, uses the host base specified
             when BlobService was initialized.
         '''
-
         return '{0}://{1}{2}/{3}/{4}'.format(settings.AZURE_PROTOCOL,
                                              settings.AZURE_STORAGE_ACCOUNT,
                                              settings.AZURE_HOST_BASE,
@@ -184,6 +184,7 @@ def json_preprocess_answers_140(request, survey_id):
     updated_count = 0
     skipped_count = 0
     errors = []
+    logs = []
     force_reprocess = False
     #debug_data = "";
     if "force_reprocess" in request.GET:
@@ -196,27 +197,27 @@ def json_preprocess_answers_140(request, survey_id):
             #p_a.experiment=a.experiment
             #p_a.question=a.question
             #p_a.answer=str(a.answer)
-            #p_a.confidence=a.confidence
             #p_a.user=a.user
             #p_a.save()
           
-            print(a.id, "Already exists")
+            logs.append(str(a.id) +" Already exists")
             if not force_reprocess:
+                skipped_count += 1
                 continue
             updated_count += 1
         except MultipleObjectsReturned:
-            print(a.id, "MultipleObjectsReturned")
+            logs.append(str(a.id) + "MultipleObjectsReturned")
             ExperimentAnswerProcessed.objects.filter(source_answer=a).delete()
-            p_a = ExperimentAnswerProcessed.objects.create(source_answer=a, experiment=a.experiment, question=a.question, answer=str(a.answer), confidence=a.confidence, user=a.user)
+            p_a = ExperimentAnswerProcessed.objects.create(source_answer=a, experiment=a.experiment, question=a.question, answer=str(a.answer), user=a.user)
             create_count += 1
         except ExperimentAnswerProcessed.DoesNotExist:
             # create a new
             try:
-                print(a.id, "ExperimentAnswerProcessed.DoesNotExist")
-                p_a = ExperimentAnswerProcessed.objects.create(source_answer=a, experiment=a.experiment, question=a.question, answer=str(a.answer), confidence=a.confidence, user=a.user)
+                logs.append(str(a.id) + "ExperimentAnswerProcessed.DoesNotExist")
+                p_a = ExperimentAnswerProcessed.objects.create(source_answer=a, experiment=a.experiment, question=a.question, answer=str(a.answer), user=a.user)
                 create_count += 1
             except:
-                print(a.id, "ExperimentAnswerProcessed.DoesNotExist Failed to create new item")
+                errors.append(str(a.id) + "ExperimentAnswerProcessed.DoesNotExist Failed to create new item")
                 continue
         if len(a.answer) > 0:
             p_a.answer = a.answer
@@ -244,6 +245,8 @@ def json_preprocess_answers_140(request, survey_id):
         cursor_y = []
         window_w = 0
         window_h = 0
+        screen_w = 0
+        screen_h = 0
         mouseMoveEvents = []
         initEvents = []
         clickEvents = []
@@ -252,38 +255,20 @@ def json_preprocess_answers_140(request, survey_id):
         miscEvents = []
         elements = {}
         try:
-            #debug_data += " MIMIC_USE_AZURE_BLOB: "+ str(settings.MIMIC_USE_AZURE_BLOB)
             eventDataURL = a.mouseData
-            
 
-            #if settings.MIMIC_USE_AZURE_BLOB:
-            #    if not eventDataURL.startswith(settings.AZURE_PROTOCOL):
-            #        print(eventDataURL, settings.AZURE_PROTOCOL)
-            #        b = eventDataURL.split("/")
-            #        eventDataURL = mymake_blob_url(b[0], b[1]);
-            #    response = requests.get(str(eventDataURL), timeout=10.0) # urllib2.urlopen(eventDataURL)
-            #    if response.status_code != 200:
-            #        mouseDataJSON = 0 #return HttpResponse('{"error":"Failed to get file('+str(eventDataURL)+')"}', mimetype="application/json")
-            #    else:
-            #        mouseDataJSON = response.json() #json.loads(jsonEventData.encode('utf-8'))
-            #    
-            #
-            #else:
-            #    #txt = open(eventDataURL)
-            #    #response = txt.read()
-            #    data_file = open(os.path.join(settings.MEDIA_ROOT,eventDataURL), 'r')   
-            #    mouseDataJSON = json.load(data_file)
-            #    #mouseDataJSON = json.loads(response)
-            
             if not eventDataURL.startswith(settings.AZURE_PROTOCOL):
                 try:
                     data_file = open(os.path.join(settings.MEDIA_ROOT,eventDataURL), 'r')   
                     mouseDataJSON = json.load(data_file)
+                    logs.append(str(a.id) + "load local file: "+os.path.join(settings.MEDIA_ROOT,eventDataURL))
                 except Exception as e2:
+                    errors.append(str(a.id) + "Failed to load local file: "+os.path.join(settings.MEDIA_ROOT,eventDataURL))
                     mouseDataJSON = 0
             else:
                 response = requests.get(str(eventDataURL), timeout=10.0) # urllib2.urlopen(eventDataURL)
                 if response.status_code != 200:
+                    errors.append(str(a.id) + " Failed to load remote file: "+str(eventDataURL))
                     mouseDataJSON = 0 #return HttpResponse('{"error":"Failed to get file('+str(eventDataURL)+')"}', mimetype="application/json")
                 else:
                     mouseDataJSON = response.json() #json.loads(jsonEventData.encode('utf-8'))
@@ -340,29 +325,33 @@ def json_preprocess_answers_140(request, survey_id):
                             miscEvents.append({'time':dataPt['timeStamp']-start_time, 'type':"init", 'e':dataPt})
                             window_w = mouseDataJSON['elements']['window'][0]['width']
                             window_h = mouseDataJSON['elements']['window'][0]['height']
+                            screen_h = mouseDataJSON['elements']['screen']['height']
+                            screen_w = mouseDataJSON['elements']['screen']['width']
                         elif e == "resize":
                             rw = dataPt['width']
                             rh = dataPt['height']
                             miscEvents.append({'time':dataPt['timeStamp']-start_time, 'x':rw, 'y':rh, 'type':"resize", 'e':dataPt}) 
                         else:
                             miscEvents.append({'time':dataPt['timeStamp']-start_time, 'type': e, 'e':dataPt, 'extra': dataPt})
-                print(p_a.id)
                 if p_a != None:
-                    #p_a.init_event = json.dumps(initEvents) #b64encode(zlib.compress(json.dumps(initEvents), 9)) 
-                    #p_a.mouse_move_event =  json.dumps(mouseMoveEvents)#b64encode(zlib.compress(json.dumps(mouseMoveEvents), 9))
-                    #p_a.mouse_click_event =  json.dumps(clickEvents)#b64encode(zlib.compress(json.dumps(clickEvents), 9))
-                    #p_a.keydown_event =  json.dumps(keydownEvents)#b64encode(zlib.compress(json.dumps(keydownEvents), 9))
-                    #p_a.scroll_event =  json.dumps(scrollEvents) #b64encode(zlib.compress(json.dumps(scrollEvents), 9))
-                    p_a.misc_event =  b64encode(zlib.compress(json.dumps( miscEvents ), 9))#json.dumps( miscEvents )#b64encode(zlib.compress(json.dumps( miscEvents ), 9))
-                    p_a.elements =  b64encode(zlib.compress(json.dumps( elements ), 9))#json.dumps( elements )#b64encode(zlib.compress(json.dumps( elements ), 9))
+                    p_a.init_event = b64encode(zlib.compress(json.dumps(initEvents).encode('utf8'))) #b64encode(zlib.compress(json.dumps(initEvents), 9)) 
+                    p_a.mouse_move_event =  b64encode(zlib.compress(json.dumps(mouseMoveEvents).encode('utf8')))#b64encode(zlib.compress(json.dumps(mouseMoveEvents), 9))
+                    p_a.mouse_click_event =  b64encode(zlib.compress(json.dumps(clickEvents).encode('utf8')))#b64encode(zlib.compress(json.dumps(clickEvents), 9))
+                    p_a.keydown_event =  b64encode(zlib.compress(json.dumps(keydownEvents).encode('utf8')))#b64encode(zlib.compress(json.dumps(keydownEvents), 9))
+                    p_a.scroll_event =  b64encode(zlib.compress(json.dumps(scrollEvents).encode('utf8')))#b64encode(zlib.compress(json.dumps(scrollEvents), 9))
+                    p_a.misc_event =  b64encode(zlib.compress(json.dumps( miscEvents).encode('utf8')))#b64encode(zlib.compress(json.dumps( miscEvents ), 9))
+                    p_a.elements =  b64encode(zlib.compress(json.dumps( elements).encode('utf8')))#b64encode(zlib.compress(json.dumps( elements ), 9))
                     # analitic data
                     p_a.window_h = window_h
                     p_a.window_w = window_w
+                    p_a.screen_h = screen_h
+                    p_a.screen_w = screen_w
                     p_a.time = ttime
                     p_a.clicks_count = clicks
                     p_a.keys_count = keydown
                     p_a.scroll_count = scrolls
                     p_a.cursor_y =  json.dumps( cursor_y )
+                    logs.append(str(p_a.id) + " saving")
                     #print("processed Answer ", start_time, end_time, ttime, clicks, keydown)
                     #debug_data += " processed Answer: "+ str(clicks) + " " + str(keydown)
                     p_a.save()
@@ -371,194 +360,23 @@ def json_preprocess_answers_140(request, survey_id):
                 #errors.append(error)
                 #debug_data += " error: "+ str(e)
                 skipped_count += 1
-                print("Exeption:", e, a.user)
+                errors.append( "Exeption:" + str(e) + " " + traceback.format_exc(1))
                 #raise
                 #p_a.delete()
 
                 continue
        
             #print("saving ", p_a.id)
-    return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+',"skipped":'+str(skipped_count)+'}', mimetype="application/json")
-
-def json_preprocess_answers_130(request, survey_id):
-    survey = get_object_or_404(Survey, id=survey_id)
-    api_version = StrictVersion(survey.user_data_version)
-
-    if api_version != StrictVersion("1.3.0"):
-        return HttpResponse('{"error":"Api version not supported in json_preprocess_answers function('+str(api_version)+')"}', mimetype="application/json")
-
-
-    expected_answers = SurveyMembership.objects.filter(survey=survey).count()
-                
-    expAns = ExperimentAnswer.objects.filter(experiment__survey=survey, experiment__finished=True)
-    create_count = 0
-    updated_count = 0
-    skipped_count = 0
-    errors = []
-    force_reprocess = False
-    if "force_reprocess" in request.GET:
-        force_reprocess = request.GET["force_reprocess"]
-
-    for a in expAns:
-        p_a = None
-        try:
-            p_a = ExperimentAnswerProcessed.objects.get(source_answer=a)
-            if not force_reprocess:
-                continue
-            updated_count += 1
-        except MultipleObjectsReturned:
-            ExperimentAnswerProcessed.objects.filter(source_answer=a).delete()
-            p_a = ExperimentAnswerProcessed.objects.create(source_answer=a, experiment=a.experiment, question=a.question, answer=str(a.answer), confidence=a.confidence, user=a.user)
-            create_count += 1
-        except ExperimentAnswerProcessed.DoesNotExist:
-            # create a new
-            p_a = ExperimentAnswerProcessed.objects.create(source_answer=a, experiment=a.experiment, question=a.question, answer=str(a.answer), confidence=a.confidence, user=a.user)
-            create_count += 1
-        
-        if len(a.answer) > 0:
-            p_a.answer = a.answer
-            #validate answer
-        
-            correct_answer = json.loads(a.question.correct_answer.encode('utf-8'))
-            answer = json.loads(p_a.answer.encode('utf-8'))
-            if len(answer) > 0:
-                for k,v in answer.iteritems():
-                    answer[k] = str(v)
-
-                #for k,v in correct_answer.iteritems():
-                #    val = str(v)
-                #    if val.isdigit():
-                #        prev_a = answer[k]
-                #        answer[k] = re.sub("[^\d\.]", "", answer[k])
-                #        if answer[k] != prev_a:
-                #            print("changed ", answer[k], prev_a)
-                p_a.answer = json.dumps(answer)
-
-        clicks = 0
-        scrolls = 0
-        time = 0
-        keydown = 0
-        cursor_y = []
-        window_w = 0
-        window_h = 0
-        mouseMoveEvents = []
-        initEvents = []
-        clickEvents = []
-        keydownEvents = []
-        scrollEvents = []
-        miscEvents = []
-        try:
-            eventDataURL = a.mouseData
-            response = requests.get(eventDataURL, timeout=10.0) # urllib2.urlopen(eventDataURL)
-            #jsonEventData = response.text #response.read()
-            #response.close()
-            if response.status_code != 200:
-                print("failded to get the file!!! ", eventDataURL)
-            mouseDataJSON = response.json() #json.loads(jsonEventData.encode('utf-8'))
-            i = 0
-            firstLine = mouseDataJSON[i]
-            while (int(firstLine[1]['timeStamp']) == 0):
-                i += 1
-                firstLine =  mouseDataJSON[i]
-            i = -1
-            lastLine = mouseDataJSON[i]
-            while (int(lastLine[1]['timeStamp']) == 0):
-                i -= 1
-                lastLine = mouseDataJSON[i]
-            start_time = 0
-            try:
-                time1 = float(firstLine[1]['timeStamp'])
-                start_time = time1
-                time2 = float(lastLine[1]['timeStamp'])
-                time = (time2-time1) / 1000.0
-            except Exception as e:
-                #error = "json_preprocess_answers: time Error: id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
-                ##errors.append(error)
-                print(e)
-                #p_a.delete()
-                #/a.experiment.state = 2 #Error
-                #a.experiment.save()
-                return HttpResponse(mouseDataJSON, mimetype="application/json")
-            
-            for line in mouseDataJSON:
-                if line[0] == "click":
-                    clicks += 1
-                    xPos = line[1]['pageX']
-                    yPos = line[1]['pageY']
-                    clickEvents.append({'time':line[1]['timeStamp']-start_time, 'x':xPos, 'y':yPos, 'type':"click", 'e':line[1], 'extra': line[2]})
-                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'x':xPos, 'y':yPos, 'type':"click", 'e':line[1], 'extra': line[2]})
-                elif line[0] == "scroll":
-                    scrolls += 1
-                    dx = line[2]['scrollOffset']['pageXOffset']
-                    dy = line[2]['scrollOffset']['pageYOffset']
-                    scrollEvents.append({'time':line[1]['timeStamp']-start_time, 'dx':dx, 'dy':dy, 'type':"scroll", 'e':line[1], 'extra': line[2]})
-                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'dx':dx, 'dy':dy, 'type':"scroll", 'e':line[1], 'extra': line[2]})
-                elif line[0] == "keydown":
-                    keydown += 1
-                    keydownEvents.append({'time':line[1]['timeStamp']-start_time, 'key':line[1]['which'], 'type':"keydown", 'e':line[1], 'extra': line[2]})
-                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'key':line[1]['which'], 'type':"keydown", 'e':line[1], 'extra': line[2]})
-                elif line[0] == "mousemove":
-                    cursor_y.append(float(line[1]['pageY']))
-                    mouseMoveEvents.append({'time':line[1]['timeStamp']-start_time, 'x':line[1]['pageX'], 'y':line[1]['pageY'], 'type':"mousemove", 'e':line[1], 'extra': line[2]})
-                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'x':line[1]['pageX'], 'y':line[1]['pageY'], 'type':"mousemove", 'e':line[1], 'extra': line[2]})
-                elif line[0] == "init":
-                    initEvents.append({'time':line[1]['timeStamp']-start_time, 'type':"init", 'e':line[1], 'extra': line[2]})
-                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'type':"init", 'e':line[1], 'extra': line[2]})
-                    window_w = line[2]['window']['width']
-                    window_h = line[2]['window']['height']
-                elif line[0] == "resize":
-                    rw = line[2]['window']['width']
-                    rh = line[2]['window']['height']
-                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'x':rw, 'y':rh, 'type':"resize", 'e':line[1], 'extra': line[2]}) 
-                else:
-                    miscEvents.append({'time':line[1]['timeStamp']-start_time, 'type': line[0], 'e':line[1], 'extra': line[2]})
-
-        except Exception as e:
-            #error = "json_preprocess_answers:  Error: " + " id: " + str(a.id) + " experiment_id: " +  str(a.experiment.id)
-            #errors.append(error)
-            print(e)
-            continue
-        
-        if p_a != None:
-            p_a.init_event = b64encode(zlib.compress(json.dumps(initEvents), 9)) 
-            p_a.mouse_move_event =  b64encode(zlib.compress(json.dumps(mouseMoveEvents), 9))
-            p_a.mouse_click_event =  b64encode(zlib.compress(json.dumps(clickEvents), 9))
-            p_a.keydown_event =  b64encode(zlib.compress(json.dumps(keydownEvents), 9))
-            p_a.scroll_event =  b64encode(zlib.compress(json.dumps(scrollEvents), 9))
-            p_a.misc_event =  b64encode(zlib.compress(json.dumps( miscEvents ), 9))
-            
-            # analitic data
-            p_a.window_h = window_h
-            p_a.window_w = window_w
-            p_a.time = time
-            p_a.clicks_count = clicks
-            p_a.keys_count = keydown
-            p_a.scroll_count = scrolls
-            p_a.cursor_y =  json.dumps( cursor_y )
-            
-            p_a.save()
-            print("saving ", p_a.id)
-    return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+',"skipped":'+str(skipped_count)+'}', mimetype="application/json")
-
-
+    return HttpResponse('{"created":'+str(create_count)+',"updated":'+str(updated_count)+',"skipped":'+str(skipped_count)+',"errors": '+ json.dumps(errors) + ',"logs": '+ json.dumps(logs) +'}', mimetype="application/json")
 
 @staff_member_required
 def json_export_answers(request, survey_id):
     export_survey_all(survey_id)
     return HttpResponse('{"done":"done"}', mimetype="application/json")
-    #export_survey_all(survey_id)
-    #return HttpResponse('{"status":"done"}', mimetype="application/json")
-    #return createItemHoverHistograms(request, survey_id);
-    #return json_preprocess_answers_140(request, survey_id)
 
 
 @staff_member_required
 def json_preprocess_answers(request, survey_id):
-    #export_survey_all(survey_id)
-    #return HttpResponse('{"done":"done"}', mimetype="application/json")
-    #export_survey_all(survey_id)
-    #return HttpResponse('{"status":"done"}', mimetype="application/json")
-    #return createItemHoverHistograms(request, survey_id);
     return json_preprocess_answers_140(request, survey_id)
 
 
@@ -659,26 +477,14 @@ def json_answers(request, survey_id, question_id):
     
     expAns = ExperimentAnswerProcessed.objects.filter(experiment__survey=survey, experiment__state__in=[0, 3], question__id = question_id)
     answers = { 'data': []}
-    
     ids = []
     for a in expAns:
-        confidenceClick = 0
-        mouseClickDataRaw = a.mouse_click_event
-        try:
-            clickEventData = mouseClickDataRaw #zlib.decompress(b64decode(mouseClickDataRaw))
-            clickEventDataJSON = json.loads(clickEventData.encode('utf-8'))
-            for line in clickEventDataJSON:
-                if 'e' in line and 'target' in line['e'] and 'id' in line['e']['target'] and "confidence" in line['e']['target']['id']:
-                    confidenceClick += 1
-        except Exception as e:
-            print("failed to decompress")
-                    
         condition = a.experiment.survey_condition
         correct_answer = a.question.correct_answer
         cursor_y = a.cursor_y
         v = {'version':2,'id':a.id, 'experiment_id': a.experiment.id, 'state': a.experiment.state, 'condition': condition,
-             'answer':a.answer, 'correct_answer': correct_answer, 'confidence':a.confidence,'user':a.user.id,
-             'time': float(a.time), 'clicks':a.clicks_count, 'scrolls':a.scroll_count, 'confidenceClick':confidenceClick, 'keydown': a.keys_count, 'window_h':a.window_h, 'window_w':a.window_w,  'cursor_y': cursor_y}
+             'answer':a.answer, 'correct_answer': correct_answer, 'user':a.user.id,
+             'time': float(a.time), 'clicks':a.clicks_count, 'scrolls':a.scroll_count, 'keydown': a.keys_count, 'window_h':a.window_h, 'window_w':a.window_w,  'cursor_y': cursor_y}
         ids.append(a.experiment.id)
         answers['data'].append(v)
     json_answers = json.dumps( answers ) #serializers.serialize("json", answers)
@@ -790,7 +596,6 @@ def json_answers22(request, survey_id, question_id):
         condition = exp.survey_condition
         exp_answers = []
         c_answers = []
-        confidence = []
         times =[]
         clicks = []
         scrolls = []
@@ -815,7 +620,6 @@ def json_answers22(request, survey_id, question_id):
                 exp.save()
             exp_answers.append(a.answer)
             c_answers.append(a.question.correct_answer)
-            confidence.append(a.confidence)
             times.append(float(a.time))
             clicks.append(a.clicks_count)
             scrolls.append(a.scroll_count)
@@ -834,7 +638,7 @@ def json_answers22(request, survey_id, question_id):
         if hasAnswer and expAns_id > -1:
             #print(expAns_id)
             v = {'version':2,'id':expAns_id, 'experiment_id': exp.id, 'state': exp.state, 'condition': condition,
-                 'answer':exp_answers, 'correct_answer':c_answers, 'confidence':confidence,'user':exp.user.id, 'time': times,
+                 'answer':exp_answers, 'correct_answer':c_answers, 'user':exp.user.id, 'time': times,
                  'clicks':clicks, 'scrolls':scrolls, 'keydown': keys, 'window_h':window_h, 'window_w':window_w, 'cursor_y': cursor_y, 'q_order':q_order}
             answers['data'].append(v)
     json_answers = json.dumps( answers ) #serializers.serialize("json", answers)
@@ -912,7 +716,7 @@ def json_answers_old(request, survey_id, question_id):
             scrolls = 0
             time = 0
             keydown = 0
-        v = {'version':version,'id':a.id, 'experiment_id': a.experiment.id, 'state': a.experiment.state, 'condition': condition, 'answer':a.answer, 'correct_answer':a.question.correct_answer, 'confidence':a.confidence,'user':a.user.id, 'time':time, 'clicks':clicks, 'scrolls':scrolls, 'keydown': keydown, 'clickPts': clickPts, 'keyPts': keyPts, 'movePts': movePts, 'mouseData':mouseData}
+        v = {'version':version,'id':a.id, 'experiment_id': a.experiment.id, 'state': a.experiment.state, 'condition': condition, 'answer':a.answer, 'correct_answer':a.question.correct_answer, 'user':a.user.id, 'time':time, 'clicks':clicks, 'scrolls':scrolls, 'keydown': keydown, 'clickPts': clickPts, 'keyPts': keyPts, 'movePts': movePts, 'mouseData':mouseData}
         #print(keyPts)
         #print(clickPts)
         answers['data'].append(v)
@@ -921,150 +725,6 @@ def json_answers_old(request, survey_id, question_id):
     json_answers = json_answers.replace("NaN", "0")
     #print(json_answers)
     return HttpResponse(json_answers, mimetype="application/json")
-
-def process_mouse_paths_v0(request, answer_id):
-    expAns = get_object_or_404(ExperimentAnswer, id=answer_id)
-    survey = expAns.experiment.survey
-    current_question = expAns.question
-    mouseData = expAns.mouseData
-    mouseLines = mouseData.splitlines()
-    mouseMoves = "["
-    mouseClicks = "["
-    scrolls = "["
-    line_i = 0
-    last_mouse = [0,0]
-    next_mouse = [0,0]
-    w = 0
-    h = 0
-    while line_i < len(mouseLines):
-        line = mouseLines[line_i]
-        pline = processLine(line)
-        vals = line.split('\t')
-        if pline['action'] == "ready":
-            w = pline['x']
-            h = pline['y']
-            line_i += 1
-        if pline['action'] == "resize":
-            rw = pline['x']
-            rh = pline['y']
-            mouseMoves += "{\"time\":\"" + vals[0] + "\",\"x\":" + rw + ", \"y\":" + rh + ", \"type\":\"resize\"},"
-            line_i += 1
-            print("resize", w, h)
-        if vals[1] == "mousemove":
-            mouseMoves += "{\"time\":\"" + vals[0] + "\",\"x\":" + vals[2] + ", \"y\":" + vals[3] + ", \"type\":\"mousemove\"},"
-            line_i += 1
-        elif vals[1] == "click":
-            mouseMoves += "{\"time\":\"" + vals[0] + "\",\"x\":" + vals[2] + ", \"y\":" + vals[3] + ", \"type\":\"click\"},"
-            mouseClicks += "{\"time\":\"" + vals[0] + "\",\"x\":" + vals[2] + ", \"y\":" + vals[3] + "},"
-            line_i += 1
-        elif vals[1] == "keydown":
-            mouseMoves += "{\"time\":\"" + vals[0] + "\",\"key\":" + vals[2] + ", \"type\":\"keydown\"},"
-            print("keydown: ", vals[2])
-            line_i += 1
-        elif vals[1] == "scroll":
-            dx = 0
-            dy = 0
-            scroll_count = 1
-            line_j = line_i+1
-            if (line_j < len(mouseLines)):
-                line_next = mouseLines[line_j]
-                pline_next = processLine(line_next)
-                while (line_j < len(mouseLines)) and pline_next['action'] == "scroll":
-                    scroll_count += 1
-                    line_j += 1
-                    line_next = mouseLines[line_j]
-                    pline_next = processLine(line_next)
-                if 'x' in pline_next and pline_next['x'] != "undefined":
-                    next_mouse=[float(pline_next['x']), float(pline_next['y'])]
-            dx = (next_mouse[0] - last_mouse[0])/scroll_count
-            dy = (next_mouse[1] - last_mouse[1])/scroll_count
-            
-            for i in range(0,scroll_count):
-                #scroll_x.append(dx)
-                #scroll_y.append(dy)
-                line_next = mouseLines[line_i+i]
-                pline_next = processLine(line_next)
-                scrolls += "{\"time\":\"" + pline_next['time'] + "\",\"dx\":" + str(dx) + ", \"dy\":" + str(dy) + "},"
-                mouseMoves += "{\"time\":\"" + pline_next['time']  + "\",\"dx\":" + str(dx) + ", \"dy\":" + str(dy) + ", \"type\":\"scroll\"},"
-            line_i += scroll_count
-        else:
-            line_i += 1
-
-        if 'x' in pline and pline['x'] != "undefined":
-            last_mouse=[float(pline['x']), float(pline['y'])]
-                    
-    mouseMoves += "]"
-    mouseClicks += "]"
-    scrolls += "]"
-    #print(scrolls)
-    return expAns, survey, current_question,  mouseMoves, mouseClicks, scrolls, w, h
-
-def process_mouse_paths_v1(request, answer_id):
-    expAns = get_object_or_404(ExperimentAnswer, id=answer_id)
-    mouseDataRaw = expAns.mouseData
-    
-    if mouseDataRaw[0] == "[":
-        version = 2
-    else:
-        version = 1
-    
-    if version == 1:
-        return version, process_mouse_paths_v0(request, answer_id)
-    else:
-        mouseData = json.loads(mouseDataRaw.encode('utf-8'))
-        
-        survey = expAns.experiment.survey
-        current_question = expAns.question
-    
-        mouseMoves = []
-        mouseClicks = []
-        scrolls = []
-        line_i = 0
-        w = 0
-        h = 0
-        
-        for line in mouseData:
-            #if line_i < 5:
-                #print("line ", line[0])
-                #line_i += 1
-            if line[0] == "init":
-                mouseMoves.append({'time':line[1]['timeStamp'], 'type':"init", 'e':line[1], 'extra': line[2]})
-                print("init", line[2]['window'])
-                w = line[2]['window']['width']
-                h = line[2]['window']['height']
-                
-            elif line[0] == "resize":
-                rw = line[2]['window']['width']
-                rh = line[2]['window']['height']
-                mouseMoves.append({'time':line[1]['timeStamp'], 'x':rw, 'y':rh, 'type':"resize", 'e':line[1], 'extra': line[2]}) #"{\"time\":\"" + vals[0] + "\",\"x\":" + rw + ", \"y\":" + rh + ", \"type\":\"resize\"},"
-                
-                #print("resize", w, h)
-            
-            elif line[0] == "mousemove":
-                mouseMoves.append({'time':line[1]['timeStamp'], 'x':line[1]['pageX'], 'y':line[1]['pageY'], 'type':"mousemove", 'e':line[1], 'extra': line[2]})
-                
-            elif line[0] == "click":
-                xPos = line[1]['pageX']
-                yPos = line[1]['pageY']
-                mouseMoves.append({'time':line[1]['timeStamp'], 'x':xPos, 'y':yPos, 'type':"click", 'e':line[1], 'extra': line[2]})
-                mouseClicks.append({'time':line[1]['timeStamp'], 'x':xPos, 'y':yPos, 'type':"click"})
-               
-            elif line[0] == "keydown":
-                mouseMoves.append({'time':line[1]['timeStamp'], 'key':line[1]['which'], 'type':"keydown", 'e':line[1], 'extra': line[2]})
-                #print("keydown: ", vals[2])
-                
-            elif line[0] == "scroll":
-                dx = line[2]['scrollOffset']['pageXOffset']
-                dy = line[2]['scrollOffset']['pageYOffset']
-                mouseMoves.append({'time':line[1]['timeStamp'], 'dx':dx, 'dy':dy, 'type':"scroll", 'e':line[1], 'extra': line[2]})
-                scrolls.append({'time':line[1]['timeStamp'], 'x':dx, 'y':dy, 'type':"scroll", 'e':line[1], 'extra': line[2]})
-            else:
-                mouseMoves.append({'time':line[1]['timeStamp'], 'type': line[0], 'e':line[1], 'extra': line[2]})
-                
-        mouseMovesJSON = json.dumps(mouseMoves)
-        mouseClicksJSON = json.dumps(mouseClicks)
-        scrollsJSON = json.dumps(scrolls)
-        return version, expAns, survey, current_question,  mouseMovesJSON, mouseClicksJSON, scrollsJSON, w, h
 
 def process_mouse_paths(request, answer_id):
     expAns = get_object_or_404(ExperimentAnswerProcessed, id=answer_id)
