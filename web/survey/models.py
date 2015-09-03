@@ -170,12 +170,10 @@ class ExperimentAnswer(models.Model):
     experiment = models.ForeignKey(Experiment)
     question = models.ForeignKey(Question)
     answer = models.TextField(blank=True, null=True)
-    confidence = models.IntegerField(default=0, choices=CONFIDENCE_TYPES, blank=True, null=True)
     user = models.ForeignKey(ExperimentUser)
     submitted_at = models.DateTimeField(default=datetime.datetime.now)
     mouseData = models.TextField()
     finished = models.BooleanField(_('question is finished'), default=False)
-    #version = models.IntegerField(default=0)
     
     def natural_key(self):
         return self.experiment.natural_key() + self.question.natural_key() + self.user.natural_key()
@@ -197,7 +195,6 @@ class ExperimentAnswerProcessed(models.Model):
     experiment = models.ForeignKey(Experiment)
     question = models.ForeignKey(Question)
     answer = models.TextField(blank=True, null=True)
-    confidence = models.IntegerField(default=0, choices=CONFIDENCE_TYPES)
     user = models.ForeignKey(ExperimentUser)
     processed_at = models.DateTimeField(default=datetime.datetime.now)
     
@@ -210,8 +207,6 @@ class ExperimentAnswerProcessed(models.Model):
     misc_event = models.TextField()
     elements = models.TextField(null=True)
     
-    #version = models.IntegerField(default=0)
-    
     # analitic data
     time = models.DecimalField(default=0.0, max_digits=19, decimal_places=10)
     clicks_count = models.IntegerField(default=0)
@@ -220,8 +215,8 @@ class ExperimentAnswerProcessed(models.Model):
     cursor_y = models.TextField()
     window_h = models.IntegerField(default=0)
     window_w = models.IntegerField(default=0)
-    bias = models.DecimalField(default=0.0, max_digits=19, decimal_places=10)
-    error = models.DecimalField(default=0.0, max_digits=19, decimal_places=10)
+    screen_h = models.IntegerField(default=0)
+    screen_w = models.IntegerField(default=0)
     
     def __unicode__(self):
         return str(self.answer)
