@@ -77,7 +77,8 @@ var countrylabel = svg.append("text")
 var first_time = true;
 
 // Load the data.
-d3.json("static/data/nations.json", function(nations) {
+var mainurl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
+d3.json(mainurl+"/static/data/nations.json", function(nations) {
   var maxCountries=20;
   nations = nations.filter(function(c, i){ return (i < maxCountries); });
   // A bisector since many nation's data is sparsely-defined.

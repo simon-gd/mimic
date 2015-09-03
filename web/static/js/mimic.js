@@ -22,7 +22,7 @@
 //
 // http://opensource.org/licenses/MIT
 
-var logBuffer = { 'version': "1.4.0", 'elements': {}, 'events': {} };;
+var mimic_logBuffer = { 'version': "1.4.0", 'elements': {}, 'events': {} };
 var answer_inputCount = 0;
 var tabindex = 1;
 
@@ -120,7 +120,7 @@ function addElementData(e, idName) {
     var identifier = "";
     if (isDefined(e[idName], 'id') && e[idName].id != "") {
         identifier = "#" + e[idName].id;
-        if (!(identifier in logBuffer.elements)) {
+        if (!(identifier in mimic_logBuffer.elements)) {
             elementData['id'] = e[idName].id;
             elementData['width'] = $(identifier).width();
             elementData['height'] = $(identifier).height();
@@ -146,11 +146,11 @@ function addElementData(e, idName) {
                 }
             }catch(e){}
 
-            logBuffer.elements[identifier] = elementData;
+            mimic_logBuffer.elements[identifier] = elementData;
         }
     } else if (isDefined(e[idName], 'documentElement')) {
         identifier = "document";
-        if (!(identifier in logBuffer.elements)) {
+        if (!(identifier in mimic_logBuffer.elements)) {
             elementData['id'] = "document";
             elementData['width'] = $(document).width();
             elementData['height'] = $(document).height();
@@ -159,14 +159,16 @@ function addElementData(e, idName) {
             elementData['offsetWidth'] = document.documentElement.offsetWidth;
             elementData['offsetHeight'] = document.documentElement.offsetHeight;
             elementData['nodeName'] = document.nodeName;
-            logBuffer.elements[identifier] = elementData;
+            mimic_logBuffer.elements[identifier] = elementData;
         }
 
     } 
     return identifier;
 }
-
-function logFormatted(logBuffer, e, typeOverwrite, extra) {
+function mimic_reset(logBuffer){
+    logBuffer = { 'version': "1.4.0", 'elements': {}, 'events': {} };
+}
+function mimic_logFormatted(logBuffer, e, typeOverwrite, extra) {
     var eventName = typeOverwrite || e.type;
     var time_stamp = (new Date).getTime();
     if (!(eventName in logBuffer.events)){
@@ -346,115 +348,115 @@ $(document).ready(function () {
     if (!debug) {
         $(document).mousemove(function (e) {
             // First mouse move lets add a ready event
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
 
         $(document).click(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
 
         $(document).dblclick(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
 
         $(document).mouseenter(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
 
         $(document).mouseleave(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
 
         $(document).mousedown(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
         $(document).mouseup(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
 
         // Keyboard Events
         $(document).keydown(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
         $(document).keyup(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
         $(document).keypress(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
         $(document).focusin(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
         $(document).focusout(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
         $(document).mousewheel(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
 
         // Window Events
         $(window).resize(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
         $(window).scroll(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
         $(window).focus(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
         $(window).blur(function (e) {
-            if (!logBuffer.events.init) {
-                logFormatted(logBuffer, e, "init");
+            if (!mimic_logBuffer.events.init) {
+                mimic_logFormatted(mimic_logBuffer, e, "init");
             }
-            logFormatted(logBuffer, e);
+            mimic_logFormatted(mimic_logBuffer, e);
         });
     }
 }); //$(document).ready(function() {

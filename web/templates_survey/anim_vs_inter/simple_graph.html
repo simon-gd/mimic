@@ -480,7 +480,7 @@ rect.frame {
             if(!debug){
                 $('.submit').click(function(e) {
 
-                    logFormatted(logBuffer, e);
+                    mimic_logFormatted(mimic_logBuffer, e);
 
 
 
@@ -548,10 +548,7 @@ rect.frame {
                         'csrfmiddlewaretoken': '{{ csrf_token }}'} ).done(function() {
                             var cache = [];
                             //console.log(logBuffer);
-                            concatLogBuffer = JSON.stringify(logBuffer);
-
-
-                            //var concatLogBuffer = JSON.stringify(logBuffer);
+                            concatLogBuffer = JSON.stringify(mimic_logBuffer);
 
                             $.ajax({type: "POST",
                                 url: "./survey/save_question/",
@@ -564,6 +561,7 @@ rect.frame {
                                 if(current_question >= total_pages){
                                     //$('.submit').prop('disabled', false);
                                     console.log("saved current_question ", current_question);
+                                    mimic_reset(mimic_logBuffer);
                                     $('#mainForm').submit();
                                 }
 

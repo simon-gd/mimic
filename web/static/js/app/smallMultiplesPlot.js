@@ -87,7 +87,8 @@ var line = d3.svg.line()
        .y(function(d) { return d.y; });
 
 // Load the data.
-d3.json("static/data/nations.json", function(nations) {
+var mainurl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
+d3.json(mainurl+"/static/data/nations.json", function(nations) {
   var maxCountries=20;
   nations = nations.filter(function(c, i){ return (i < maxCountries); });
 
