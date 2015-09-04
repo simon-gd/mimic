@@ -27,13 +27,16 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Cache-control" content="NO-CACHE">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
 
     <title>Experiscope Test</title>
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="{% static 'css/dragit.css' %}">
     <style>
         html, body {
@@ -315,9 +318,9 @@ rect.frame {
                   s = ['<div id="p1_step'+step+'">',
                            '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
                            '<div id="chart" style="margin:0px"></div>',
-                           '<span id="min-time">1820</span> ',
-                           '<input type="range" name="points" min="0" max="188" step="1" value="0" id="slider-time" style="width:600px; display: inline;">',
-                           '<span id="max-time">2008</span><br><br>',
+                           '<span id="min-time">1975</span> ',
+                           '<input type="range" name="points" min="0" max="25" step="1" value="0" id="slider-time" style="width:600px; display: inline;">',
+                           '<span id="max-time">2000</span><br><br>',
                            //'&nbsp; <button id="graph_play_button" class="btn">Play</button><br>',
                            '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
                            '</div>'].join("\n");  
@@ -327,8 +330,11 @@ rect.frame {
                   s = ['<div id="p1_step'+step+'">',
                            '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
                            '<div id="chart" style="margin:0px"></div>',
-                           '<button id="play_button" class="btn btn-default">Play Animation</button>',
-                           '<button id="rewind_button" class="btn btn-default">Rewind</button><br><br>',
+                           '<button id="rewind_button" class="btn btn-default" title="Rewind Back"><i class="fa fa-step-backward"></i></button>',
+                           '<button id="fast_backward_button" class="btn btn-default"  title="Fast Backward"><i class="fa fa-backward"></i></button>',
+                           '<button id="play_button" class="btn btn-default" title="Play/Pause">Play <i class="fa fa-play"></i></button>',
+                           '<button id="fast_forward_button" class="btn btn-default"  title="Fast Forward"><i class="fa fa-forward"></i></button>',
+                           '<button id="rewind_forward_button" class="btn btn-default" title="Rewind Forward"><i class="fa fa-step-forward"></i></button><br><br>',
                            //'&nbsp; <button id="graph_play_button" class="btn">Play</button><br>',
                            '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
                            '</div>'].join("\n");  
@@ -561,7 +567,7 @@ rect.frame {
                                 if(current_question >= total_pages){
                                     //$('.submit').prop('disabled', false);
                                     console.log("saved current_question ", current_question);
-                                    mimic_reset(mimic_logBuffer);
+                                    mimic_reset();
                                     $('#mainForm').submit();
                                 }
 
@@ -587,6 +593,7 @@ rect.frame {
                                 
                                
                             }
+                            mimic_reset();
 
                         }).fail(function() {
                             $('.submit').prop('disabled', false);

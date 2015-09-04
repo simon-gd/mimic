@@ -5,7 +5,7 @@ function radius(d) { return d.population; }
 function color(d) { return d.region; }
 function key(d) { return d.name; }
 
-var startYear = 1820;
+var startYear = 1975;
 function smallMultiplesPlotRun(condition_name) {
 // Chart dimensions.
 var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5},
@@ -89,13 +89,13 @@ var line = d3.svg.line()
 // Load the data.
 var mainurl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
 d3.json(mainurl+"/static/data/nations.json", function(nations) {
-  var maxCountries=20;
+  var maxCountries=18;
   nations = nations.filter(function(c, i){ return (i < maxCountries); });
 
   var bisect = d3.bisector(function(d) { return d[0]; });
   // A bisector since many nation's data is sparsely-defined.
   var years = [];
-  for(var yy = startYear; yy<2009; yy++) {
+  for(var yy = startYear; yy<2000; yy++) {
       years.push(yy);
       //var cobj = interpolateData(yy);
       //mydata[] = {

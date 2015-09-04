@@ -5,15 +5,15 @@ function radius(d) { return d.population; }
 function color(d) { return d.region; }
 function key(d) { return d.name; }
 
-var startYear = 1820;
+var startYear = 1975;
 function scatterPlotRun(condition_name) {
 // Chart dimensions.
-var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5},
+var margin = {top: 19.5, right: 19.5, bottom: 39.5, left: 39.5},
     width = 700 - margin.right,
     height = 500 - margin.top - margin.bottom;
 
 // Various scales. These domains make assumptions of data, naturally.
-var xScale = d3.scale.log().domain([300, 1e5]).range([0, width]),
+var xScale = d3.scale.linear().domain([100, 25000]).range([0, width]),
     yScale = d3.scale.linear().domain([10, 85]).range([height, 0]),
     radiusScale = d3.scale.sqrt().domain([0, 5e8]).range([0, 40]),
     colorScale = d3.scale.category10();
@@ -46,14 +46,14 @@ svg.append("text")
     .attr("class", "x label")
     .attr("text-anchor", "end")
     .attr("x", width)
-    .attr("y", height - 6)
+    .attr("y", height + 36)
     .text("income per capita, inflation-adjusted (dollars)");
 
 // Add a y-axis label.
 svg.append("text")
     .attr("class", "y label")
     .attr("text-anchor", "end")
-    .attr("y", 6)
+    .attr("y", -40)
     .attr("dy", ".75em")
     .attr("transform", "rotate(-90)")
     .text("life expectancy (years)");
@@ -79,17 +79,18 @@ var first_time = true;
 // Load the data.
 var mainurl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
 d3.json(mainurl+"/static/data/nations.json", function(nations) {
-  var maxCountries=20;
+  var maxCountries=18;
   nations = nations.filter(function(c, i){ return (i < maxCountries); });
   // A bisector since many nation's data is sparsely-defined.
   var bisect = d3.bisector(function(d) { return d[0]; });
 
   // Add a dot per nation. Initialize the data at 1800, and set the colors.
   var selectedDot;
+  var selectedCountry = "";
   var dot = svg.append("g")
       .attr("class", "dots")
     .selectAll(".dot")
-      .data(interpolateData(1820))
+      .data(interpolateData(startYear))
     .enter().append("circle")
       .attr("class", "dot")
       .style("opacity", .4)
@@ -99,6 +100,8 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
 
       })
       .on("mouseup", function(d, i) {
+        selectedCountry = d.name;
+        countrylabel.style("fill", "black");
         dot.classed("selected", false);
         dot.style("opacity", .4);
         //selectedDot.moveToBack();
@@ -118,6 +121,11 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
           //dragit.trajectory.display(d, i)
           //dragit.utils.animateTrajectory(dragit.trajectory.display(d, i), dragit.time.current, 1000)
           countrylabel.text(d.name);
+          if(d.name === selectedCountry){
+            countrylabel.style("fill", "black");
+          }else{
+            countrylabel.style("fill", "gray");  
+          }          
           //dot.style("opacity", .4)
           d3.select(this).style("opacity", 1).moveToFront();
           //d3.selectAll(".selected").style("opacity", 1)
@@ -126,7 +134,8 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
       .on("mouseleave", function(d, i) {
         
         if(dragit.statemachine.current_state == "idle") {
-          countrylabel.text("");
+          countrylabel.text(selectedCountry);
+          countrylabel.style("fill", "black");
           dot.style("opacity", .4);
           if(selectedDot){
             selectedDot.style("opacity", 1);
@@ -205,10 +214,10 @@ function init() {
 
     dragit.init(".gRoot");
 
-    dragit.time = {min:startYear, max:2009, step:1, current:1820};
+    dragit.time = {min:startYear, max:2000, step:1, current:startYear};
     dragit.data = d3.range(nations.length).map(function() { return Array(); });
 
-    for(var yy = startYear; yy<2009; yy++) {
+    for(var yy = startYear; yy<2000; yy++) {
 
       interpolateData(yy).filter(function(d, i) { 
         dragit.data[i][yy-dragit.time.min] = [xScale(x(d)), yScale(y(d))];
@@ -230,21 +239,63 @@ function init() {
       
       d3.select("#rewind_button") 
       .on("click", function() { 
+          stop_play();
           dragit.time.current =dragit.time.min;
           update(dragit.time.current);
       });
+
+      d3.select("#rewind_forward_button") 
+      .on("click", function() { 
+          stop_play();
+          dragit.time.current =dragit.time.max;
+          update(dragit.time.current);
+      });
+
       
+      d3.select("#fast_backward_button") 
+      .on("mousedown", function() { 
+          stop_play();
+          //console.log("fast_backward_button down");
+          play_demo(-1, 100);  
+      });
+      d3.select("#fast_backward_button") 
+      .on("mouseup", function() { 
+          //console.log("fast_backward_button up");
+          //clearInterval(demo_interval);
+          stop_play();
+          demo_interval = null;
+      });
+
+      
+      d3.select("#fast_forward_button") 
+      .on("mousedown", function() { 
+          stop_play();
+          play_demo(1, 100);  
+      });
+      d3.select("#fast_forward_button") 
+      .on("mouseup", function() { 
+          //clearInterval(demo_interval);
+          stop_play();
+          demo_interval = null;
+      });
+
+      
+
+      //fast_forward_button
       d3.select("#play_button")
       .on("click", function() { 
         //update(parseInt(this.value), 500);
         if(demo_interval){
-          d3.select("#play_button").text("Play Animation");
+          d3.select("#play_button").html('Play <i class="fa fa-play"></i>');
           clearInterval(demo_interval);
           demo_interval = null;
           clear_demo();
         }else{
-          d3.select("#play_button").text("Pause Animation");
-          play_demo();  
+          d3.select("#play_button").html('Pause <i class="fa fa-pause"></i>');
+          if(dragit.time.current >= dragit.time.max){
+            dragit.time.current =  dragit.time.min;
+          }
+          play_demo(1, 400);  
         }
         
       });
@@ -257,7 +308,11 @@ function init() {
 
     //dragit.evt.register("dragend", end_effect);
 }
-
+function stop_play() {
+  d3.select("#play_button").html('Play <i class="fa fa-play"></i>');
+  clearInterval(demo_interval);
+  demo_interval = null;
+}
 function clear_demo() {
   if(first_time) {
     svg.transition().duration(0);
@@ -269,17 +324,23 @@ function clear_demo() {
   }
 }
 var demo_interval = null;
-function play_demo(){
+
+function play_demo(dir, timeout){
+  
   demo_interval = setInterval(function() {
     //console.log("playing", dragit.time.current);
-    if((dragit.time.current+1)< dragit.time.max){
-      dragit.time.current+=1;
+    if(dir > 0 && (dragit.time.current+dir) <= dragit.time.max) {
+      dragit.time.current += dir;
       update(dragit.time.current);
-    }else{
-      clearInterval(demo_interval)
+    } else if(dir < 0 && (dragit.time.current+dir) >= dragit.time.min) {
+      dragit.time.current += dir;
+      update(dragit.time.current);
+    } else {
+      clearInterval(demo_interval);
       demo_interval = null;
+      d3.select("#play_button").html('Play <i class="fa fa-play"></i>');
     }    
-  }, 100);
+  }, timeout);
 }
 /*
 function play_demo() {

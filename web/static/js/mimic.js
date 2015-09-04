@@ -165,8 +165,8 @@ function addElementData(e, idName) {
     } 
     return identifier;
 }
-function mimic_reset(logBuffer){
-    logBuffer = { 'version': "1.4.0", 'elements': {}, 'events': {} };
+function mimic_reset(){
+    mimic_logBuffer = { 'version': "1.4.0", 'elements': {}, 'events': {} };
 }
 function mimic_logFormatted(logBuffer, e, typeOverwrite, extra) {
     var eventName = typeOverwrite || e.type;
