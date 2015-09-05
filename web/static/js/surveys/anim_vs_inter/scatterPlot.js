@@ -96,7 +96,7 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
       .style("opacity", .4)
       .style("fill", function(d) { return "grey";}) //return colorScale(color(d)); })
       .call(position)
-      .on("mousedow", function(d, i) {
+      .on("mousedown", function(d, i) {
 
       })
       .on("mouseup", function(d, i) {
@@ -111,8 +111,6 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
         selectedDot.moveToFront();
         //dragit.trajectory.display(d, i, "selected");
 
-        //TODO: test if has been dragged
-        // Look at the state machine history and find a drag event in it?
 
       })
       .on("mouseenter", function(d, i) {
