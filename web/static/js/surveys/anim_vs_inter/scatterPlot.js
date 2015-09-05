@@ -24,7 +24,7 @@ var xScale = d3.scale.log().domain([100, 25000]).range([0, width]),
     radiusScale = d3.scale.sqrt().domain([0, 5e8]).range([0, 40]),
     colorScale = d3.scale.category10();
 
-var tip = d3.tip().attr('class', 'd3-tip').offset([-10, 0]).html(function(d) { console.log(d); return d.x + "<br>" + d.y; });
+var tip = d3.tip().attr('class', 'd3-tip').offset([-10, 0]).html(function(d) { return d.x + "<br>" + d.y; });
 
 var selectionColor = "green";
 var hoverColor = "steelblue";
@@ -83,7 +83,7 @@ var label = svg.append("text")
 
 // Add the country label; the value is set on transition.
 var countrylabel = svg.append("text")
-    .attr("class", "country label")
+    .attr("class", "countryLabel label")
     .attr("text-anchor", "start")
     .attr("y", 24)
     .attr("x", 20)
@@ -116,6 +116,7 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
         countrylabel.style("fill", selectionColor);
         dot.classed("selected", false);
         dot.style("opacity", .3);
+        dot.style("fill", regularColor);
         //selectedDot.moveToBack();
         selectedDot = d3.select(this);
         
