@@ -168,39 +168,39 @@ function addElementData(e, idName) {
 function mimic_reset(){
     mimic_logBuffer = { 'version': "1.4.0", 'elements': {}, 'events': {} };
 }
-function mimic_logFormatted(logBuffer, e, typeOverwrite, extra) {
+function mimic_logFormatted(e, typeOverwrite, extra) {
     var eventName = typeOverwrite || e.type;
     var time_stamp = (new Date).getTime();
-    if (!(eventName in logBuffer.events)){
-        logBuffer.events[eventName] = [];
+    if (!(eventName in mimic_logBuffer.events)){
+        mimic_logBuffer.events[eventName] = [];
     }
     var eobj = {
         timeStamp: time_stamp
     }
     if (eventName == "init") {
         // Add all the elements we can
-        if (!("navigator" in logBuffer.elements)) {
-            logBuffer.elements['navigator'] = {};
-            logBuffer.elements['navigator']['appCodeName'] = navigator.appCodeName;
-            logBuffer.elements['navigator']['appName'] = navigator.appName;
-            logBuffer.elements['navigator']['appVersion'] = navigator.appVersion;
-            logBuffer.elements['navigator']['cookieEnabled'] = navigator.cookieEnabled;
-            logBuffer.elements['navigator']['language'] = navigator.language;
-            logBuffer.elements['navigator']['platform'] = navigator.platform;
-            logBuffer.elements['navigator']['product'] = navigator.product;
-            logBuffer.elements['navigator']['userAgent'] = navigator.userAgent;
+        if (!("navigator" in mimic_logBuffer.elements)) {
+            mimic_logBuffer.elements['navigator'] = {};
+            mimic_logBuffer.elements['navigator']['appCodeName'] = navigator.appCodeName;
+            mimic_logBuffer.elements['navigator']['appName'] = navigator.appName;
+            mimic_logBuffer.elements['navigator']['appVersion'] = navigator.appVersion;
+            mimic_logBuffer.elements['navigator']['cookieEnabled'] = navigator.cookieEnabled;
+            mimic_logBuffer.elements['navigator']['language'] = navigator.language;
+            mimic_logBuffer.elements['navigator']['platform'] = navigator.platform;
+            mimic_logBuffer.elements['navigator']['product'] = navigator.product;
+            mimic_logBuffer.elements['navigator']['userAgent'] = navigator.userAgent;
         }
-        if (!("screen" in logBuffer.elements)) {
-            logBuffer.elements['screen'] = {};
-            logBuffer.elements['screen']['width'] = screen.width;
-            logBuffer.elements['screen']['height'] = screen.height;
-            logBuffer.elements['screen']['availWidth'] = screen.availWidth;
-            logBuffer.elements['screen']['availHeight'] = screen.availHeight;
-            logBuffer.elements['screen']['colorDepth'] = screen.colorDepth;
-            logBuffer.elements['screen']['pixelDepth'] = screen.pixelDepth;
+        if (!("screen" in mimic_logBuffer.elements)) {
+            mimic_logBuffer.elements['screen'] = {};
+            mimic_logBuffer.elements['screen']['width'] = screen.width;
+            mimic_logBuffer.elements['screen']['height'] = screen.height;
+            mimic_logBuffer.elements['screen']['availWidth'] = screen.availWidth;
+            mimic_logBuffer.elements['screen']['availHeight'] = screen.availHeight;
+            mimic_logBuffer.elements['screen']['colorDepth'] = screen.colorDepth;
+            mimic_logBuffer.elements['screen']['pixelDepth'] = screen.pixelDepth;
         }
-        if (!("window" in logBuffer.elements)) {
-            logBuffer.elements['window'] = [];
+        if (!("window" in mimic_logBuffer.elements)) {
+            mimic_logBuffer.elements['window'] = [];
             var offs = getScrollXY();
             var wobj = {
                 timeStamp: time_stamp,
@@ -217,7 +217,7 @@ function mimic_logFormatted(logBuffer, e, typeOverwrite, extra) {
             if (isDefined(window, 'mozInnerScreenX')) {
                 wobj['offset'] = { 'left': window.mozInnerScreenX, 'top': window.mozInnerScreenY };
             }
-            logBuffer.elements['window'].push(wobj);
+            mimic_logBuffer.elements['window'].push(wobj);
         }       
     } else if (eventName == "resize") {
         eobj['width'] = $(window).width();
@@ -239,7 +239,7 @@ function mimic_logFormatted(logBuffer, e, typeOverwrite, extra) {
         if (isDefined(window, 'mozInnerScreenX')) {
             wobj['offset'] = { 'left': window.mozInnerScreenX, 'top': window.mozInnerScreenY };
         }
-        logBuffer.elements['window'].push(wobj);
+        mimic_logBuffer.elements['window'].push(wobj);
 
     } else if (eventName == "init" || eventName == "scroll" || eventName == "resize" || eventName == "mousewheel") {
         var offs = getScrollXY();
@@ -340,7 +340,7 @@ function mimic_logFormatted(logBuffer, e, typeOverwrite, extra) {
     }
 
     // Add event
-    logBuffer.events[eventName].push(eobj);
+    mimic_logBuffer.events[eventName].push(eobj);
 }
 
 $(document).ready(function () {
@@ -349,114 +349,114 @@ $(document).ready(function () {
         $(document).mousemove(function (e) {
             // First mouse move lets add a ready event
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted(e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
 
         $(document).click(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
 
         $(document).dblclick(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
 
         $(document).mouseenter(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
 
         $(document).mouseleave(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
 
         $(document).mousedown(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
         $(document).mouseup(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
 
         // Keyboard Events
         $(document).keydown(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
         $(document).keyup(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
         $(document).keypress(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
         $(document).focusin(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
         $(document).focusout(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
         $(document).mousewheel(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
 
         // Window Events
         $(window).resize(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
         $(window).scroll(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
         $(window).focus(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
         $(window).blur(function (e) {
             if (!mimic_logBuffer.events.init) {
-                mimic_logFormatted(mimic_logBuffer, e, "init");
+                mimic_logFormatted( e, "init");
             }
-            mimic_logFormatted(mimic_logBuffer, e);
+            mimic_logFormatted( e);
         });
     }
 }); //$(document).ready(function() {
