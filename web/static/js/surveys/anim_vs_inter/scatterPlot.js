@@ -5,6 +5,12 @@ function radius(d) { return d.population; }
 function color(d) { return d.region; }
 function key(d) { return d.name; }
 
+var intFormat = d3.format(",d");
+var xValformat = function(d){ return "<strong>Income per capita</strong>: $"+intFormat(d3.round(d,0)); };
+var yValformat = function(d){ return "<strong>Life expectancy</strong>: "+ intFormat(d3.round(d,0))+ " years"; };
+
+// T
+
 var startYear = 1975;
 function scatterPlotRun(condition_name) {
 // Chart dimensions.
@@ -18,9 +24,16 @@ var xScale = d3.scale.log().domain([100, 25000]).range([0, width]),
     radiusScale = d3.scale.sqrt().domain([0, 5e8]).range([0, 40]),
     colorScale = d3.scale.category10();
 
+var tip = d3.tip().attr('class', 'd3-tip').offset([-10, 0]).html(function(d) { console.log(d); return d.x + "<br>" + d.y; });
+
+var selectionColor = "green";
+var hoverColor = "steelblue";
+var regularColor = "black";
+
 // The x & y axes.
 var xAxis = d3.svg.axis().orient("bottom").scale(xScale).ticks(12, d3.format(",d")),
     yAxis = d3.svg.axis().scale(yScale).orient("left");
+
 
 // Create the SVG container and set the origin.
 var svg = d3.select("#chart").append("svg")
@@ -58,6 +71,8 @@ svg.append("text")
     .attr("transform", "rotate(-90)")
     .text("life expectancy (years)");
 
+svg.call(tip);
+
 // Add the year label; the value is set on transition.
 var label = svg.append("text")
     .attr("class", "year label")
@@ -94,51 +109,63 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
     .enter().append("circle")
       .attr("class", "dot")
       .style("opacity", .4)
-      .style("fill", function(d) { return "grey";}) //return colorScale(color(d)); })
+      .style("fill", function(d) { return regularColor;}) //return colorScale(color(d)); })
       .call(position)
-      .on("mousedown", function(d, i) {
-
-      })
-      .on("mouseup", function(d, i) {
+      .on("click", function(d, i) {
         selectedCountry = d.name;
-        countrylabel.style("fill", "black");
+        countrylabel.style("fill", selectionColor);
         dot.classed("selected", false);
-        dot.style("opacity", .4);
+        dot.style("opacity", .3);
         //selectedDot.moveToBack();
         selectedDot = d3.select(this);
-        d3.select(this).classed("selected", !d3.select(this).classed("selected"));
-        d3.select(this).style("opacity", 1);
+        
+        selectedDot.classed("selected", !d3.select(this).classed("selected"));
+        selectedDot.style("opacity", 1);
+        selectedDot.style("fill", selectionColor);
         selectedDot.moveToFront();
         //dragit.trajectory.display(d, i, "selected");
 
 
       })
       .on("mouseenter", function(d, i) {
-        clear_demo();
-        if(dragit.statemachine.current_state == "idle") {
+        //console.log(d, xValformat(x(d)), yValformat(y(d)));
+        tip.show(
+             {x: xValformat(x(d)), 
+              y: yValformat(y(d))},i);
+
+        //clear_demo();
+        //if(dragit.statemachine.current_state == "idle") {
           //dragit.trajectory.display(d, i)
           //dragit.utils.animateTrajectory(dragit.trajectory.display(d, i), dragit.time.current, 1000)
           countrylabel.text(d.name);
           if(d.name === selectedCountry){
-            countrylabel.style("fill", "black");
+            countrylabel.style("fill", selectionColor);
           }else{
-            countrylabel.style("fill", "gray");  
+            countrylabel.style("fill", hoverColor);  
           }          
           //dot.style("opacity", .4)
+          d3.select(this).style("fill", hoverColor);
           d3.select(this).style("opacity", 1).moveToFront();
           //d3.selectAll(".selected").style("opacity", 1)
-        }
+        //}
       })
       .on("mouseleave", function(d, i) {
-        
-        if(dragit.statemachine.current_state == "idle") {
+        tip.hide(d,i);
+        //if(dragit.statemachine.current_state == "idle") {
           countrylabel.text(selectedCountry);
-          countrylabel.style("fill", "black");
-          dot.style("opacity", .4);
+          countrylabel.style("fill", selectionColor);
+          
+
+          dot.style("fill", regularColor);
+          
           if(selectedDot){
+            dot.style("opacity", .3);
+            selectedDot.style("fill", selectionColor);
             selectedDot.style("opacity", 1);
+          }else{
+            dot.style("opacity", .4);
           }
-        }
+        //}
   
         //dragit.trajectory.remove(d, i);
         
@@ -146,13 +173,13 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
       //.call(dragit.object.activate)
 
   // Add a title.
-  dot.append("title")
-      .text(function(d) { return d.name; });
+  //dot.append("title")
+  //    .text(function(d) { return d.name; });
 
   // Start a transition that interpolates the data based on year.
-  svg.transition()
-      .duration(3000)
-      .ease("linear");
+  //svg.transition()
+  //    .duration(3000)
+  //    .ease("linear");
 
   // Positions the dots based on data.
   function position(dot) {
@@ -316,7 +343,7 @@ function clear_demo() {
     svg.transition().duration(0);
     first_time = false;
     clearInterval(demo_interval);
-    countrylabel.text("");
+    //countrylabel.text("");
     //dragit.trajectory.removeAll();
     //d3.selectAll(".dot").style("opacity", 1);
   }

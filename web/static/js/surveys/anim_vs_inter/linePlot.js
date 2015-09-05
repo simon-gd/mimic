@@ -16,10 +16,17 @@ var xScale = d3.scale.log().domain([100, 25000]).range([0, width]),
     yScale = d3.scale.linear().domain([10, 85]).range([height, 0]),
     radiusScale = d3.scale.sqrt().domain([0, 5e8]).range([0, 40]),
     colorScale = d3.scale.category10();
-var myGrad = d3.scale.linear().domain([0.0, 1.0]).range([.2, .8])
+var myGrad = d3.scale.linear().domain([0.0, 1.0]).range([.2, .8]);
+
+var intFormat = d3.format(",d");
+var xValformat = function(d){ return "<strong>Income per capita</strong>: $"+intFormat(d3.round(d,0)); };
+var yValformat = function(d){ return "<strong>Life expectancy</strong>: "+ intFormat(d3.round(d,0))+ " years"; };
+
 // The x & y axes.
 var xAxis = d3.svg.axis().orient("bottom").scale(xScale).ticks(12, d3.format(",d")),
     yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+var tip = d3.tip().attr('class', 'd3-tip').offset([-10, 0]).html(function(d) { return d.x + "<br>" + d.y; });
 
 var selectionColor = "green";
 var hoverColor = "steelblue";
@@ -61,44 +68,8 @@ svg.append("text")
     .attr("transform", "rotate(-90)")
     .text("life expectancy (years)");
 
-/*
-var gradient = svg.append("defs")
-  .append("linearGradient")
-    .attr("id", "gradient")
-    .attr("x1", "0%")
-    .attr("y1", "0%")
-    .attr("x2", "100%")
-    .attr("y2", "100%");
-gradient.append("svg:stop")
-    .attr("offset", "0%")
-    .attr("stop-color", "#ccc")
-    .attr("stop-opacity", 1);
+svg.call(tip);
 
-gradient.append("svg:stop")
-    .attr("offset", "100%")
-    .attr("stop-color", "#ccc")
-    .attr("stop-opacity", 0);
-*/
-/*
-var gradient = svg.append("defs")
-  .append("radialGradient")
-    .attr("id", "gradient")
-    .attr("fx", "0%")
-    .attr("fy", "0%")
-    .attr("c2", "100%")
-    .attr("c2", "100%")
-    .attr("r", "100%");
-gradient.append("svg:stop")
-    .attr("offset", "0%")
-    .attr("stop-color", "#ccc")
-    .attr("stop-opacity", 1);
-
-gradient.append("svg:stop")
-    .attr("offset", "100%")
-    .attr("stop-color", "#ccc")
-    .attr("stop-opacity", 0);
-// Add the year label; the value is set on transition.
-*/
 var label = svg.append("text")
     .attr("class", "year label")
     .attr("text-anchor", "end")
@@ -108,11 +79,15 @@ var label = svg.append("text")
 
 // Add the country label; the value is set on transition.
 var countrylabel = svg.append("text")
-    .attr("class", "country label")
+    .attr("class", "countryLabel label")
     .attr("text-anchor", "start")
     .attr("y", 24)
     .attr("x", 20)
     .text(" ");
+
+
+var tooltip = svg.append("g") 
+    .style("display", "none");
 
 var first_time = true;
 
@@ -172,15 +147,42 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
   var country = svg.selectAll(".country")
       .data(transpose);
   
-  var gradientEnter = svg.append("defs")
-    .selectAll("g.countryGrads")
-    .data(transpose)
-    .enter().append("g")
-    .attr("class", "countryGrads")
+  // place the value at the intersection
+  
+  tooltip.append("text")
+        .attr("class", "y1")
+        .style("fill", hoverColor)
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .style("stroke", "white")
+        .style("stroke-width", "1.5px")
+        //.style("fill", hoverColor)
+        //.style("opacity", 0.8)
+        .attr("dx", 8)
+        .attr("dy", "-.3em");
+  //tooltip.append("text")
+  //      .attr("class", "y2")
+  //      .attr("dx", 8)
+  //      .attr("dy", "-.3em");
+
+    // place the date at the intersection
+  tooltip.append("text")
+        .attr("class", "y2 shadow")
+        .style("fill", hoverColor)
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        //.style("stroke-width", "3.5px")
+        //.style("opacity", 0.8)
+        .attr("dx", 8)
+        .attr("dy", "1em");
+  //tooltip.append("text")
+  //      .attr("class", "y4")
+  //      .attr("dx", 8)
+  //      .attr("dy", "1em");
 
   var countryEnter = country.enter().append("g")
       .attr("class", "country")
-      .style("opacity", 0.5)
+      .style("opacity", 0.6)
       .attr("id", function(d) { return d.name; });
   
 
@@ -193,12 +195,16 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
       .attr("opacity", function(d, i){ return (i===(years.length-1)) ? 1.0 : myGrad(i / years.length); })
       .style("stroke", function(d, i) { return "none"; }); //url(#gradient_"+i+")" //return "hsl(225, 0%, "+ (i*100).toString() +"%)";})
       //console.log(d, i); return (i*100);});
+  
+  
 
-  countryEnter.append("g").selectAll(".circle")
+  var countryG = countryEnter.append("g");
+  
+  countryG.selectAll(".circle")
     .data(function (d) { return d.values })
     .enter().append("circle")
      .attr("class", "yearCircle")
-     .attr("r", 5)
+     .attr("r", 6)
      .attr("fill", regularColor)//function (d, i){ return "hsl(225, 0%, "+ (100-((i / years.length)*80)).toString() +"%)";})
      .attr("stroke", "none")
      .attr("fill-opacity", function(d, i){ return (i===(years.length-1)) ? 1.0 : myGrad(i / years.length); })
@@ -218,7 +224,7 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
         label.text(selectedYear);
         label.style("fill", selectionColor);
 
-        d3.selectAll(".country").style("opacity", 0.6);
+        d3.selectAll(".country").style("opacity", 0.3);
         selectedNode = this.parentNode.parentNode;
         selectedYearNode = this;
         d3.select(selectedNode).style("opacity", 1.0).moveToFront();
@@ -226,18 +232,13 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
         d3.select(selectedNode).selectAll("path").style("fill", selectionColor);
 
         d3.selectAll(".yearCircle").attr("stroke", "none"); 
-        d3.select(this).attr("stroke", regularColor);
-        
-        //selectedDot.moveToBack();
-        //selectedDot = d3.select(this);
-        //d3.select(this).classed("selected", !d3.select(this).classed("selected"));
-        //d3.select(this).style("opacity", 1);
-        //selectedDot.moveToFront();
-        //dragit.trajectory.display(d, i, "selected");
-
-
+        d3.select(this).attr("stroke", regularColor).moveToFront();
       })
      .on("mouseenter", function(d, i) {
+          tip.show(
+             {x: xValformat(xScale.invert(d.x)), 
+              y: yValformat(yScale.invert(d.y))},i);
+          //tooltip.style("display", null);
           countrylabel.text(d.name);
           if(d.name === selectedCountry){
             countrylabel.style("fill", selectionColor);
@@ -260,15 +261,18 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
           d3.select(this.parentNode.parentNode).selectAll("path").style("fill", hoverColor);
           
           if(selectedNode){
+            d3.selectAll(".country").style("opacity", 0.3);
             d3.select(selectedNode).style("opacity", 1.0);
           }
 
-          d3.select(this).attr("stroke", regularColor);
+          d3.select(this).attr("stroke", regularColor).moveToFront();
           d3.select(this).attr("stroke-width", 2);
 
           //console.log( this.parentNode.parentNode); //d3.select(this).node());
       })
       .on("mouseleave", function(d, i) {
+        tip.hide(d, i);
+        //tooltip.style("display", "none");
         countrylabel.text(selectedCountry);
         countrylabel.style("fill", selectionColor);
         
@@ -276,14 +280,17 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
         label.style("fill", selectionColor);
 
         d3.selectAll(".yearCircle").attr("stroke", "none"); 
-        d3.selectAll(".country").style("opacity", 0.6);
+        
         d3.selectAll(".country").selectAll("circle").attr("fill", regularColor);
         d3.selectAll(".country").selectAll("path").style("fill", regularColor);
 
         if(selectedNode){
+          d3.selectAll(".country").style("opacity", 0.3);
           d3.select(selectedNode).style("opacity", 1.0);
           d3.select(selectedNode).selectAll("circle").attr("fill", selectionColor);
           d3.select(selectedNode).selectAll("path").style("fill", selectionColor);
+        }else{
+          d3.selectAll(".country").style("opacity", 0.6);
         }
         if(selectedYearNode){
           d3.select(selectedYearNode).attr("stroke", regularColor);

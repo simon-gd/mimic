@@ -6,18 +6,29 @@ function color(d) { return d.region; }
 function key(d) { return d.name; }
 
 var startYear = 1975;
+var selectionColor = "green";
+var hoverColor = "steelblue";
+var regularColor = "black";
+
+var intFormat = d3.format(",d");
+var xValformat = function(d){ return "<strong>Income per capita</strong>: $"+intFormat(d3.round(d,0)); };
+var yValformat = function(d){ return "<strong>Life expectancy</strong>: "+ intFormat(d3.round(d,0))+ " years"; };
+
 function smallMultiplesPlotRun(condition_name) {
 // Chart dimensions.
-var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5},
+var margin = {top: 35, right: 19.5, bottom: 19.5, left: 39.5},
     width = 700 - margin.right,
     height = 640 - margin.top - margin.bottom,
-    padding = 10, nx = 5, ny = 4, size = 140;
+    padding = 5, nx = 5, ny = 4, size = 140;
 // Various scales. These domains make assumptions of data, naturally.
+
+var tip = d3.tip().attr('class', 'd3-tip').offset([-10, 0]).html(function(d) { return d.x + "<br>" + d.y; });
+
 var xScale = d3.scale.log().domain([300, 1e5]).range([padding / 2, size - padding / 2]),
     yScale = d3.scale.linear().domain([10, 85]).range([size - padding / 2, padding / 2]),
     radiusScale = d3.scale.sqrt().domain([0, 5e8]).range([0, 40]),
     colorScale = d3.scale.category10();
-
+var myGrad = d3.scale.linear().domain([0.0, 1.0]).range([.2, .8]);
 // The x & y axes.
 var xAxis = d3.svg.axis().orient("bottom").scale(xScale).ticks(12, d3.format(",d")),
     yAxis = d3.svg.axis().scale(yScale).orient("left");
@@ -61,16 +72,17 @@ svg.append("text")
     .text("life expectancy (years)");
 
 
+svg.call(tip);
 
 // Add the year label; the value is set on transition.
-/*
+
 var label = svg.append("text")
     .attr("class", "year label")
     .attr("text-anchor", "end")
-    .attr("y", 24)
+    .attr("y", -15)
     .attr("x", width)
-    .text(1800);
-
+    .text("");
+/*/
 // Add the country label; the value is set on transition.
 var countrylabel = svg.append("text")
     .attr("class", "country label")
@@ -97,11 +109,6 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
   var years = [];
   for(var yy = startYear; yy<2000; yy++) {
       years.push(yy);
-      //var cobj = interpolateData(yy);
-      //mydata[] = {
-      //  [xScale(x(d)), yScale(y(d))];
-      //  }
-      //});
   }
   var transpose = nations.map(function(c) {
             return {
@@ -135,40 +142,139 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
       //.each(function(d) { d3.select(this).call(axis.scale(y[d]).orient("right")); });
   */
   // Cell and plot.
+
+
+  var selectedCountry = "";
+  var selectedCountryNode;
+  var selectedYear;
+  var selectedCircleNode;
   var gridData = stack(transpose, nx, ny);
   console.log(gridData)
   var cell = svg.selectAll("g.cell")
       .data(gridData)
-    .enter().append("svg:g")
+    .enter().append("g")
       .attr("class", "cell")
       .attr("transform", function(d) { return "translate(" + d.i * size + "," + d.j * size + ")"; })
       .each(plot);
+  function hoverInItem(self,mycell,d,i){
+    d3.select(self).style("stroke", hoverColor);
+    mycell.selectAll("text").style("fill", hoverColor);
+    mycell.selectAll("circle").style("fill", hoverColor);
+    if(selectedCountryNode){
+      d3.select(selectedCountryNode).style("stroke", selectionColor);
+      d3.select(selectedCountryNode.parentNode).selectAll("text").style("fill", selectionColor);
+      d3.select(selectedCountryNode.parentNode).selectAll("circle").style("fill", selectionColor);
+    }
+  }
+  function hoverOutItem(self,mycell,d,i){
+    d3.selectAll(".smrect").style("stroke", regularColor);
+    mycell.selectAll("text").style("fill", regularColor);
+    mycell.selectAll("circle").style("fill", regularColor);
+    if(selectedCountryNode){
+      d3.select(selectedCountryNode).style("stroke", selectionColor);
+      d3.select(selectedCountryNode.parentNode).selectAll("text").style("fill", selectionColor);
+      d3.select(selectedCountryNode.parentNode).selectAll("circle").style("fill", selectionColor);
+    }
+  }
+  function selectItem(self, mycell, name){
+    //deselect circles
+    selectedYear = "";
+    label.text(selectedYear);
+    d3.selectAll(".yearCircle").attr("stroke", "none");
 
+    selectedCountryNode = self;
+    console.log(d3.select(self).data()[0].c.name);
+    selectedCountry = d3.select(self).data()[0].c.name;
+
+    d3.selectAll(".smrect").style("stroke", regularColor);
+    d3.selectAll(".countrylabel").style("fill", regularColor);
+    d3.selectAll(".yearCircle").style("fill", regularColor);
+
+    d3.select(self).style("stroke", selectionColor);
+    mycell.selectAll("text").style("fill", selectionColor);
+    mycell.selectAll("circle").style("fill", selectionColor);
+  }
   function plot(p) {
     var cell = d3.select(this);
 
     // Plot frame.
-    cell.append("svg:rect")
-        .attr("class", "frame")
+    var borderRect = cell.append("rect")
+        .attr("class", "smrect")
         .attr("x", padding / 2)
         .attr("y", padding / 2)
         .attr("width", size - padding)
-        .attr("height", size - padding);
-
+        .attr("height", size - padding)
+        .style("stroke", regularColor)
+       .on("mouseenter", function(d, i) {
+          hoverInItem(this, cell, d, i);
+       })
+       .on("mouseleave", function(d, i) {
+          hoverOutItem(this, cell, d, i);          
+       })
+       .on("click", function(d, i) {
+          selectItem(this, cell, d, i);
+       })
     // Plot dots.
-     cell.append("g")
-          .attr("class", "country")
+    var countryG = cell.append("g")
+          .attr("class", "country");
+     
+    countryG.selectAll(".circle")
+    .data(function (d) { return d.c.values })
+    .enter().append("circle")
+     .attr("class", "yearCircle")
+     .attr("r", 3)
+     .attr("fill", regularColor)//function (d, i){ return "hsl(225, 0%, "+ (100-((i / years.length)*80)).toString() +"%)";})
+     .attr("stroke", "none")
+     .attr("fill-opacity", function(d, i){ return (i===(years.length-1)) ? 1.0 : myGrad(i / years.length); })
+     .attr("cx", function (d) {return d.x;})
+     .attr("cy", function (d) {return d.y;})
+     .on("mouseenter", function(d,i){
+        label.text(startYear+i);
+        label.style("fill", hoverColor);
+        tip.show(
+             {x: xValformat(xScale.invert(d.x)), 
+              y: yValformat(yScale.invert(d.y))},i);
+        d3.select(this).attr("stroke", regularColor).moveToFront();
+        d3.select(this).attr("stroke-width", 3);
+        hoverInItem(borderRect.node(), cell, d, i);
+        //console.log("mouseenter circle");
+      })
+     .on("mouseleave", function(d,i){
+        tip.hide();
+        label.text(selectedYear);
+        label.style("fill", selectionColor);
+        hoverOutItem(borderRect.node(), cell, d, i);
+        d3.selectAll(".yearCircle").attr("stroke", "none");
+        if(selectedCircleNode){
+          d3.select(selectedCircleNode).attr("stroke", regularColor).moveToFront();
+        }
+        //console.log("mouseleave circle");
+      })
+     .on("click", function(d,i){
+        selectItem(borderRect.node(), cell, name);
+        selectedCircleNode = this;
+        selectedYear = startYear+i;
+        label.text(selectedYear);
+        label.style("fill", selectionColor);
+        d3.select(selectedCircleNode).attr("stroke", regularColor).moveToFront();
+        //console.log("click circle");
+      })
+
+    /*
           .append("path")
           .attr("class", "countryline")
           .attr("d", function(d) { return line(d.c.values); })
           .style("fill", function(d) { return "none"; })
           .style("stroke", function(d) { return "grey"; });
+          */
 
     var countrylabel = cell.append("text")
+    .attr("class", "countrylabel")
     .style("font", '500 16px "Helvetica Neue"')
     .attr("text-anchor", "middle")
     .attr("y", 20)
     .attr("x", size/2)
+    .attr("pointer-events", "none")
     .text(function(d){ return d.c.name; });
       
     //cell.selectAll("circle")
@@ -182,10 +288,12 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
   function stack(a, nx, ny) {
     var c = [], n = nx, m = ny, i, j;
     var count = 0;
-    for (i = 0; i < n; ++i) {
-      for (j = 0; j < m; ++j) {
-        c.push({c: a[count], i: i, j: j});
-        count++;
+    for (j = 0; j < m; ++j) {
+      for (i = 0; i < n; ++i) {
+        if(count < a.length){
+          c.push({c: a[count], i: i, j: j});
+          count++;
+        }
       }
     }
     return c;

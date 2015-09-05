@@ -38,6 +38,7 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="{% static 'css/dragit.css' %}">
+    <link rel="stylesheet" href="//rawgithub.com/Caged/d3-tip/master/examples/example-styles.css">
     <style>
         html, body {
             height: 100%;
@@ -159,7 +160,7 @@ text {
   fill: #000;
 }
 
-.country.label  {
+.countryLabel.label  {
   font: 500 26px "Helvetica Neue";
   fill: #000;
 }
@@ -206,10 +207,15 @@ rect.extent {
   stroke: #fff;
 }
 
-rect.frame {
+rect.smrect {
   fill: #fff;
   fill-opacity: .7;
-  stroke: #aaa;
+}
+
+text.shadow {
+    stroke: white;
+    stroke-width: 2.5px;
+    opacity: 0.9;
 }
 
     </style>
@@ -225,6 +231,7 @@ rect.frame {
     <script type="text/javascript" src="{% static 'js/lib/rangy-serializer.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/app/detect-zoom.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/lib/d3.v3.js' %}"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.6.7/d3-tip.min.js"></script>
     <script type="text/javascript">
     d3.selection.prototype.moveToFront = function() {
       return this.each(function(){
@@ -242,6 +249,7 @@ rect.frame {
     <script type="text/javascript" src="{% static 'js/surveys/anim_vs_inter/scatterPlot.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/surveys/anim_vs_inter/linePlot.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/surveys/anim_vs_inter/smallMultiplesPlot.js' %}"></script>
+
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
