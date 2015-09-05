@@ -12,7 +12,7 @@ var margin = {top: 19.5, right: 19.5, bottom: 39.5, left: 39.5},
     height = 500 - margin.top - margin.bottom;
 
 // Various scales. These domains make assumptions of data, naturally.
-var xScale = d3.scale.linear().domain([100, 25000]).range([0, width]),
+var xScale = d3.scale.log().domain([100, 25000]).range([0, width]),
     yScale = d3.scale.linear().domain([10, 85]).range([height, 0]),
     radiusScale = d3.scale.sqrt().domain([0, 5e8]).range([0, 40]),
     colorScale = d3.scale.category10();
@@ -121,14 +121,13 @@ var normalize = function(vec){
   // normalize vector
   return [vec[0]/l, vec[1]/l];
 }
-var triangle = function(d){
+var triangle = function(d, offset){
   var vec0 = [d[1].x-d[0].x, d[1].y-d[0].y];
   var vec = normalize(vec0);
 
   var perp1 = [vec[1], (-1*vec[0])];
   var perp2 = [(-1*vec[1]), vec[0]];
   //console.log("trig", vec, perp1);
-  var offset = 3;
   return "M"+d[0].x+","+d[0].y+
          " L"+(d[1].x+perp1[0]*offset)+","+(d[1].y+perp1[1]*offset)+
          " L"+(d[1].x+perp2[0]*offset)+","+(d[1].y+perp2[1]*offset)+
@@ -165,10 +164,15 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
   var country = svg.selectAll(".country")
       .data(transpose);
   
+  var gradientEnter = svg.append("defs")
+    .selectAll("g.countryGrads")
+    .data(transpose)
+    .enter().append("g")
+    .attr("class", "countryGrads")
 
   var countryEnter = country.enter().append("g")
       .attr("class", "country")
-      .style("opacity", 0.3)
+      .style("opacity", 1.0)
       .attr("id", function(d) { return d.name; });
   
   // One long path
@@ -208,15 +212,43 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
     .style("opacity", function(d) { return d.t+.2; })
     .attr("d", function(d) { return lineJoin(d[0], d[1], d[2], d[3], 2); });
 */
+    
+    /*
+    var gradients = gradientEnter.selectAll(".gradient")
+        .data(function (d) { return d.values.map(function(v, i, a){ return ((i+1) < a.length) ? [v, a[i+1]] : [v,{x:v.x+1, y:v.y+1}];  }); })
+        .enter().append("linearGradient")
+          .attr("id", function(d, i) { return "gradient_"+i; })
+          .attr("x1", function(d) { return "0%"})
+          .attr("y1", function(d) { return "0%"})
+          .attr("x2", function(d) { return "100%"})
+          .attr("y2", function(d) { return "100%"})
+          //.attr("gradientUnits", "objectBoundingBox")
+          .attr("gradientTransform", function(d){
+            var vec0 = [d[1].x-d[0].x, d[1].y-d[0].y];
+            var vec = normalize(vec0);
 
+            var angle_deg = Math.atan2(vec[1],vec[0])*(180/Math.PI);
+            if (angle_deg < 0) angle_deg = 360 + angle_deg; // range [0, 360)
+            console.log(angle_deg, vec);
+            return "rotate("+angle_deg+")";
+          });
+    gradients.append("svg:stop")
+          .attr("offset", "0%")
+          .attr("stop-color", "#000")
+          .attr("stop-opacity", 1);
+    gradients.append("svg:stop")
+          .attr("offset", "100%")
+          .attr("stop-color", "#000")
+          .attr("stop-opacity", 0);
+    */
     countryEnter.append("g").selectAll(".linesegs")
     .data(function (d) { return d.values.map(function(v, i, a){ return ((i+1) < a.length) ? [v, a[i+1]] : [v,{x:v.x+1, y:v.y+1}];  }); })
     .enter().append("path")
     .attr("class", "countryline")
-      .attr("d", function(d) { return triangle(d); })
+      .attr("d", function(d) { return triangle(d, 2); })
       .style("fill", function(d) { return "steelblue"; })
       .attr("fill-opacity", function(d, i){ return (i===(years.length-1)) ? 1.0 : myGrad(i / years.length); })
-      .style("stroke", function(d, i) { return "none"; }); //return "hsl(225, 0%, "+ (i*100).toString() +"%)";})
+      .style("stroke", function(d, i) { return "none"; }); //url(#gradient_"+i+")" //return "hsl(225, 0%, "+ (i*100).toString() +"%)";})
       //console.log(d, i); return (i*100);});
 
   countryEnter.append("g").selectAll(".circle")
