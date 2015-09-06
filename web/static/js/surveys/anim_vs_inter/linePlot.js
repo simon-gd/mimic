@@ -1,26 +1,34 @@
 // Various accessors that specify the four dimensions of data to visualize.
-function x(d) { return d.income; }
-function y(d) { return d.lifeExpectancy; }
+var intFormat = d3.format(",d");
+
+function linePlotRun(condition_name, task, selectionCallback) {
+
+var startYear = task.years[0];
+var endYear = task.years[1];
+
+function x(d) { return d[task.indicators[0]]; }
+function y(d) { return d[task.indicators[1]]; }
 function radius(d) { return d.population; }
 function color(d) { return d.region; }
 function key(d) { return d.name; }
-var startYear = 1975;
-function linePlotRun(condition_name) {
+
+var xValformat = function(d){ return "<strong>"+task.indicatorLabels[0]+"</strong>: "+intFormat(d3.round(d,0))+ " "+ task.indicatorUnits[0]; };
+var yValformat = function(d){ return "<strong>"+task.indicatorLabels[1]+"</strong>: "+ intFormat(d3.round(d,0))+ " "+ task.indicatorUnits[1]; };
+
+
 // Chart dimensions.
 var margin = {top: 19.5, right: 19.5, bottom: 39.5, left: 39.5},
     width = 700 - margin.right,
     height = 500 - margin.top - margin.bottom;
 
 // Various scales. These domains make assumptions of data, naturally.
-var xScale = d3.scale.log().domain([100, 25000]).range([0, width]),
-    yScale = d3.scale.linear().domain([10, 85]).range([height, 0]),
+var xScale = task.indicatorDomains[0].range([0, width]),
+    yScale = task.indicatorDomains[1].range([height, 0]),
     radiusScale = d3.scale.sqrt().domain([0, 5e8]).range([0, 40]),
     colorScale = d3.scale.category10();
 var myGrad = d3.scale.linear().domain([0.0, 1.0]).range([.2, .8]);
 
-var intFormat = d3.format(",d");
-var xValformat = function(d){ return "<strong>Income per capita</strong>: $"+intFormat(d3.round(d,0)); };
-var yValformat = function(d){ return "<strong>Life expectancy</strong>: "+ intFormat(d3.round(d,0))+ " years"; };
+
 
 // The x & y axes.
 var xAxis = d3.svg.axis().orient("bottom").scale(xScale).ticks(12, d3.format(",d")),
@@ -57,7 +65,7 @@ svg.append("text")
     .attr("text-anchor", "end")
     .attr("x", width)
     .attr("y", height + 36)
-    .text("income per capita, inflation-adjusted (dollars)");
+    .text(task.indicatorLabels[0]+" ("+task.indicatorUnits[0]+")");
 
 // Add a y-axis label.
 svg.append("text")
@@ -66,7 +74,7 @@ svg.append("text")
     .attr("y", -40)
     .attr("dy", ".75em")
     .attr("transform", "rotate(-90)")
-    .text("life expectancy (years)");
+    .text(task.indicatorLabels[1]+" ("+task.indicatorUnits[1]+")");
 
 svg.call(tip);
 
@@ -115,8 +123,8 @@ var triangle = function(d, offset){
 // Load the data.
 var mainurl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
 d3.json(mainurl+"/static/data/nations.json", function(nations) {
-  var maxCountries=20;
-  nations = nations.filter(function(c, i){ return (i < maxCountries); });
+
+  nations = task.countries.map(function(i){ return nations[i] });
 
   var bisect = d3.bisector(function(d) { return d[0]; });
   // A bisector since many nation's data is sparsely-defined.
@@ -217,6 +225,7 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
 
 
         selectedCountry = d.name;
+        selectionCallback(selectedCountry);
         countrylabel.style("fill", selectionColor);
         countrylabel.text(selectedCountry);
         

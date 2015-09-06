@@ -1,31 +1,34 @@
-// Various accessors that specify the four dimensions of data to visualize.
-function x(d) { return d.income; }
-function y(d) { return d.lifeExpectancy; }
+var intFormat = d3.format(",d");
+
+function smallMultiplesPlotRun(condition_name, task, selectionCallback) {
+
+var startYear = task.years[0];
+var endYear = task.years[1];
+
+function x(d) { return d[task.indicators[0]]; }
+function y(d) { return d[task.indicators[1]]; }
 function radius(d) { return d.population; }
 function color(d) { return d.region; }
 function key(d) { return d.name; }
 
-var startYear = 1975;
+var xValformat = function(d){ return "<strong>"+task.indicatorLabels[0]+"</strong>: "+intFormat(d3.round(d,0))+ " "+ task.indicatorUnits[0]; };
+var yValformat = function(d){ return "<strong>"+task.indicatorLabels[1]+"</strong>: "+ intFormat(d3.round(d,0))+ " "+ task.indicatorUnits[1]; };
+
 var selectionColor = "green";
 var hoverColor = "steelblue";
 var regularColor = "black";
 
-var intFormat = d3.format(",d");
-var xValformat = function(d){ return "<strong>Income per capita</strong>: $"+intFormat(d3.round(d,0)); };
-var yValformat = function(d){ return "<strong>Life expectancy</strong>: "+ intFormat(d3.round(d,0))+ " years"; };
-
-function smallMultiplesPlotRun(condition_name) {
 // Chart dimensions.
 var margin = {top: 35, right: 19.5, bottom: 19.5, left: 39.5},
     width = 700 - margin.right,
-    height = 640 - margin.top - margin.bottom,
-    padding = 5, nx = 5, ny = 4, size = 140;
+    height = 660 - margin.top - margin.bottom,
+    padding = 0, nx = 4, ny = 4, size = 145;
 // Various scales. These domains make assumptions of data, naturally.
 
 var tip = d3.tip().attr('class', 'd3-tip').offset([-10, 0]).html(function(d) { return d.x + "<br>" + d.y; });
 
-var xScale = d3.scale.log().domain([300, 1e5]).range([padding / 2, size - padding / 2]),
-    yScale = d3.scale.linear().domain([10, 85]).range([size - padding / 2, padding / 2]),
+var xScale = task.indicatorDomains[0].range([padding / 2, size - padding / 2]),
+    yScale = task.indicatorDomains[1].range([size - padding / 2, padding / 2]),
     radiusScale = d3.scale.sqrt().domain([0, 5e8]).range([0, 40]),
     colorScale = d3.scale.category10();
 var myGrad = d3.scale.linear().domain([0.0, 1.0]).range([.2, .8]);
@@ -58,9 +61,9 @@ svg.append("g")
 svg.append("text")
     .attr("class", "x label")
     .attr("text-anchor", "end")
-    .attr("x", width)
+    .attr("x", width - 100)
     .attr("y", height - 6)
-    .text("income per capita, inflation-adjusted (dollars)");
+    .text(task.indicatorLabels[0]+" ("+task.indicatorUnits[0]+")");
 
 // Add a y-axis label.
 svg.append("text")
@@ -69,7 +72,7 @@ svg.append("text")
     .attr("y", -25)
     .attr("dy", ".75em")
     .attr("transform", "rotate(-90)")
-    .text("life expectancy (years)");
+    .text(task.indicatorLabels[1]+" ("+task.indicatorUnits[1]+")");
 
 
 svg.call(tip);
@@ -101,13 +104,13 @@ var line = d3.svg.line()
 // Load the data.
 var mainurl = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
 d3.json(mainurl+"/static/data/nations.json", function(nations) {
-  var maxCountries=18;
-  nations = nations.filter(function(c, i){ return (i < maxCountries); });
+
+  nations = task.countries.map(function(i){ return nations[i] });
 
   var bisect = d3.bisector(function(d) { return d[0]; });
   // A bisector since many nation's data is sparsely-defined.
   var years = [];
-  for(var yy = startYear; yy<2000; yy++) {
+  for(var yy = startYear; yy<endYear; yy++) {
       years.push(yy);
   }
   var transpose = nations.map(function(c) {
@@ -185,6 +188,7 @@ d3.json(mainurl+"/static/data/nations.json", function(nations) {
     selectedCountryNode = self;
     console.log(d3.select(self).data()[0].c.name);
     selectedCountry = d3.select(self).data()[0].c.name;
+    selectionCallback(selectedCountry);
 
     d3.selectAll(".smrect").style("stroke", regularColor);
     d3.selectAll(".countrylabel").style("fill", regularColor);

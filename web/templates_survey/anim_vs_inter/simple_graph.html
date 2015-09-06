@@ -96,7 +96,7 @@
         }
 
         .answer {
-            width: 5em;
+            width: 12em;
         }
 
         .likert {
@@ -270,26 +270,102 @@ text.shadow {
         var steps;
         var required_questions;
 
+        var tasks =[
+          {question: "Name a country whose rate of energy consumption was faster than their rate of GDP per capita growth.",
+           countries: [10,11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+           years: [1975, 2000],
+           indicators: ["lifeExpectancy", "population"],
+           indicatorLabels: ["Life Expectancy", "Population"],
+           indicatorUnits: ["years", "people"],
+           indicatorDomains: [d3.scale.linear().domain([30, 65]), d3.scale.sqrt().domain([0, 9e7])]
+           },
+         {question: "Name a country whose rate of energy consumption was faster than their rate of GDP per capita growth.",
+           countries: [0,1,2,3,4,5,6,7,8,9,10,11, 12, 13, 14, 15],
+           years: [1975, 2000],
+           indicators: ["income", "lifeExpectancy"],
+           indicatorLabels: ["Income per capita", "Life expectancy"],
+           indicatorUnits: ["US dollars", "years"],
+           indicatorDomains: [d3.scale.log().domain([100, 25000]), d3.scale.linear().domain([10, 85])]
+           },
+          {question: "Name a country whose rate of energy consumption was faster than their rate of GDP per capita growth.",
+           countries: [0,1,2,3,4,5,6,7,8,9,10,11, 12, 13, 14, 15],
+           years: [1975, 2000],
+           indicators: ["income", "lifeExpectancy"],
+           indicatorLabels: ["Income per capita", "Life expectancy"],
+           indicatorUnits: ["US dollars", "years"],
+           indicatorDomains: [d3.scale.log().domain([100, 25000]), d3.scale.linear().domain([10, 85])]
+           },
+          {question: "Name a country whose rate of energy consumption was faster than their rate of GDP per capita growth.",
+           countries: [0,1,2,3,4,5,6,7,8,9,10,11, 12, 13, 14, 15],
+           years: [1975, 2000],
+           indicators: ["income", "lifeExpectancy"],
+           indicatorLabels: ["Income per capita", "Life expectancy"],
+           indicatorUnits: ["US dollars", "years"],
+           indicatorDomains: [d3.scale.log().domain([100, 25000]), d3.scale.linear().domain([10, 85])]
+           },
+          {question: "Name a country whose rate of energy consumption was faster than their rate of GDP per capita growth.",
+           countries: [0,1,2,3,4,5,6,7,8,9,10,11, 12, 13, 14, 15],
+           years: [1975, 2000],
+           indicators: ["income", "lifeExpectancy"],
+           indicatorLabels: ["Income per capita", "Life expectancy"],
+           indicatorUnits: ["US dollars", "years"],
+           indicatorDomains: [d3.scale.log().domain([100, 25000]), d3.scale.linear().domain([10, 85])]
+           },
+         {question: "Name a country whose rate of energy consumption was faster than their rate of GDP per capita growth.",
+           countries: [0,1,2,3,4,5,6,7,8,9,10,11, 12, 13, 14, 15],
+           years: [1975, 2000],
+           indicators: ["income", "lifeExpectancy"],
+           indicatorLabels: ["Income per capita", "Life expectancy"],
+           indicatorUnits: ["US dollars", "years"],
+           indicatorDomains: [d3.scale.log().domain([100, 25000]), d3.scale.linear().domain([10, 85])]
+           },
+          {question: "Name a country whose rate of energy consumption was faster than their rate of GDP per capita growth.",
+           countries: [0,1,2,3,4,5,6,7,8,9,10,11, 12, 13, 14, 15],
+           years: [1975, 2000],
+           indicators: ["income", "lifeExpectancy"],
+           indicatorLabels: ["Income per capita", "Life expectancy"],
+           indicatorUnits: ["US dollars", "years"],
+           indicatorDomains: [d3.scale.log().domain([100, 25000]), d3.scale.linear().domain([10, 85])]
+           },
+          {question: "Name a country whose rate of energy consumption was faster than their rate of GDP per capita growth.",
+           countries: [0,1,2,3,4,5,6,7,8,9,10,11, 12, 13, 14, 15],
+           years: [1975, 2000],
+           indicators: ["income", "lifeExpectancy"],
+           indicatorLabels: ["Income per capita", "Life expectancy"],
+           indicatorUnits: ["US dollars", "years"],
+           indicatorDomains: [d3.scale.log().domain([100, 25000]), d3.scale.linear().domain([10, 85])]
+           },
+         {question: "Name a country whose rate of energy consumption was faster than their rate of GDP per capita growth.",
+           countries: [0,1,2,3,4,5,6,7,8,9,10,11, 12, 13, 14, 15],
+           years: [1975, 2000],
+           indicators: ["income", "lifeExpectancy"],
+           indicatorLabels: ["Income per capita", "Life expectancy"],
+           indicatorUnits: ["US dollars", "years"],
+           indicatorDomains: [d3.scale.log().domain([100, 25000]), d3.scale.linear().domain([10, 85])]
+           }
+        ]
+
         // confidence diagram_use how_calculated, how_focus, answer_focus1, answer_focus2, answer_focus3 answer_chance1 answer_chance2
         if(condition === 0){
-          steps = ["problem_setup","animated_viz","question", "confidence"];
+          steps = ["animated_viz","question", "confidence"];
           required_questions = ["answer_chance1", "confidence"];
         }else if(condition === 1){
-          steps = ["problem_setup","interactive_viz","question", "confidence"];
+          steps = ["interactive_viz","question", "confidence"];
           required_questions = ["answer_chance1", "confidence"];
         } else if(condition === 2){
-          steps = ["problem_setup","traces","question", "confidence"];
+          steps = ["traces","question", "confidence"];
           required_questions = ["answer_chance1", "confidence"];
         }else if(condition === 3){
-          steps = ["problem_setup","small_multiples","question", "confidence"];
+          steps = ["small_multiples","question", "confidence"];
           required_questions = ["answer_chance1", "confidence"];
         }
 
 
-        console.log(condition, steps);
-        function init(cond) {
+        //console.log(condition, steps);
+        function init_task(cond, page_number) {
+            var task_i = page_number-1;
             var step;  
-            console.log(steps);
+            //console.log(steps);
             for(step=1; step <= steps.length; step++){
                 var s;
                 var stepName = steps[step-1];
@@ -309,77 +385,78 @@ text.shadow {
                 } else if(stepName === "question") {
                     var prev_steps = "the previous steps";
                                 
-                   s = ['<div id="p1_step'+step+'">',
-                        '<p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. Answer the following question carefully using the information from '+prev_steps+'.</strong></p>',
-                        '<div id="p1_step'+step+'+_body">',
+                   s = ['<div id="p1_step'+step+"_"+page_number+'">',
+                        '<p class="lead" id="p1_step'+step+"_"+page_number+'_instructions"><strong>Task</strong></p>',
+                        '<div id="p1_step'+step+"_"+page_number+'+_body">',
                             '<div class="well well-sm">',
-                    '<p>Some question here?</p>',
+                    '<p>'+tasks[task_i].question+'</p>',
                     '</div>',
-                    '<p>Then answer is <input id="answer_chance1" class="answer" name="answer_chance1" type="text" /></p>',
+                    '<p>You have selected: <input id="answer_'+page_number+'" class="answer" name="answer'+page_number+'" type="text" disabled/></p>',
                         '</div>',
-                         '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
                     '</div>'].join("\n");
                     
                    
                    $("#p1_right").append(s);
                 } else if(stepName === "interactive_viz") {
-                  s = ['<div id="p1_step'+step+'">',
-                           '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
+                  s = ['<div id="p1_step'+step+"_"+page_number+'">',
+                           '<p class="lead">Inspect the diagram below carefully and <strong>Click</strong> on a country to set an answer to the Task on the right.</p>',
                            '<div id="chart" style="margin:0px"></div>',
                            '<span id="min-time">1975</span> ',
                            '<input type="range" name="points" min="0" max="25" step="1" value="0" id="slider-time" style="width:600px; display: inline;">',
                            '<span id="max-time">2000</span><br><br>',
                            //'&nbsp; <button id="graph_play_button" class="btn">Play</button><br>',
-                           '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
+                          
                            '</div>'].join("\n");  
                   $("#p1_left").append(s);
-                  scatterPlotRun(stepName);
+                  scatterPlotRun(stepName, tasks[task_i], function(answer){
+                    $("#answer_"+page_number).val(answer);
+                    $("#answer_"+page_number).effect("highlight", {}, 600);
+                  
+                  });
                 } else if(stepName === "animated_viz") {
-                  s = ['<div id="p1_step'+step+'">',
-                           '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
-                           '<div id="chart" style="margin:0px"></div>',
+                  s = ['<div id="p1_step'+step+'_'+page_number+'">',
+                           '<p class="lead">Inspect the diagram below carefully and <strong>Click</strong> on a country to set an answer to the Task on the right.</p>',
+                          '<div id="chart" style="margin:0px"></div>',
                            '<button id="rewind_button" class="btn btn-default" title="Rewind Back"><i class="fa fa-step-backward"></i></button>',
                            '<button id="fast_backward_button" class="btn btn-default"  title="Fast Backward"><i class="fa fa-backward"></i></button>',
                            '<button id="play_button" class="btn btn-default" title="Play/Pause">Play <i class="fa fa-play"></i></button>',
                            '<button id="fast_forward_button" class="btn btn-default"  title="Fast Forward"><i class="fa fa-forward"></i></button>',
                            '<button id="rewind_forward_button" class="btn btn-default" title="Rewind Forward"><i class="fa fa-step-forward"></i></button><br><br>',
                            //'&nbsp; <button id="graph_play_button" class="btn">Play</button><br>',
-                           '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
+                           
                            '</div>'].join("\n");  
                   $("#p1_left").append(s);
-                  scatterPlotRun(stepName);
+                  scatterPlotRun(stepName, tasks[task_i], function(answer){
+                    $("#answer_"+page_number).val(answer);
+                  });
                 } else if(stepName === "traces") {
-                  s = ['<div id="p1_step'+step+'">',
-                           '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
+                  s = ['<div id="p1_step'+step+"_"+page_number+'">',
+                           '<p class="lead">Inspect the diagram below carefully and <strong>Click</strong> on a country to set an answer to the Task on the right.</p>',
                            '<div id="chart_traces" style="margin:0px"></div>',
-                           //'&nbsp; <button id="graph_play_button" class="btn">Play</button><br>',
-                           '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
                            '</div>'].join("\n");  
                   $("#p1_left").append(s);
-                  linePlotRun(stepName);
-                } else if(stepName === "small_multiples") {
-                  s = ['<div id="p1_step'+step+'">',
-                           '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
-                           '<div id="chart_sm" style="margin:0px"></div>',
-                           //'&nbsp; <button id="graph_play_button" class="btn">Play</button><br>',
-                           '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
-                           '</div>'].join("\n");  
-                  $("#p1_left").append(s);
-                  smallMultiplesPlotRun(stepName);
-                
-                
-                
-                } else if(stepName == "visualization2") {
-                   s = ['<div id="p1_step'+step+'">',
-                           '<p id="readtextbelow" class="lead"><strong>Step '+step+'. Inspect the diagram below carefully.</strong></p>',
+                  linePlotRun(stepName,tasks[task_i], function(answer){
+                    $("#answer_"+page_number).val(answer);
+                    $("#answer_"+page_number).effect("highlight", {}, 600);
                   
-                           '<img src="{% static 'images/dtree2.png' %}" width="100%">',
-                           '<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>',
+                  });
+                } else if(stepName === "small_multiples") {
+                  s = ['<div id="p1_step'+step+"_"+page_number+'">',
+                           '<p class="lead">Inspect the diagram below carefully and <strong>Click</strong> on a country to set an answer to the Task on the right.</p>',
+                          '<div id="chart_sm" style="margin:0px"></div>',
                            '</div>'].join("\n");  
-                    $("#p1_left").append(s);
+                  $("#p1_left").append(s);
+                  smallMultiplesPlotRun(stepName, tasks[task_i], function(answer){
+                    $("#answer_"+page_number).val(answer);
+                    $("#answer_"+page_number).effect("highlight", {}, 600);
+                  
+                  });
+                
+                
+                
                 } else if(stepName == "confidence") {
-                    s = ['<div id="p1_step'+step+'">',
-                       ' <p class="lead" id="p1_step'+step+'_instructions"><strong>Step '+step+'. How confident are you in your answer?</strong></p>',
+                    s = ['<div id="p1_step'+step+"_"+page_number+'">',
+                       ' <p class="lead" id="p1_step'+step+"_"+page_number+'_instructions"><strong>How confident are you in your answer?</strong></p>',
 
                         '<ul class="list-inline pull-down text-center">',
                             '<li style="width:19%">No Confidence<br /><input type="radio" id="confidence-1" name="confidence" value="1" /><label id="confidence-1-label" for="confidence-1">&nbsp;1</label></li>',
@@ -399,12 +476,9 @@ text.shadow {
                            ' </li>',
                         '</ul>'];
 
-                        if(step == steps.length){
                            s.push('<button type="submit" class="btn btn-default submit">Next Page</button>');
                            s.push('<div id="error2" class="error text-danger"></div>');
-                        }else{
-                          s.push('<button id="p1_step'+step+'_nextButton" class="btn btn-default">Next Step</button>');
-                        }
+                        
                         s.push('</div>');
 
                       $("#p1_right").append(s.join("\n"));
@@ -414,28 +488,17 @@ text.shadow {
                         '</div>'].join("\n");
                       $("#p1_right").append(s);
                 } 
-
-
             }
-
-             for(step=1; step <= steps.length; step++){
-                if(step > 1){
-                  $("#p1_step"+step).hide();  
-                }                
-                 (function(s) {
-                 $("#p1_step"+step+"_nextButton").click(function(e){
-                    $("#p1_step"+s+"_nextButton").hide();
-                    $("#p1_step"+(s+1)).fadeIn(1000); 
-                    $("#p1_step"+(s+1)).effect("highlight", {}, 1000);
-                    $('html, body').animate({
-                        scrollTop: $("#p1_step"+(s+1)).offset().top}, 2000);  
-                })})(step);
-              }
         }
        
-        function showPage(elementID) {
+        function showPage(elementID, page_number) {
             // try to find the requested page and alert if it's not found
             $(".page").hide();
+
+            if(page_number){
+              init_task(condition, page_number);
+            }
+
             $(elementID).show();
         }
 
@@ -482,27 +545,23 @@ text.shadow {
             var questionCondition = {{ condition|safe}};
             var total_pages =  4;
             var current_question =  parseInt({{qnum|safe}});
-            var answer = "";
-            var confidence = 0;
-           
+                 
             
-            init(condition);
             checkResolution(1000, 560);
 
-          
             // Question submits
             if(!debug){
                 $('.submit').click(function(e) {
 
                     mimic_logFormatted(e);
 
-
+                    var answer;
 
 
                     $(".error").html("");
-                    if(current_question == 0){
+                    if(current_question === 0){
 
-                    }else if(current_question == 1){
+                    }else if(current_question < 11){
                         var a_c1 = $('input:text[name=answer_chance1]').val();
                         var confidence = $('input:radio[name=confidence]:checked').val();
                    
@@ -522,10 +581,10 @@ text.shadow {
                        
                         a_c1 = a_c1 ? a_c1 : "";
                         confidence = confidence ? confidence : "";
-                        i
+                        
                        
                         answer = {'a_c1':a_c1, 'confidence': confidence };
-                    }else if(current_question == 2){
+                    }else if(current_question  === 11){
                         var who_from = $('input:radio[name=who_from]:checked').val();
                         var what_department = $('input:radio[name=what_department]:checked').val();
                         if(!who_from || !what_department ){
@@ -535,7 +594,7 @@ text.shadow {
                         }
                         answer = {'who_from':who_from, 'what_department':what_department};
 
-                    }else if(current_question == 3){
+                    }else if(current_question === 12){
                         var gender = $('input:radio[name=gender]:checked').val();
                         var occupation = $('#occupation option:selected').val();
                         var education = $('#education option:selected').val();
@@ -596,7 +655,7 @@ text.shadow {
                                 // Go to next question
                                 current_question++;
                                 $("#currentQ").val(current_question);
-                                showPage("#page"+current_question.toString());
+                                showPage("#page"+current_question.toString(), current_question);
                                 $('.submit').prop('disabled', false);
                                 
                                
@@ -675,7 +734,7 @@ text.shadow {
 
             });
 
-            showPage("#page"+current_question);
+            showPage("#page"+current_question, current_question);
 
         });
 
@@ -691,7 +750,7 @@ text.shadow {
             <div id="page0" class="page container size-16-9">
                 <div class="row">
                     <div id="" class="col-xs-12">
-                        <em>Page 1/4</em>
+                        <em>Page 1/14</em>
                     </div>
                 </div>
                 <div class="row">
@@ -738,23 +797,130 @@ text.shadow {
             <div id="page1" class="page container size-16-9">
                 <div class="row">
                     <div id="" class="col-xs-12">
-                        <em>Page 2/4</em>
+                        <em>Page 2/14</em>
                     </div>
                 </div>
                 <div class="row">
-                    <div id="p1_left" class="col-xs-8">
-                    </div>
-
-                    <div id="p1_right" class="col-xs-4">
-                        
-                    </div>
+                    <div id="p1_left" class="col-xs-8"></div>
+                    <div id="p1_right" class="col-xs-4"></div>
                 </div>
             </div>
-            <!-- PAGE 2 - QUESTION -->
-             <div id="page2" class="page container size-16-9">
+            <div id="page2" class="page container size-16-9">
                 <div class="row">
                     <div id="" class="col-xs-12">
-                        <em>Page 3/4</em>
+                        <em>Page 2/14</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="p1_left" class="col-xs-8"></div>
+                    <div id="p1_right" class="col-xs-4"></div>
+                </div>
+            </div>
+            <div id="page3" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 3/14</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="p1_left" class="col-xs-8"></div>
+                    <div id="p1_right" class="col-xs-4"></div>
+                </div>
+            </div>
+            <div id="page4" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 4/14</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="p1_left" class="col-xs-8"></div>
+                    <div id="p1_right" class="col-xs-4"></div>
+                </div>
+            </div>
+            <div id="page5" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 5/14</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="p1_left" class="col-xs-8"></div>
+                    <div id="p1_right" class="col-xs-4"></div>
+                </div>
+            </div>
+            <div id="page6" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 6/14</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="p1_left" class="col-xs-8"></div>
+                    <div id="p1_right" class="col-xs-4"></div>
+                </div>
+            </div>
+            <div id="page7" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 7/14</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="p1_left" class="col-xs-8"></div>
+                    <div id="p1_right" class="col-xs-4"></div>
+                </div>
+            </div>
+            <div id="page8" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 8/14</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="p1_left" class="col-xs-8"></div>
+                    <div id="p1_right" class="col-xs-4"></div>
+                </div>
+            </div>
+            <div id="page8" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 8/14</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="p1_left" class="col-xs-8"></div>
+                    <div id="p1_right" class="col-xs-4"></div>
+                </div>
+            </div>
+            <div id="page9" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 9/14</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="p1_left" class="col-xs-8"></div>
+                    <div id="p1_right" class="col-xs-4"></div>
+                </div>
+            </div>
+             <div id="page10" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 10/14</em>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="p1_left" class="col-xs-8"></div>
+                    <div id="p1_right" class="col-xs-4"></div>
+                </div>
+            </div>
+
+            <!-- PAGE 11 - QUESTION -->
+             <div id="page11" class="page container size-16-9">
+                <div class="row">
+                    <div id="" class="col-xs-12">
+                        <em>Page 11/14</em>
                     </div>
                 </div>
                 <div class="row">
@@ -814,11 +980,11 @@ text.shadow {
                 </div>
             </div>
 
-            <!-- PAGE 3 - QUESTION -->
-            <div id="page3" class="page container size-16-9">
+            <!-- PAGE 12 - QUESTION -->
+            <div id="page12" class="page container size-16-9">
                 <div class="row">
                     <div id="" class="col-xs-12">
-                        <em>Page 4/4</em>
+                        <em>Page 12/14</em>
                     </div>
                 </div>
                 <div class="row">
